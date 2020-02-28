@@ -1,0 +1,45 @@
+/* User code */
+
+package lexer;
+
+%% /* Options and declarations */
+
+%public
+%class DumplingLexer
+%line
+%column
+%type Symbol
+
+%unicode
+
+%{
+   StringBuffer string = new StringBuffer();
+
+   private Symbol symbol(int type) {
+      return new Symbol(type, yyline, yycolumn);
+   }
+   private Symbol symbol(int type, Object value) {
+      return new Symbol(type, yyline, yycolumn, value);
+   }
+%}
+
+WhiteSpace = [ \t\f\n\r]
+
+%state STRING
+
+%% /* Lexical rules */
+
+// String
+<YYINITIAL> \" {string.setLength(0); yybegin(STRING);}
+
+<STRING> {
+    \"    {yybegin(YYINITIAL); return symbol(3, string.toString());}
+    [^\"] {string.append(yytext());}
+}
+
+
+"every" {return symbol(1);}
+
+{WhiteSpace} {}
+
+[^] {System.out.println("Error");}
