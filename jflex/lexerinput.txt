@@ -100,10 +100,10 @@ Comment = "/*".*"*/"|"//".*"\n"
 "or" {return symbol(SymType.OR);}
 "=" {return symbol(SymType.ASSIGN);}
 "==" {return symbol(SymType.EQUAL);}
-"+" {return symbol(SymType.PLUS);}
-"-" {return symbol(SymType.MINUS);}
-"*" {return symbol(SymType.MULTIPLY);}
-"/" {return symbol(SymType.DIVIDE);}
+"+" {return symbol(SymType.ADDITION);}
+"-" {return symbol(SymType.SUBTRACTION);}
+"*" {return symbol(SymType.MULTIPLICATION);}
+"/" {return symbol(SymType.DIVISION);}
 "%" {return symbol(SymType.MODULO);}
 ">" {return symbol(SymType.GREATERTHAN);}
 "<" {return symbol(SymType.LESSTHAN);}
@@ -116,7 +116,8 @@ Comment = "/*".*"*/"|"//".*"\n"
 "<=" {return symbol(SymType.LESSTHANOREQUALTO);}
 ";" {return symbol(SymType.SEMICOLON);}
 "!" {return symbol(SymType.NOT);}
-":" {return symbol(SymType.RETURNTYPE);}
+":" {return symbol(SymType.COLON);}
+"," {return symbol(SymType.COMMA);}
 "return" {return symbol(SymType.RETURN);}
 
 "template" {return symbol(SymType.TEMPLATE);}
