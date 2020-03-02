@@ -72,4 +72,5 @@ enum class SymType {
     STRINGTYPE,
     CHARTYPE,
     COMMENT,
+    EOF
 }

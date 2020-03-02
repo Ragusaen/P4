@@ -1,15 +1,15 @@
 import lexer.*
-import java.io.File
+import java.nio.file.Paths
 
 fun main() {
-
-    val reader = File("/home/kasper/P4/build/production/P4/test.txt").reader()
+    val reader = Paths.get("", "resources", "test.txt").toFile().reader()
     val lexer = DumplingLexer(reader)
 
 
-    val symbolList = mutableListOf<Symbol>()
+    val tokenList = mutableListOf<Symbol>()
 
-    while (!lexer.yyatEOF()) println(lexer.yylex())
+    while (!lexer.yyatEOF()) tokenList.add(lexer.yylex() ?: Symbol(SymType.EOF, 0, 0))
 
+    println(tokenList.map{it.type.name}.joinToString(""))
 }
 
