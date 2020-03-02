@@ -110,6 +110,7 @@ Char = "'"[^ \t\f\n\r]"'"
 ";" {return symbol(SymType.SEMICOLON);}
 "!" {return symbol(SymType.NOT);}
 ":" {return symbol(SymType.RETURNTYPE);}
+"," {return symbol(SymType.COMMA);}
 "return" {return symbol(SymType.RETURN);}
 
 "template" {return symbol(SymType.TEMPLATE);}

@@ -57,6 +57,7 @@ enum class SymType {
     GREATERTHANOREQUALTO,
     LESSTHANOREQUALTO,
     SEMICOLON,
+    COMMA,
     NOT,
     TIME,
     TIMELITERAL,
@@ -72,5 +73,5 @@ enum class SymType {
     STRINGTYPE,
     CHARTYPE,
     COMMENT,
-    EOF
+    EOF,
 }
