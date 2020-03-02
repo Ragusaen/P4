@@ -1,0 +1,46 @@
+Prog -> Rootelements
+Rootelements -> Module Rootelements | Dcl Rootelements | EPSILON
+
+%'Declarations'
+Dcl -> Type VarDcls 'SEMICOLON'
+VarDcls -> VarDcl MoreVarDcls
+VarDcl -> 'IDENTIFIER' VarInit
+VarInit -> 'ASSIGN' Expr | EPSILON
+MoreVarDcls -> 'COMMA' VarDcls | EPSILON
+
+%'Expressions'
+Expr -> OrExpr
+
+OrExpr -> OrExprX OrExprY
+OrExprX -> AndExpr
+OrExprY -> 'OR' AndExpr OrExprY | EPSILON
+
+AndExpr -> AndExprX AndExprY
+AndExprX -> EqualExpr
+AndExprY -> 'AND' EqualExpr AndExprY | EPSILON
+
+EqualExpr -> EqualExprX EqualExprY
+EqualExprX -> AdditionExpr
+EqualExprY -> 'EQUAL' AdditionExpr EqualExprY | 'NOTEQUAL' AdditionExpr EqualExprY | EPSILON
+
+AdditionExpr -> AdditionExprX AdditionExprY
+AdditionExprX ->  MultiplicationExpr
+AdditionExprY -> 'ADDITION' MultiplicationExpr AdditionExprY | 'SUBTRACTION' MultiplicationExpr AdditionExprY | EPSILON
+
+
+MultiplicationExpr -> MultiplicationExprX MultiplicationExprY
+MultiplicationExprX -> UnaryExpr
+MultiplicationExprY -> 'MULTIPLICATION' UnaryExpr MultiplicationExprY | 'DIVIDE' UnaryExpr MultiplicationExprY | 'MODULO' UnaryExpr MultiplicationExprY | EPSILON
+
+UnaryExpr -> 'ADDITION' ParenthesisExpr | 'SUBTRACTION' ParenthesisExpr | 'NOT' ParenthesisExpr | ParenthesisExpr
+
+ParenthesisExpr -> 'LPAREN' Expr 'RPAREN' | ParenthesisExprX ParenthesisExprY
+ParenthesisExprX -> Value
+ParenthesisExprY -> 'LBRACKET' Expr 'RBRACKET' | EPSILON
+
+Value -> Literal | 'IDENTIFIER'
+Literal -> 'INTLITERAL' | 'FLOATLITERAL' | 'BOOLLITERAL' | 'STRINGLITERAL' | 'CHARLITERAL' | 'TIMELITERAL'
+
+Module -> 'TEMPLATE' 'MODULE' 'IDENTIFIER' '{' Dcl '}'
+
+Type -> 'INTTYPE' | 'FLOATTYPE' | 'BOOLTYPE' | 'STRINGTYPE' | 'CHARTYPE' | 'DIGITALOUTPUTPINTYPE' | 'DIGITALINPUTPINTYPE' | 'ANALOGOUTPUTPINTYPE' | 'ANALOGINPUTPINTYPE'
