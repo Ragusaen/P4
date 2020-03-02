@@ -100,6 +100,7 @@ Comment = "/*".*"*/"|"//".*"\n"
 "or" {return symbol(SymType.OR);}
 "=" {return symbol(SymType.ASSIGN);}
 "==" {return symbol(SymType.EQUAL);}
+"!=" {return symbol(SymType.NOTEQUAL);}
 "+" {return symbol(SymType.ADDITION);}
 "-" {return symbol(SymType.SUBTRACTION);}
 "*" {return symbol(SymType.MULTIPLICATION);}
