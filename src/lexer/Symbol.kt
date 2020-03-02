@@ -42,6 +42,7 @@ enum class SymType {
     FLOATLITERAL,
     ASSIGN,
     EQUAL,
+    NOTEQUAL,
     ADDITION,
     SUBTRACTION,
     MULTIPLICATION,
