@@ -8,7 +8,12 @@ fun main() {
 
     val tokenList = mutableListOf<Symbol>()
 
-    while (!lexer.yyatEOF()) tokenList.add(lexer.yylex() ?: Symbol(SymType.EOF, 0, 0))
+    while (!lexer.yyatEOF()) {
+        val p = lexer.yylex()
+        if (p != null) {
+            tokenList.add(p)
+        }
+    }
 
     println(tokenList.map{it.type.name}.joinToString(""))
 }
