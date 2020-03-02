@@ -15,6 +15,7 @@ fun main() {
         }
     }
 
-    println(tokenList.map{it.type.name}.joinToString(""))
+    tokenList.removeAt(tokenList.lastIndex)
+    println(tokenList.map{it.type.name}.joinToString(" "))
 }
 

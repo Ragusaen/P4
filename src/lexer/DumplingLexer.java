@@ -935,12 +935,12 @@ public class DumplingLexer {
             // fall through
           case 84: break;
           case 8:
-            { return symbol(SymType.MULTIPLY);
+            { return symbol(SymType.MULTIPLICATION);
             }
             // fall through
           case 85: break;
           case 9:
-            { return symbol(SymType.PLUS);
+            { return symbol(SymType.ADDITION);
             }
             // fall through
           case 86: break;
@@ -950,12 +950,12 @@ public class DumplingLexer {
             // fall through
           case 87: break;
           case 11:
-            { return symbol(SymType.MINUS);
+            { return symbol(SymType.SUBTRACTION);
             }
             // fall through
           case 88: break;
           case 12:
-            { return symbol(SymType.DIVIDE);
+            { return symbol(SymType.DIVISION);
             }
             // fall through
           case 89: break;
@@ -965,7 +965,7 @@ public class DumplingLexer {
             // fall through
           case 90: break;
           case 14:
-            { return symbol(SymType.RETURNTYPE);
+            { return symbol(SymType.COLON);
             }
             // fall through
           case 91: break;
