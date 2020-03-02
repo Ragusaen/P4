@@ -10,6 +10,7 @@ fun main() {
 
     while (!lexer.yyatEOF()) tokenList.add(lexer.yylex() ?: Symbol(SymType.EOF, 0, 0))
 
-    println(tokenList.map{it.type.name}.joinToString(""))
+    tokenList.removeAt(tokenList.lastIndex)
+    println(tokenList.map{it.type.name}.joinToString(" "))
 }
 
