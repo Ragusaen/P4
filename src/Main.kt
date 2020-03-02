@@ -1,14 +1,15 @@
-import lexer.DumplingLexer
-import lexer.Symbol
-import java.io.StringReader
+import lexer.*
+import java.io.File
 
 fun main() {
-    val reader = StringReader("every \"this is string\" every")
 
+    val reader = File("/home/kasper/P4/build/production/P4/test.txt").reader()
     val lexer = DumplingLexer(reader)
+
 
     val symbolList = mutableListOf<Symbol>()
 
     while (!lexer.yyatEOF()) println(lexer.yylex())
 
 }
+

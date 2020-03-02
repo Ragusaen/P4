@@ -15,17 +15,26 @@ package lexer;
 %{
    StringBuffer string = new StringBuffer();
 
-   private Symbol symbol(int type) {
+   private Symbol symbol(SymType type) {
       return new Symbol(type, yyline, yycolumn);
    }
-   private Symbol symbol(int type, Object value) {
+   private Symbol symbol(SymType type, Object value) {
       return new Symbol(type, yyline, yycolumn, value);
    }
 %}
 
 WhiteSpace = [ \t\f\n\r]
+BoolLiteral = ("false"|"true"|"HIGH"|"LOW")
+IntLiteral = [0-9]+
+FloatLiteral = [0-9]+\.[0-9]*|[0-9]*\.[0-9]+
+TimeLiteral = [0-9]*\.?[0-9]*("ms"|"s"|"m"|"h")
+Identifier = ([a-z]|[A-Z])([a-z]*|[0-9]*|[A-Z])*
+Comment = "/*".*"*/"|"//".*"\n"
+Char = "'"[^ \t\f\n\r]"'"
+
 
 %state STRING
+
 
 %% /* Lexical rules */
 
@@ -34,12 +43,87 @@ WhiteSpace = [ \t\f\n\r]
 
 <STRING> {
     \"    {yybegin(YYINITIAL); return symbol(SymType.STRING, string.toString());}
-    [^\"] {string.append(yytext());}
+    [^\n\r\"\\]+    {string.append(yytext());}
+    \\t     {string.append('\t');}
+    \\n     {string.append('\n');}
+
+    \\r     {string.append('\r');}
+    \\\"    {string.append('\"');}
+    \\      {string.append('\\');}
 }
 
+{BoolLiteral} {return symbol(SymType.BOOLLITERAL, yytext());}
+{IntLiteral} {return symbol(SymType.INTLITERAL, yytext());}
+{FloatLiteral} {return symbol(SymType.FLOATLITERAL, yytext());}
+{TimeLiteral} {return symbol(SymType.TIMELITERAL, yytext());}
+{Comment} {return symbol(SymType.COMMENT, yytext());}
+{Char} {return symbol(SymType.CHAR, yytext());}
 
-"every" {return symbol(1);}
+"String" {return symbol(SymType.STRINGTYPE);}
+"Char" {return symbol(SymType.CHARTYPE);}
+"Int" {return symbol(SymType.INTTYPE);}
+"Float" {return symbol(SymType.FLOATTYPE);}
+"Bool" {return symbol(SymType.BOOLTYPE);}
+"DigitalOutputPin" {return symbol(SymType.DIGITALOUTPUTPINTYPE);}
+"DigitalInputPin" {return symbol(SymType.DIGITALINPUTPINTYPE);}
+"AnalogOutputPin" {return symbol(SymType.ANALOGOUTPUTPINTYPE);}
+"AnalogInputPin" {return symbol(SymType.ANALOGINPUTPINTYPE);}
+"Time" {return symbol(SymType.TIME);}
+
+"every" {return symbol(SymType.EVERY);}
+"if" {return symbol(SymType.IF);}
+"on" {return symbol(SymType.ON);}
+"else" {return symbol(SymType.ELSE);}
+"while" {return symbol(SymType.WHILE);}
+"for" {return symbol(SymType.FOR);}
+"break" {return symbol(SymType.BREAK);}
+"continue" {return symbol(SymType.CONTINUE);}
+"rising" {return symbol(SymType.RISING);}
+"falling" {return symbol(SymType.FALLING);}
+
+"pin" {return symbol(SymType.PIN);}
+"delay" {return symbol(SymType.DELAY);}
+"until" {return symbol(SymType.UNTIL);}
+"set" {return symbol(SymType.SET);}
+"to" {return symbol(SymType.TO);}
+"read" {return symbol(SymType.READ);}
+"start" {return symbol(SymType.START);}
+"stop" {return symbol(SymType.STOP);}
+"and" {return symbol(SymType.AND);}
+"or" {return symbol(SymType.OR);}
+"=" {return symbol(SymType.ASSIGN);}
+"==" {return symbol(SymType.EQUAL);}
+"+" {return symbol(SymType.PLUS);}
+"-" {return symbol(SymType.MINUS);}
+"*" {return symbol(SymType.MULTIPLY);}
+"/" {return symbol(SymType.DIVIDE);}
+"%" {return symbol(SymType.MODULO);}
+">" {return symbol(SymType.GREATERTHAN);}
+"<" {return symbol(SymType.LESSTHAN);}
+"+=" {return symbol(SymType.PLUSASSIGN);}
+"-=" {return symbol(SymType.MINUSASSIGN);}
+"*=" {return symbol(SymType.MULTIPLYASSIGN);}
+"/=" {return symbol(SymType.DIVIDEASSIGN);}
+"%=" {return symbol(SymType.MODULOASSIGN);}
+">=" {return symbol(SymType.GREATERTHANOREQUALTO);}
+"<=" {return symbol(SymType.LESSTHANOREQUALTO);}
+";" {return symbol(SymType.SEMICOLON);}
+"!" {return symbol(SymType.NOT);}
+":" {return symbol(SymType.RETURNTYPE);}
+"return" {return symbol(SymType.RETURN);}
+
+"template" {return symbol(SymType.TEMPLATE);}
+"fun" {return symbol(SymType.FUN);}
+"module" {return symbol(SymType.MODULE);}
+
+"(" {return symbol(SymType.LPAREN);}
+")" {return symbol(SymType.RPAREN);}
+"{" {return symbol(SymType.LBRACE);}
+"}" {return symbol(SymType.RBRACE);}
+"[" {return symbol(SymType.LBRACKET);}
+"]" {return symbol(SymType.RBRACKET);}
 
 {WhiteSpace} {}
 
+{Identifier} {return symbol(SymType.IDENTIFIER, yytext());}
 [^] {System.out.println("Error");}
