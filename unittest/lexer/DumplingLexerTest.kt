@@ -475,11 +475,10 @@ internal class DumplingLexerTest {
         assertEquals(expected, lexer.yylex())
     }
     @Test
-    fun single_comment_returns_COMMENT() {
-        val reader = ("//This is a comment").reader()
+    fun single_token_timeliteral_returns_TIMELITERAL() {
+        val reader = ("12ms").reader()
         val lexer = DumplingLexer(reader)
-        val expected = Symbol(SymType.COMMENT,0,0, "This is a comment")
+        val expected = Symbol(SymType.TIMELITERAL,0,0,"12ms")
         assertEquals(expected, lexer.yylex())
     }
-
 }

@@ -29,15 +29,16 @@ IntLiteral = [0-9]+
 FloatLiteral = [0-9]+\.[0-9]*|[0-9]*\.[0-9]+
 TimeLiteral = [0-9]*\.?[0-9]*("ms"|"s"|"m"|"h")
 Identifier = ([a-z]|[A-Z])([a-z]*|[0-9]*|[A-Z])*
+Comment = ("/*"(.*?\n?)*"*/")|("//".*([^.]|"\n"))
 
 
 
 
 %state STRING
 %state CHAR
-%state COMMENT
 
 %% /* Lexical rules */
+
 
 // String
 <YYINITIAL> \" {string.setLength(0); yybegin(STRING);}
@@ -60,15 +61,7 @@ Identifier = ([a-z]|[A-Z])([a-z]*|[0-9]*|[A-Z])*
     [^ \n\r\"\\]   {string.append(yytext());}
 }
 
-// Comment
-<YYINITIAL> "/*" {string.setLength(0); yybegin(COMMENT);}
-
-<COMMENT> {
-     [/*]   {yybegin(YYINITIAL); return symbol(SymType.COMMENT, string.toString());}
-     [^\n]  {string.append(yytext());}
-}
-
-
+{Comment} {}
 {BoolLiteral} {return symbol(SymType.BOOLLITERAL, yytext());}
 {IntLiteral} {return symbol(SymType.INTLITERAL, yytext());}
 {FloatLiteral} {return symbol(SymType.FLOATLITERAL, yytext());}
@@ -141,6 +134,7 @@ Identifier = ([a-z]|[A-Z])([a-z]*|[0-9]*|[A-Z])*
 "]" {return symbol(SymType.RBRACKET);}
 
 {WhiteSpace} {}
+
 
 {Identifier} {return symbol(SymType.IDENTIFIER, yytext());}
 [^] {System.out.println("Error");}
