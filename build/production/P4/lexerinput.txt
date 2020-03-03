@@ -29,12 +29,13 @@ IntLiteral = [0-9]+
 FloatLiteral = [0-9]+\.[0-9]*|[0-9]*\.[0-9]+
 TimeLiteral = [0-9]*\.?[0-9]*("ms"|"s"|"m"|"h")
 Identifier = ([a-z]|[A-Z])([a-z]*|[0-9]*|[A-Z])*
-Comment = "/*".*"*/"|"//".*"\n"
+
 
 
 
 %state STRING
 %state CHAR
+%state COMMENT
 
 %% /* Lexical rules */
 
@@ -59,12 +60,19 @@ Comment = "/*".*"*/"|"//".*"\n"
     [^ \n\r\"\\]   {string.append(yytext());}
 }
 
+// Comment
+<YYINITIAL> "/*" {string.setLength(0); yybegin(COMMENT);}
+
+<COMMENT> {
+     [/*]   {yybegin(YYINITIAL); return symbol(SymType.COMMENT, string.toString());}
+     [^\n]  {string.append(yytext());}
+}
+
 
 {BoolLiteral} {return symbol(SymType.BOOLLITERAL, yytext());}
 {IntLiteral} {return symbol(SymType.INTLITERAL, yytext());}
 {FloatLiteral} {return symbol(SymType.FLOATLITERAL, yytext());}
 {TimeLiteral} {return symbol(SymType.TIMELITERAL, yytext());}
-{Comment} {return symbol(SymType.COMMENT, yytext());}
 
 "String" {return symbol(SymType.STRINGTYPE);}
 "Char" {return symbol(SymType.CHARTYPE);}
@@ -100,6 +108,7 @@ Comment = "/*".*"*/"|"//".*"\n"
 "or" {return symbol(SymType.OR);}
 "=" {return symbol(SymType.ASSIGN);}
 "==" {return symbol(SymType.EQUAL);}
+"!=" {return symbol(SymType.NOTEQUAL);}
 "+" {return symbol(SymType.ADDITION);}
 "-" {return symbol(SymType.SUBTRACTION);}
 "*" {return symbol(SymType.MULTIPLICATION);}
@@ -107,10 +116,10 @@ Comment = "/*".*"*/"|"//".*"\n"
 "%" {return symbol(SymType.MODULO);}
 ">" {return symbol(SymType.GREATERTHAN);}
 "<" {return symbol(SymType.LESSTHAN);}
-"+=" {return symbol(SymType.PLUSASSIGN);}
-"-=" {return symbol(SymType.MINUSASSIGN);}
-"*=" {return symbol(SymType.MULTIPLYASSIGN);}
-"/=" {return symbol(SymType.DIVIDEASSIGN);}
+"+=" {return symbol(SymType.ADDITIONASSIGN);}
+"-=" {return symbol(SymType.SUBTRACTIONASSIGN);}
+"*=" {return symbol(SymType.MULTIPLICATIONASSIGN);}
+"/=" {return symbol(SymType.DIVISIONASSIGN);}
 "%=" {return symbol(SymType.MODULOASSIGN);}
 ">=" {return symbol(SymType.GREATERTHANOREQUALTO);}
 "<=" {return symbol(SymType.LESSTHANOREQUALTO);}
