@@ -137,4 +137,3 @@ Comment = ("/*"(.*?\n?)*"*/")|("//".*([^.]|"\n"))
 
 
 {Identifier} {return symbol(SymType.IDENTIFIER, yytext());}
-[^] {System.out.println("Error");}

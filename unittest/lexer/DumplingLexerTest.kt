@@ -2,7 +2,7 @@ package lexer
 
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import java.io.IOException
+import java.lang.Error
 import kotlin.test.assertEquals
 
 
@@ -540,5 +540,53 @@ internal class DumplingLexerTest {
     fun exception() {
         val lexer = DumplingLexer(".!-".reader())
 
+    }
+    @Test
+    fun dual_token_inttype_and_IDENTIFIER_returns_INTTYPE_and_IDENTIFIER(){
+        val reader = ("Int a").reader()
+        val lexer = DumplingLexer(reader)
+        val expected = mutableListOf<Symbol>(Symbol(SymType.INTTYPE, 0,0), Symbol(SymType.IDENTIFIER,0,4, "a"))
+
+        val actual = mutableListOf<Symbol>()
+        actual.add(lexer.yylex())
+        actual.add(lexer.yylex())
+
+        assertEquals(expected, actual)
+    }
+    @Test
+    fun multiple_tokens_return_correct_column_index() {
+        val reader = ("Int a = b").reader()
+        val lexer = DumplingLexer(reader)
+        val expected = 8
+
+        lexer.yylex()
+        lexer.yylex()
+        lexer.yylex()
+        val actual = lexer.yylex().column
+
+        assertEquals(expected, actual)
+    }
+    @Test
+    fun two_lines_returns_line_index_1_on_line_2() {
+        val reader = ("Int a = b;\nInt").reader()
+        val lexer = DumplingLexer(reader)
+        val expected = 1
+
+        lexer.yylex()
+        lexer.yylex()
+        lexer.yylex()
+        lexer.yylex()
+        lexer.yylex()
+        val actual = lexer.yylex().line
+
+        assertEquals(expected, actual)
+    }
+
+    @Test
+    fun invalid_symbols_no_match_expect_error(){
+        val reader = ".!%".reader()
+        val lexer = DumplingLexer(reader)
+
+        assertThrows<Error> { lexer.yylex() }
     }
 }

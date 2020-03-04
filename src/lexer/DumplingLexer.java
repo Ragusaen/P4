@@ -911,7 +911,8 @@ public class DumplingLexer {
       else {
         switch (zzAction < 0 ? zzAction : ZZ_ACTION[zzAction]) {
           case 1:
-            { System.out.println("Error");
+            {
+              zzScanError(ZZ_NO_MATCH);
             }
             // fall through
           case 79: break;
