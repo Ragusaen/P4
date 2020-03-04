@@ -1,8 +1,12 @@
 package lexer
 
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
+import java.lang.Error
+import java.lang.Exception
 import kotlin.math.exp
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 
 
 internal class DumplingLexerTest {
@@ -521,5 +525,13 @@ internal class DumplingLexerTest {
         val actual = lexer.yylex().line
 
         assertEquals(expected, actual)
+    }
+
+    @Test
+    fun invalid_symbols_no_match_expect_error(){
+        val reader = ".!%".reader()
+        val lexer = DumplingLexer(reader)
+
+        assertThrows<Error> { lexer.yylex() }
     }
 }
