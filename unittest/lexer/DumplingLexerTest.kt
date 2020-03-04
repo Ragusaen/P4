@@ -783,19 +783,20 @@ internal class DumplingLexerTest {
     @Test
     fun anonymous_module_every_timeliteral_increment_global_variable_interrupted_by_whitespace() {
         val reader = "Int\n a = 0\t; every    \n\n\n1000ms \t{\t a\n +=\n 1\n; \t\t      }".reader()
-        val expected = listOf(Symbol(SymType.INTTYPE, 0, 0),
-                Symbol(SymType.IDENTIFIER, 0,4, "a"),
-                Symbol(SymType.ASSIGN, 0, 6),
-                Symbol(SymType.INTLITERAL, 0, 8, "0"),
-                Symbol(SymType.SEMICOLON, 0, 9),
-                Symbol(SymType.EVERY, 0, 11),
-                Symbol(SymType.TIMELITERAL, 0, 17, "1000ms"),
-                Symbol(SymType.LBRACE, 0, 24),
-                Symbol(SymType.IDENTIFIER, 0, 26, "a"),
-                Symbol(SymType.ADDITIONASSIGN, 0, 28),
-                Symbol(SymType.INTLITERAL, 0, 31, "1"),
-                Symbol(SymType.SEMICOLON, 0, 32),
-                Symbol(SymType.RBRACE, 0, 34)
+        val expected = listOf(
+                Symbol(SymType.INTTYPE, 0, 0),
+                Symbol(SymType.IDENTIFIER, 1,1, "a"),
+                Symbol(SymType.ASSIGN, 1, 3),
+                Symbol(SymType.INTLITERAL, 1, 5, "0"),
+                Symbol(SymType.SEMICOLON, 1, 7),
+                Symbol(SymType.EVERY, 1, 9),
+                Symbol(SymType.TIMELITERAL, 4, 0, "1000ms"),
+                Symbol(SymType.LBRACE, 4, 8),
+                Symbol(SymType.IDENTIFIER, 4, 11, "a"),
+                Symbol(SymType.ADDITIONASSIGN, 5, 1),
+                Symbol(SymType.INTLITERAL, 6, 1, "1"),
+                Symbol(SymType.SEMICOLON, 7, 0),
+                Symbol(SymType.RBRACE, 7, 10)
         )
         val lexer = DumplingLexer(reader)
 
