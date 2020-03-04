@@ -1,6 +1,7 @@
 package lexer
 
 import org.junit.jupiter.api.Test
+import kotlin.math.exp
 import kotlin.test.assertEquals
 
 
@@ -480,5 +481,17 @@ internal class DumplingLexerTest {
         val lexer = DumplingLexer(reader)
         val expected = Symbol(SymType.TIMELITERAL,0,0,"12ms")
         assertEquals(expected, lexer.yylex())
+    }
+    @Test
+    fun dual_token_inttype_and_IDENTIFIER_returns_INTTYPE_and_IDENTIFIER(){
+        val reader = ("Int a").reader()
+        val lexer = DumplingLexer(reader)
+        val expected = mutableListOf<Symbol>(Symbol(SymType.INTTYPE, 0,0), Symbol(SymType.IDENTIFIER,0,4, "a"))
+
+        val actual = mutableListOf<Symbol>()
+        actual.add(lexer.yylex())
+        actual.add(lexer.yylex())
+
+        assertEquals(expected, actual)
     }
 }
