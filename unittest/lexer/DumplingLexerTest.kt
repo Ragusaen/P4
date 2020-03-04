@@ -494,4 +494,32 @@ internal class DumplingLexerTest {
 
         assertEquals(expected, actual)
     }
+    @Test
+    fun multiple_tokens_return_correct_column_index() {
+        val reader = ("Int a = b").reader()
+        val lexer = DumplingLexer(reader)
+        val expected = 8
+
+        lexer.yylex()
+        lexer.yylex()
+        lexer.yylex()
+        val actual = lexer.yylex().column
+
+        assertEquals(expected, actual)
+    }
+    @Test
+    fun two_lines_returns_line_index_1_on_line_2() {
+        val reader = ("Int a = b;\nInt").reader()
+        val lexer = DumplingLexer(reader)
+        val expected = 1
+
+        lexer.yylex()
+        lexer.yylex()
+        lexer.yylex()
+        lexer.yylex()
+        lexer.yylex()
+        val actual = lexer.yylex().line
+
+        assertEquals(expected, actual)
+    }
 }
