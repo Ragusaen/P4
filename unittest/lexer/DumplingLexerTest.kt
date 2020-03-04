@@ -1,6 +1,8 @@
 package lexer
 
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
+import java.io.IOException
 import kotlin.test.assertEquals
 
 
@@ -477,8 +479,66 @@ internal class DumplingLexerTest {
     @Test
     fun single_token_timeliteral_returns_TIMELITERAL() {
         val reader = ("12ms").reader()
-        val lexer = DumplingLexer(reader)
         val expected = Symbol(SymType.TIMELITERAL,0,0,"12ms")
-        assertEquals(expected, lexer.yylex())
+        val lexer = DumplingLexer(reader)
+
+        val actual = lexer.yylex()
+
+        assertEquals(expected, actual)
+    }
+    @Test
+    fun anonymous_module_every_timeliteral_increment_global_variable() {
+        val reader = "Int a = 0; every 1000ms { a += 1; }".reader()
+        val expected = listOf(Symbol(SymType.INTTYPE, 0, 0),
+                Symbol(SymType.IDENTIFIER, 0,4, "a"),
+                Symbol(SymType.ASSIGN, 0, 6),
+                Symbol(SymType.INTLITERAL, 0, 8, "0"),
+                Symbol(SymType.SEMICOLON, 0, 9),
+                Symbol(SymType.EVERY, 0, 11),
+                Symbol(SymType.TIMELITERAL, 0, 17, "1000ms"),
+                Symbol(SymType.LBRACE, 0, 24),
+                Symbol(SymType.IDENTIFIER, 0, 26, "a"),
+                Symbol(SymType.ADDITIONASSIGN, 0, 28),
+                Symbol(SymType.INTLITERAL, 0, 31, "1"),
+                Symbol(SymType.SEMICOLON, 0, 32),
+                Symbol(SymType.RBRACE, 0, 34)
+        )
+        val lexer = DumplingLexer(reader)
+
+        val actual = Array(expected.size) { i -> lexer.yylex()!!}.toList()
+
+        assertEquals(expected, actual)
+        assertEquals(null, lexer.yylex())
+    }
+
+    @Test
+    fun anonymous_module_every_timeliteral_increment_global_variable_interrupted_by_whitespace() {
+        val reader = "Int\n a = 0\t; every    \n\n\n1000ms \t{\t a\n +=\n 1\n; \t\t      }".reader()
+        val expected = listOf(Symbol(SymType.INTTYPE, 0, 0),
+                Symbol(SymType.IDENTIFIER, 0,4, "a"),
+                Symbol(SymType.ASSIGN, 0, 6),
+                Symbol(SymType.INTLITERAL, 0, 8, "0"),
+                Symbol(SymType.SEMICOLON, 0, 9),
+                Symbol(SymType.EVERY, 0, 11),
+                Symbol(SymType.TIMELITERAL, 0, 17, "1000ms"),
+                Symbol(SymType.LBRACE, 0, 24),
+                Symbol(SymType.IDENTIFIER, 0, 26, "a"),
+                Symbol(SymType.ADDITIONASSIGN, 0, 28),
+                Symbol(SymType.INTLITERAL, 0, 31, "1"),
+                Symbol(SymType.SEMICOLON, 0, 32),
+                Symbol(SymType.RBRACE, 0, 34)
+        )
+        val lexer = DumplingLexer(reader)
+
+        val actual = Array(expected.size) { i -> lexer.yylex()!!}.toList()
+
+        assertEquals(expected, actual)
+        assertEquals(null, lexer.yylex())
+    }
+
+    @Test
+    fun exception() {
+        val lexer = DumplingLexer(".!-".reader())
+
     }
 }
