@@ -25,7 +25,7 @@ class SymbolTable {
     }
 
     fun empty() {
-
+        
     }
 
     fun declaredLocally(name:String) {
