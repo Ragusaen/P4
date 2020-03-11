@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import java.lang.Error
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 internal class SymbolTableTest {
 
@@ -16,6 +17,19 @@ internal class SymbolTableTest {
         val actual = st.find("a").type
 
         assertEquals(expected, actual)
+    }
+
+    @Test
+    fun findSymbolFromLowerScope() {
+        val st = SymbolTable()
+        val expected = Identifier("a")
+        val identifier = Identifier("a")
+
+        st.add("a", identifier)
+        st.openScope()
+        val actual = st.find("a")
+
+        assertEquals(expected,actual)
     }
 
     @Test
@@ -42,9 +56,12 @@ internal class SymbolTableTest {
     }
 
     @Test
-    fun LocallyDeclaredVariableIsSetAsLocallyDeclared() {
+    fun locallyDeclaredVariableIsSetAsLocallyDeclared() {
         val st = SymbolTable()
 
-        assertThrows<CloseScopeZeroException> { st.closeScope() }
+        st.openScope()
+        st.add("a",Identifier("Int"))
+
+        assertTrue { st.declaredLocally("a") }
     }
 }
