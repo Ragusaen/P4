@@ -1,21 +1,27 @@
 package semantics
 
-import semantics.Identifier
-
 class SymbolTable {
-    val HashTable = hashMapOf<String, MutableList<Identifier>>()
     var depth:Int = 0
-
+    var currentScope = Scope(null)
 
     fun add(name:String, identifier: Identifier) {
-        // Checks whether the hashtable contains the identifier already, if so append the identifier,
-        // if not a new identifier accompanied with a list is added to the hashtable.
-        HashTable[name]?.add(identifier) ?: HashTable.put(name, mutableListOf(identifier))
-
+        // If the name is already used within this scope throw exception
+        if (currentScope.contains(name))
+            throw IdentifierAlreadyDeclaredException("The variable $name is already declared.")
+        else
+            currentScope[name] = identifier
     }
 
-    fun find(name: String) {
-        var a = HashTable[name]
+    fun find(name: String):Identifier {
+        var tempScope:Scope? = currentScope
+
+        while(tempScope != null) {
+            if (tempScope.contains(name))
+                return tempScope[name]!!
+            tempScope = tempScope.parent
+        }
+
+        throw IdentifierUsedBeforeDeclarationException("Variable $name was used before it was declared.")
     }
 
     fun empty() {
