@@ -1,8 +1,7 @@
 package semantics
 
 class SymbolTable {
-    var depth:Int = 0
-    var currentScope = Scope(null)
+    private var currentScope = Scope(null)
 
     fun add(name:String, identifier: Identifier) {
         // If the name is already used within this scope throw exception
@@ -24,20 +23,22 @@ class SymbolTable {
         throw IdentifierUsedBeforeDeclarationException("Variable $name was used before it was declared.")
     }
 
-    fun empty() {
-        
-    }
-
     fun declaredLocally(name:String) {
 
     }
 
-    fun OpenScope() {
-        depth++
+    fun openScope() {
+        val newScope = Scope(currentScope)
+        currentScope.children.add(newScope)
+        currentScope = newScope
     }
 
     fun closeScope() {
-        depth--
-        // Delete identifiers in hashtable with top-level depth
+        val parent = currentScope.parent
+
+        if (parent != null)
+            currentScope = parent
+        else
+            throw CloseScopeZeroException("Attempted to close the bottom scope.")
     }
 }

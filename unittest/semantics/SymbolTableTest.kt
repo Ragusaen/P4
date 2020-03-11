@@ -28,9 +28,16 @@ internal class SymbolTableTest {
     }
 
     @Test
-    fun addThrowsExceptionWhenVariableIsUsedBeforeDeclaration() {
+    fun findThrowsExceptionWhenVariableIsUsedBeforeDeclaration() {
         val st = SymbolTable()
 
         assertThrows<IdentifierUsedBeforeDeclarationException> { st.find("a") }
+    }
+
+    @Test
+    fun closingScopeZeroThrowsException() {
+        val st = SymbolTable()
+
+        assertThrows<CloseScopeZeroException> { st.closeScope() }
     }
 }

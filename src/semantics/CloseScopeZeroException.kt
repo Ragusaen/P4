@@ -1,4 +1,3 @@
 package semantics
 
-class CloseScopeZeroException {
-}
+class CloseScopeZeroException(message:String) : Exception(message)
