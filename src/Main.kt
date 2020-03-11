@@ -2,6 +2,7 @@ import sablecc.analysis.DepthFirstAdapter
 import sablecc.lexer.IPushbackReader
 import sablecc.lexer.Lexer
 import sablecc.node.AAdditionBinop
+import sablecc.node.Switch
 import sablecc.parser.Parser
 import kotlin.reflect.typeOf
 
@@ -12,8 +13,9 @@ fun main() {
     val parser = Parser(lexer)
 
     val a = parser.parse()
+    val dfa = DepthFirstAdapter(a)
 
-    a.pExpr
+    a.pExpr.apply(Switch)
 }
 
 class reader(val string: CharArray) : IPushbackReader {
