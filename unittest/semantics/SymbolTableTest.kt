@@ -64,4 +64,16 @@ internal class SymbolTableTest {
 
         assertTrue { st.declaredLocally("a") }
     }
+
+    @Test
+    fun locallyDeclaredVariableExpectFalse(){
+        val st = SymbolTable()
+        val expected = false
+
+        st.add("a", Identifier("Int"))
+        st.openScope()
+        val actual = st.declaredLocally("a")
+
+        assertEquals(expected, actual)
+    }
 }
