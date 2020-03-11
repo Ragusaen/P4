@@ -1,6 +1,3 @@
 package semantics
 
-data class Identifier(var type:String, var value:Any = Unit) {
-
-}
-
+open class Identifier(var type:String, var value:Any = Unit)
