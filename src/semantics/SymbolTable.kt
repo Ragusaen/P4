@@ -23,8 +23,8 @@ class SymbolTable {
         throw IdentifierUsedBeforeDeclarationException("Variable $name was used before it was declared.")
     }
 
-    fun declaredLocally(name:String) {
-
+    fun declaredLocally(name:String):Boolean {
+        return currentScope.contains(name)
     }
 
     fun openScope() {

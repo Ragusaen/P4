@@ -40,4 +40,11 @@ internal class SymbolTableTest {
 
         assertThrows<CloseScopeZeroException> { st.closeScope() }
     }
+
+    @Test
+    fun LocallyDeclaredVariableIsSetAsLocallyDeclared() {
+        val st = SymbolTable()
+
+        assertThrows<CloseScopeZeroException> { st.closeScope() }
+    }
 }
