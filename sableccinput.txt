@@ -1,0 +1,108 @@
+Package sablecc;
+
+Helpers
+    all = [0 .. 0xFFFF];
+    anychar = ['A' .. 'z'];
+    digit = ['0' .. '9'];
+    tab = 9;
+    cr = 13;
+    lf = 10;
+    eol = cr lf | cr | lf;
+
+Tokens
+    stringtype = 'String';
+    chartype = 'Char';
+    inttype = 'Int';
+    floattype = 'Float';
+    booltype = 'Bool';
+    digitaloutputpintype = 'DigitalOutputPin';
+    digitalinputpintype = 'DigitalInputPin';
+    analogoutputpintype = 'AnalogOutputPin';
+    analoginputpintype = 'AnalogInputPin';
+    time = 'Time';
+    every = 'every';
+    if = 'if';
+    on = 'on';
+    else = 'else';
+    while = 'while';
+    for = 'for';
+    break = 'break';
+    continue = 'continue';
+    rising = 'rising';
+    falling = 'falling';
+    pin = 'pin';
+    delay = 'delay';
+    until = 'until';
+    set = 'set';
+    to = 'to';
+    read = 'read';
+    start = 'start';
+    stop = 'stop';
+    and = 'and';
+    or = 'or';
+    assign = '=';
+    equal = '==';
+    notequal = '!=';
+    addition = '+';
+    subtraction = '-';
+    multiplication = '*';
+    division = '/';
+    modulo = '%';
+    greaterthan = '>';
+    lessthan = '<';
+    additionassign = '+=';
+    subtractionassign = '-=';
+    multiplicationassign = '*=';
+    divisionassign = '/=';
+    moduloassign = '%=';
+    greaterthanorequalto = '>=';
+    lessthanorequalto = '<=';
+    semicolon = ';';
+    not = '!';
+    colon = ':';
+    comma = ',';
+    return = 'return';
+    template = 'template';
+    fun = 'fun';
+    module = 'module';
+    lparen = '(';
+    lbrace = '{';
+    rbrace = '}';
+    lbracket = '[';
+    rbracket = ']';
+    boolliteral = ('false'|'true'|'HIGH'|'LOW');
+    intliteral = digit+;
+    floatliteral = digit+'.'digit*|digit*'.'digit+;
+    timeliteral = (digit*'.')?digit+('ms'|'s'|'m'|'h');
+    stringliteral = '"'[all - '"']*'"';
+    identifier = anychar (anychar|digit)*;
+    whitespace = (' ' | tab | lf | eol)+;
+    comment = '/*' all* '*/' | ('//'all*(eol));
+
+Ignored Tokens
+    whitespace, comment;
+
+Productions
+    expr {-> expr} =
+        {addition} expr addition value
+            {-> New expr.binop(expr, New binop.addition(), value.expr)}
+        | {value} value
+            {-> value.expr};
+
+    value {-> expr} =
+        {identifier} identifier
+            {-> New expr.value(New value.identifier(identifier))}
+        | {literal} literal
+            {-> literal.expr};
+
+    literal {-> expr} =
+        {int} intliteral
+            {-> New expr.value(New value.literal(New literal.int(intliteral)))}
+        | {float} floatliteral
+            {-> New expr.value(New value.literal(New literal.float(floatliteral)))};
+
+Abstract Syntax Tree
+    expr = {binop} [l]:expr binop [r]:expr | {value} value;
+    binop = {addition} | {multiplication};
+    value = {identifier} identifier | {literal} literal;
+    literal = {int} intliteral | {float} floatliteral;

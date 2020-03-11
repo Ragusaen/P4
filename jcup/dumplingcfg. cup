@@ -1,7 +1,0 @@
-import java_cup.runtime.*
-
-parser code {:
-
-:}
-
-terminal a b
