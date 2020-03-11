@@ -47,4 +47,16 @@ internal class SymbolTableTest {
 
         assertThrows<CloseScopeZeroException> { st.closeScope() }
     }
+
+    @Test
+    fun locallyDeclaredVariableExpectFalse(){
+        val st = SymbolTable()
+        val expected = false
+
+        st.add("a", Identifier("Int"))
+        st.openScope()
+        val actual = st.declaredLocally("a")
+
+        assertEquals(expected, actual)
+    }
 }
