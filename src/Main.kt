@@ -8,14 +8,13 @@ import kotlin.reflect.typeOf
 
 
 fun main() {
-    val input = "7+8+2"
+    val input = "(7+8)*2"
     val lexer = Lexer(reader(input.toCharArray()))
     val parser = Parser(lexer)
 
     val a = parser.parse()
-    val dfa = DepthFirstAdapter(a)
 
-    a.pExpr.apply(Switch)
+    PrettyPrinter().print(a)
 }
 
 class reader(val string: CharArray) : IPushbackReader {

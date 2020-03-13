@@ -66,13 +66,14 @@ Tokens
     fun = 'fun';
     module = 'module';
     lparen = '(';
+    rparen = ')';
     lbrace = '{';
     rbrace = '}';
     lbracket = '[';
     rbracket = ']';
     boolliteral = ('false'|'true'|'HIGH'|'LOW');
-    intliteral = digit+;
-    floatliteral = digit+'.'digit*|digit*'.'digit+;
+    intliteral = '-'?digit+;
+    floatliteral = '-'?digit+'.'digit*|digit*'.'digit+;
     timeliteral = (digit*'.')?digit+('ms'|'s'|'m'|'h');
     stringliteral = '"'[all - '"']*'"';
     identifier = anychar (anychar|digit)*;
@@ -83,11 +84,39 @@ Ignored Tokens
     whitespace, comment;
 
 Productions
+
+/* Expressions */
     expr {-> expr} =
-        {addition} expr addition value
-            {-> New expr.binop(expr, New binop.addition(), value.expr)}
+        {addition} expr addition factor
+            {-> New expr.binop(expr, New binop.addition(), factor.expr)}
+        | {subtraction} expr subtraction factor
+            {-> New expr.binop(expr, New binop.subtraction(), factor.expr)}
+        | {factor} factor
+            {-> factor.expr};
+
+    factor {-> expr} =
+        {multiplication} factor multiplication value
+            {-> New expr.binop(factor.expr, New binop.multiplication(), value.expr)}
+        | {division} factor division value
+            {-> New expr.binop(factor.expr, New binop.division(), value.expr)}
+        | {unary} unary
+            {-> unary.expr};
+
+    unary {->expr} =
+        {plus} addition value
+            {-> New expr.unop(New unop.plus(), value.expr)}
+        | {minus} subtraction value
+            {-> New expr.unop(New unop.minus(), value.expr)}
+        | {not} not value
+            {-> New expr.unop(New unop.not(), value.expr)}
+        | {parenthesis} parenthesis
+            {->parenthesis.expr};
+
+    parenthesis {-> expr} =
+        {parenthesis} lparen expr rparen
+            {-> New expr.parenthesis(expr)}
         | {value} value
-            {-> value.expr};
+             {-> value.expr};
 
     value {-> expr} =
         {identifier} identifier
@@ -97,12 +126,12 @@ Productions
 
     literal {-> expr} =
         {int} intliteral
-            {-> New expr.value(New value.literal(New literal.int(intliteral)))}
+            {-> New expr.value(New value.int(intliteral))}
         | {float} floatliteral
-            {-> New expr.value(New value.literal(New literal.float(floatliteral)))};
+            {-> New expr.value(New value.float(floatliteral))};
 
 Abstract Syntax Tree
-    expr = {binop} [l]:expr binop [r]:expr | {value} value;
-    binop = {addition} | {multiplication};
-    value = {identifier} identifier | {literal} literal;
-    literal = {int} intliteral | {float} floatliteral;
+    expr = {binop} [l]:expr binop [r]:expr | {unop} unop expr | {parenthesis} expr | {value} value;
+    binop = {addition} | {subtraction} | {multiplication} | {division};
+    unop = {minus} | {plus} | {not};
+    value = {identifier} identifier | {int} intliteral | {float} floatliteral;
