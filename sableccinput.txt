@@ -85,7 +85,39 @@ Ignored Tokens
 
 Productions
 
-/* Expressions */
+
+
+/* Declaration */
+    dcl {-> dcl} =
+        type vardcls semicolon
+            {-> New dcl(type, [vardcls.vardcl])};
+
+    vardcls {-> vardcl* } =
+        varinit vardcls_tail*
+            {-> [varinit.vardcl, vardcls_tail.vardcl]};
+
+    vardcls_tail {-> vardcl} =
+        comma varinit
+            {-> varinit.vardcl};
+
+    varinit {-> vardcl} =
+        {no_init} identifier
+            {-> New vardcl(identifier, Null)}
+        | {init} identifier assign expr
+            {-> New vardcl(identifier, expr)};
+
+    type =
+        {string} stringtype {-> New type.string()}
+        | {char} chartype {-> New type.char()}
+        | {int} inttype {-> New type.int()}
+        | {float} floattype {-> New type.float()}
+        | {bool} booltype {-> New type.bool()}
+        | {digitaloutputpin} digitaloutputpintype {-> New type.digitaloutputpin()}
+        | {digitalinputpin} digitalinputpintype {-> New type.digitalinputpin()}
+        | {analogoutputpin} analogoutputpintype {-> New type.analogoutputpin()}
+        | {analoginputpin} analoginputpintype {-> New type.analoginputpin()};
+
+/* Expression */
     expr {-> expr} =
         {addition} expr addition factor
             {-> New expr.binop(expr, New binop.addition(), factor.expr)}
@@ -95,20 +127,20 @@ Productions
             {-> factor.expr};
 
     factor {-> expr} =
-        {multiplication} factor multiplication value
-            {-> New expr.binop(factor.expr, New binop.multiplication(), value.expr)}
+        {multiplication} factor multiplication unary
+            {-> New expr.binop(factor.expr, New binop.multiplication(), unary.expr)}
         | {division} factor division value
             {-> New expr.binop(factor.expr, New binop.division(), value.expr)}
         | {unary} unary
             {-> unary.expr};
 
     unary {->expr} =
-        {plus} addition value
-            {-> New expr.unop(New unop.plus(), value.expr)}
-        | {minus} subtraction value
-            {-> New expr.unop(New unop.minus(), value.expr)}
-        | {not} not value
-            {-> New expr.unop(New unop.not(), value.expr)}
+        {plus} addition parenthesis
+            {-> New expr.unop(New unop.plus(), parenthesis.expr)}
+        | {minus} subtraction parenthesis
+            {-> New expr.unop(New unop.minus(), parenthesis.expr)}
+        | {not} not parenthesis
+            {-> New expr.unop(New unop.not(), parenthesis.expr)}
         | {parenthesis} parenthesis
             {->parenthesis.expr};
 
@@ -131,6 +163,12 @@ Productions
             {-> New expr.value(New value.float(floatliteral))};
 
 Abstract Syntax Tree
+/* Declaration */
+    dcl = type vardcl*;
+    vardcl = identifier expr?;
+    type = {string} | {char} | {int} | {float} | {bool} | {digitaloutputpin} | {digitalinputpin} | {analogoutputpin} | {analoginputpin};
+
+/* Expression */
     expr = {binop} [l]:expr binop [r]:expr | {unop} unop expr | {parenthesis} expr | {value} value;
     binop = {addition} | {subtraction} | {multiplication} | {division};
     unop = {minus} | {plus} | {not};

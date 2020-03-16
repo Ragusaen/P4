@@ -1,35 +1,16 @@
-import sablecc.analysis.DepthFirstAdapter
-import sablecc.lexer.IPushbackReader
 import sablecc.lexer.Lexer
-import sablecc.node.AAdditionBinop
-import sablecc.node.Switch
 import sablecc.parser.Parser
-import kotlin.reflect.typeOf
+import java.io.PushbackReader
 
 
 fun main() {
-    val input = "(7+8)*2"
-    val lexer = Lexer(reader(input.toCharArray()))
+    val input = "Int variable = 3 * (6 + 4), othervar;"
+    val lexer = Lexer(PushbackReader(input.reader()))
     val parser = Parser(lexer)
 
     val a = parser.parse()
 
     PrettyPrinter().print(a)
-}
-
-class reader(val string: CharArray) : IPushbackReader {
-    var index = 0
-
-    override fun unread(c: Int) {
-        string[--index] = c.toChar()
-    }
-
-    override fun read(): Int {
-        if (index >= string.size)
-            return -1
-        return string[index++].toInt()
-    }
-
 }
 
 
