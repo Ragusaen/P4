@@ -54,8 +54,29 @@ internal class SymbolTableBuilderTest {
         assertThrows<IdentifierUsedBeforeDeclarationException> { stb.buildSymbolTable(s) }
     }
 
+    //TODO: UNCOMMENT WHEN BOOLEAN/CONDITIONS IS IMPLEMENTED
+    /*Test
+    fun symbolTableBuilderThrowsErrorIfForLoopVariablesAreUsedInForLoopParens(){
+        val stb = SymbolTableBuilder()
+        val input = """
+            template module thismodule {
+                for(Int i = b; i < 2; i += 2){
+                    Int b = 1;
+                }
+                every (1000) {
+                    ; 
+                }
+            }
+        """
+        val lexer = Lexer(PushbackReader(input.reader()))
+        val parser = Parser(lexer)
 
-    //CANT TEST BECAUSE CURRENTSCOPE IS PRIVATE
+        val s = parser.parse()
+
+        assertThrows<IdentifierUsedBeforeDeclarationException> { stb.buildSymbolTable(s) }
+    }*/
+
+    //TODO: CANT TEST BECAUSE CURRENTSCOPE IS PRIVATE
     /*@Test
     fun symbolTableContainsCorrectValuesOfVariablesWithSameNameAndDifferentValuesInDiffirentScopes(){
         val stb = SymbolTableBuilder()

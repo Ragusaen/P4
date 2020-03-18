@@ -27,6 +27,14 @@ class SymbolTableBuilder : DepthFirstAdapter() {
         st.closeScope()
     }
 
+    override fun inAForStmt(node: AForStmt) {
+        st.openScope()
+    }
+
+    override fun outAForStmt(node: AForStmt) {
+        st.closeScope()
+    }
+
     override fun outAVardcl(node: AVardcl) {
         val name = node.identifier.text
         val type = (node.parent() as ADclStmt).type.toString()
