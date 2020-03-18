@@ -10,27 +10,24 @@ import sablecc.parser.Parser
 internal class TypeCheckerTest {
     @Test
     fun plusAdditionIsTypeCorrectForTwoIntegers(){
-        val input = "5+8"
+        val input = "Int a = 5 + 8;"
         val lexer = Lexer(PushbackReader(input.reader()))
         val parser = Parser(lexer)
-
         val a = parser.parse()
 
-        PrettyPrinter().print(a)
+
     }
 
     @Test
     @Suppress("UNREACHABLE_CODE")
-    fun plusAdditionIsTypeIncorrectForIntegerAndBoolean(){
-        TODO("Boolean cfg not implemented.")
-
-        return
-        val input = "5+false"
+    fun AssigningFloatToIntVarThrowsError(){
+        val input = "Int a = 4.5;"
         val lexer = Lexer(PushbackReader(input.reader()))
         val parser = Parser(lexer)
-
         val a = parser.parse()
 
-        PrettyPrinter().print(a)
+
+
+
     }
 }

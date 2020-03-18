@@ -13,7 +13,7 @@ class SymbolTableBuilder : DepthFirstAdapter() {
 
     override fun outAVardcl(node: AVardcl) {
         val name = node.identifier.text
-        val type = (node.parent() as ADcl).type.toString()
+        val type = (node.parent() as ADclStmt).type.toString()
 
         try {
             st.add(name, Identifier(type, null, node))
@@ -32,7 +32,6 @@ class SymbolTableBuilder : DepthFirstAdapter() {
         }
         catch (e:IdentifierUsedBeforeDeclarationException) {
             throw e
-            // todo "Append to error list"
         }
     }
 }
