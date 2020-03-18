@@ -11,12 +11,28 @@ class SymbolTableBuilder : DepthFirstAdapter() {
         return st
     }
 
+    override fun inABlockStmt(node: ABlockStmt) {
+        st.openScope()
+    }
+
+    override fun outABlockStmt(node: ABlockStmt) {
+        st.closeScope()
+    }
+
+    override fun inAInnerModule(node: AInnerModule) {
+        st.openScope()
+    }
+
+    override fun outAInnerModule(node: AInnerModule) {
+        st.closeScope()
+    }
+
     override fun outAVardcl(node: AVardcl) {
         val name = node.identifier.text
         val type = (node.parent() as ADclStmt).type.toString()
 
         try {
-            st.add(name, Identifier(type, null, node))
+            st.add(name, Identifier(type, node.expr, node))
         }
         catch (e:IdentifierAlreadyDeclaredException) {
             throw e
