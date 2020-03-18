@@ -115,7 +115,6 @@ Productions
             {-> New module_structure.on(expr, stmt)};
 
 /* Statement */
-
     stmt {-> stmt} =
         {single_stmt} single_stmt semicolon
             {-> single_stmt.stmt}
@@ -134,9 +133,6 @@ Productions
             {-> New stmt.assign(identifier, expr)}
         | {no_stmt}
             {-> New stmt.no_stmt()};
-
-
-
 
 /* Declaration */
     dcl {-> stmt} =
@@ -235,7 +231,7 @@ Abstract Syntax Tree
     type = {string} | {char} | {int} | {float} | {bool} | {digitaloutputpin} | {digitalinputpin} | {analogoutputpin} | {analoginputpin};
 
 /* Expression */
-    expr = {assign} identifier expr | {binop} [l]:expr binop [r]:expr | {unop} unop expr | {parenthesis} expr | {value} value;
+    expr = {binop} [l]:expr binop [r]:expr | {unop} unop expr | {parenthesis} expr | {value} value;
     binop = {addition} | {subtraction} | {multiplication} | {division};
     unop = {minus} | {plus} | {not};
     value = {identifier} identifier | {int} intliteral | {float} floatliteral;
