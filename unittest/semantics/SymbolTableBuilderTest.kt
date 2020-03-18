@@ -13,7 +13,7 @@ internal class SymbolTableBuilderTest {
     @Test
     fun symbolTableBuilderThrowsErrorWhenVariableHasAlreadyBeenDeclared() {
         val stb = SymbolTableBuilder()
-        val input = "Int a = 8, a = 5;"
+        val input = "Int a = 8; Int a = 5;"
         val lexer = Lexer(PushbackReader(input.reader()))
         val parser = Parser(lexer)
 
