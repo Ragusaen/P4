@@ -2,15 +2,9 @@ package semantics
 
 import PrettyPrinter
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
-import sablecc.lexer.Lexer
-import java.lang.Error
-import kotlin.test.assertEquals
-import kotlin.test.assertTrue
-import sablecc.node.*
-import sablecc.parser.Parser
 import java.io.PushbackReader
-import java.io.Reader
+import sablecc.lexer.Lexer
+import sablecc.parser.Parser
 
 
 internal class TypeCheckerTest {
