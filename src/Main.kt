@@ -4,8 +4,19 @@ import java.io.PushbackReader
 
 
 fun main() {
-    val input = "Int variable = 3 * (6 + 4), othervar;"
-    val lexer = Lexer(PushbackReader(input.reader()))
+    val input = """
+        Int a = 0;
+        
+        template module thismodule {
+            Int a = 3;
+            Float k = 3.5;
+            
+            every (1000) {
+                ; 
+            }
+        }
+    """
+    val lexer = Lexer(PushbackReader(input.reader(), 1024))
     val parser = Parser(lexer)
 
     val a = parser.parse()

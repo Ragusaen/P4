@@ -7,7 +7,7 @@ Helpers
     tab = 9;
     cr = 13;
     lf = 10;
-    eol = cr lf | cr | lf;
+    eol = cr lf | cr | lf | '\n';
 
 Tokens
     stringtype = 'String';
@@ -78,19 +78,70 @@ Tokens
     stringliteral = '"'[all - '"']*'"';
     identifier = anychar (anychar|digit)*;
     whitespace = (' ' | tab | lf | eol)+;
-    comment = '/*' all* '*/' | ('//'all*(eol));
+    comment = '/*' all* '*/' | '//'all*eol;
 
 Ignored Tokens
     whitespace, comment;
 
 Productions
+    program = root_element*;
+
+    root_element {-> root_element} =
+        {dcl} dcl_stmt
+            {-> New root_element.dcl(dcl_stmt.stmt)}
+        | {module} moduledcl
+            {-> New root_element.moduledcl(moduledcl)};
+
+/* Module */
+    moduledcl {-> moduledcl} =
+        {template} template module identifier inner_module
+            {-> New moduledcl.template(identifier, inner_module)}
+        | {anonymous_no_dcls} module_structure
+            {-> New moduledcl.anonymous(New inner_module([], module_structure))}
+        | {anonymous_with_dcls} inner_module
+            {-> New moduledcl.anonymous(inner_module)};
+
+    inner_module {-> inner_module} =
+        lbrace dcl_stmt* module_structure rbrace
+            {-> New inner_module([dcl_stmt.stmt], module_structure)};
+
+    dcl_stmt {-> stmt} = dcl semicolon
+        {-> dcl.stmt};
+
+    module_structure {-> module_structure} =
+        {every} every lparen expr rparen stmt
+            {-> New module_structure.every(expr, stmt)}
+        | {on} on lparen expr rparen stmt
+            {-> New module_structure.on(expr, stmt)};
+
+/* Statement */
+
+    stmt {-> stmt} =
+        {single_stmt} single_stmt semicolon
+            {-> single_stmt.stmt}
+        | {block} lbrace stmt* rbrace
+            {-> New stmt.block([stmt])}
+        | {for} for lparen [init]:single_stmt [a]:semicolon [condition]:expr [b]:semicolon [update]:single_stmt rparen [body]:stmt
+            {-> New stmt.for(init.stmt, condition, update.stmt, body)}
+        | {while} while lparen [condition]:expr rparen [body]:stmt
+            {-> New stmt.while(condition, body)};
+
+
+    single_stmt {-> stmt} =
+        {dcl} dcl
+            {-> dcl.stmt}
+        | {assign} identifier assign expr
+            {-> New stmt.assign(identifier, expr)}
+        | {no_stmt}
+            {-> New stmt.no_stmt()};
+
 
 
 
 /* Declaration */
-    dcl {-> dcl} =
-        type vardcls semicolon
-            {-> New dcl(type, [vardcls.vardcl])};
+    dcl {-> stmt} =
+        type vardcls
+            {-> New stmt.dcl(type, [vardcls.vardcl])};
 
     vardcls {-> vardcl* } =
         varinit vardcls_tail*
@@ -106,7 +157,7 @@ Productions
         | {init} identifier assign expr
             {-> New vardcl(identifier, expr)};
 
-    type =
+    type {-> type} =
         {string} stringtype {-> New type.string()}
         | {char} chartype {-> New type.char()}
         | {int} inttype {-> New type.int()}
@@ -119,6 +170,11 @@ Productions
 
 /* Expression */
     expr {-> expr} =
+         {term} term
+            {-> term.expr};
+
+
+    term {-> expr} =
         {addition} expr addition factor
             {-> New expr.binop(expr, New binop.addition(), factor.expr)}
         | {subtraction} expr subtraction factor
@@ -163,13 +219,23 @@ Productions
             {-> New expr.value(New value.float(floatliteral))};
 
 Abstract Syntax Tree
-/* Declaration */
-    dcl = type vardcl*;
+    program = root_element*;
+    root_element = {dcl} stmt | {moduledcl} moduledcl;
+
+/* Module */
+    moduledcl = {template} identifier inner_module | {anonymous} inner_module;
+    inner_module = [dcls]:stmt* module_structure;
+    module_structure = {every} expr [body]:stmt | {on} expr [body]:stmt;
+
+/* Statement */
+    stmt = {no_stmt} | {dcl} type vardcl* | {assign} identifier expr | {block} stmt* | {for} [init]:stmt [condition]:expr [update]:stmt [body]:stmt | {while} [condition]:expr [body]:stmt;
+
+/* Declaration subnodes*/
     vardcl = identifier expr?;
     type = {string} | {char} | {int} | {float} | {bool} | {digitaloutputpin} | {digitalinputpin} | {analogoutputpin} | {analoginputpin};
 
 /* Expression */
-    expr = {binop} [l]:expr binop [r]:expr | {unop} unop expr | {parenthesis} expr | {value} value;
+    expr = {assign} identifier expr | {binop} [l]:expr binop [r]:expr | {unop} unop expr | {parenthesis} expr | {value} value;
     binop = {addition} | {subtraction} | {multiplication} | {division};
     unop = {minus} | {plus} | {not};
     value = {identifier} identifier | {int} intliteral | {float} floatliteral;

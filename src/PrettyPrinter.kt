@@ -1,27 +1,21 @@
 
 import sablecc.analysis.Analysis
 import sablecc.analysis.DepthFirstAdapter
-import sablecc.node.AValueExpr
-import sablecc.node.Node
-import sablecc.node.PValue
-import sablecc.node.Start
+import sablecc.node.*
 
 class PrettyPrinter : DepthFirstAdapter() {
     override fun defaultIn(node: Node?) {
         if (node != null) {
-            if (node is AValueExpr) {
-                print("${node.value} ")
-            } else if (node !is PValue) {
-                print("${node.javaClass.simpleName}(")
+            print("${node.javaClass.simpleName}(")
+            if (node is AVardcl) {
+                print(" ${node.identifier} ")
             }
         }
     }
 
     override fun defaultOut(node: Node?) {
         if (node != null) {
-            if (node !is AValueExpr && node !is PValue) {
-                print(") ")
-            }
+            print(") ")
         }
     }
 

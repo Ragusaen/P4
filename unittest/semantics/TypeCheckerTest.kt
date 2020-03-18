@@ -3,20 +3,21 @@ package semantics
 import PrettyPrinter
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import reader
 import sablecc.lexer.Lexer
 import java.lang.Error
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import sablecc.node.*
 import sablecc.parser.Parser
+import java.io.PushbackReader
+import java.io.Reader
 
 
 internal class TypeCheckerTest {
     @Test
     fun plusAdditionIsTypeCorrectForTwoIntegers(){
         val input = "5+8"
-        val lexer = Lexer(reader(input.toCharArray()))
+        val lexer = Lexer(PushbackReader(input.reader()))
         val parser = Parser(lexer)
 
         val a = parser.parse()
@@ -31,7 +32,7 @@ internal class TypeCheckerTest {
 
         return
         val input = "5+false"
-        val lexer = Lexer(reader(input.toCharArray()))
+        val lexer = Lexer(PushbackReader(input.reader()))
         val parser = Parser(lexer)
 
         val a = parser.parse()
