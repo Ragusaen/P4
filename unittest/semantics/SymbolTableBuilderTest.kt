@@ -35,7 +35,7 @@ internal class SymbolTableBuilderTest {
     }
 
     @Test
-    fun symbolTableBuilderThrowsErrorIfVariableIsUsedBeforeDeclarationAndDefinedInOtherScope(){
+    fun symbolTableBuilderThrowsErrorIfVariableIsUsedBeforeDeclarationAndDefinedInLowerScope(){
         val stb = SymbolTableBuilder()
         val input = """
             template module thismodule {
@@ -76,9 +76,8 @@ internal class SymbolTableBuilderTest {
         assertThrows<IdentifierUsedBeforeDeclarationException> { stb.buildSymbolTable(s) }
     }*/
 
-    //TODO: CANT TEST BECAUSE CURRENTSCOPE IS PRIVATE
-    /*@Test
-    fun symbolTableContainsCorrectValuesOfVariablesWithSameNameAndDifferentValuesInDiffirentScopes(){
+    @Test
+    fun symbolTableContainsVariablesWithSameNameInDiffirentScopes(){
         val stb = SymbolTableBuilder()
         val input = """
             Int a = 2;
@@ -91,13 +90,11 @@ internal class SymbolTableBuilderTest {
         """
         val lexer = Lexer(PushbackReader(input.reader()))
         val parser = Parser(lexer)
-        val expectedOuter = 2
-        val expectedInner = 3
 
         val s = parser.parse()
-        val sTable = stb.buildSymbolTable(s)
+        val scope = stb.buildSymbolTable(s)
 
-        assertEquals(sTable.currentScope["a"]!!.value, expectedOuter)
-        assertEquals(sTable.currentScope.children[0]["a"]!!.value, expectedInner)
-    }*/
+        assertTrue(scope.containsKey("a"))
+        assertTrue(scope.children[0].containsKey("a"))
+    }
 }
