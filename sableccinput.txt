@@ -132,6 +132,16 @@ Productions
             {-> dcl.stmt}
         | {assign} identifier assign expr
             {-> New stmt.assign(identifier, expr)}
+        | {additionassign} identifier additionassign expr
+            {-> New stmt.additionassign(identifier, expr)}
+        | {subtractionassign} identifier subtractionassign expr
+            {-> New stmt.subtractionassign(identifier, expr)}
+        | {divisionassign} identifier divisionassign expr
+            {-> New stmt.divisionassign(identifier, expr)}
+        | {multiplicationassign} identifier multiplicationassign expr
+            {-> New stmt.multiplicationassign(identifier, expr)}
+        | {moduloassign} identifier moduloassign expr
+            {-> New stmt.moduloassign(identifier, expr)}
         | {no_stmt}
             {-> New stmt.no_stmt()};
 
@@ -235,7 +245,7 @@ Abstract Syntax Tree
     module_structure = {every} expr [body]:stmt | {on} expr [body]:stmt;
 
 /* Statement */
-    stmt = {no_stmt} | {dcl} type vardcl* | {assign} identifier expr | {block} stmt* | {for} [init]:stmt [condition]:expr [update]:stmt [body]:stmt | {while} [condition]:expr [body]:stmt;
+    stmt = {no_stmt} | {dcl} type vardcl* | {assign} identifier expr | {additionassign} identifier expr | {subtractionassign} identifier expr | {divisionassign} identifier expr | {multiplicationassign} identifier expr | {moduloassign} identifier expr | {block} stmt* | {for} [init]:stmt [condition]:expr [update]:stmt [body]:stmt | {while} [condition]:expr [body]:stmt;
 
 /* Declaration subnodes*/
     vardcl = identifier expr?;

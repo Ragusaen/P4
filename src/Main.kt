@@ -6,12 +6,12 @@ import java.io.PushbackReader
 
 fun main() {
     val input = """
-        Time t = 2.5s;
+        Int t = 5;
         
         template module thismodule {
             
             every (1000) {
-                ; 
+                t += 1;
             }
         }
     """
