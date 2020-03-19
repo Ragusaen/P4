@@ -8,18 +8,15 @@ import java.io.PushbackReader
 
 fun main() {
     val input = """
-        Int a = 0;
+        Time t = 2.5s;
         
         template module thismodule {
-            Int a = 3;
-            Float k = 3.5;
             
             every (1000) {
                 ; 
             }
         }
     """
-
 
     val lexer = Lexer(PushbackReader(input.reader(), 1024))
     val parser = Parser(lexer)

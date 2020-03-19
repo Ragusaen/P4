@@ -55,7 +55,7 @@ class SymbolTableBuilder : DepthFirstAdapter() {
     override fun outABlockStmt(node: ABlockStmt) = closeScope()
 
     override fun inAForStmt(node: AForStmt) = openScope()
-    override fun outAForStmt(node: AForStmt) = openScope()
+    override fun outAForStmt(node: AForStmt) = closeScope()
 
     override fun inAInnerModule(node: AInnerModule) {
         if (!node.dcls.isEmpty()) {
