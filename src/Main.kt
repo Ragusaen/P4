@@ -1,5 +1,6 @@
 import sablecc.lexer.Lexer
 import sablecc.parser.Parser
+import semantics.SymbolTableBuilder
 import java.io.PushbackReader
 
 
@@ -16,10 +17,14 @@ fun main() {
             }
         }
     """
+
+
     val lexer = Lexer(PushbackReader(input.reader(), 1024))
     val parser = Parser(lexer)
 
     val a = parser.parse()
+
+
 
     PrettyPrinter().print(a)
 }
