@@ -2,6 +2,7 @@ package semantics
 
 import sablecc.analysis.DepthFirstAdapter
 import sablecc.node.*
+import kotlin.reflect.typeOf
 
 class SymbolTableBuilder : DepthFirstAdapter() {
     private var currentScope = Scope(null)
@@ -50,6 +51,16 @@ class SymbolTableBuilder : DepthFirstAdapter() {
         return currentScope
     }
 
+    fun getTypeFromPType(node:PType):Type {
+        return when(node) {
+            is AIntType -> Type.INT
+            is AFloatType -> Type.FLOAT
+            is AStringType -> Type.STRING
+            else -> throw Exception("Unsupported node type")
+        }
+
+    }
+
 /* Tree traversal */
     override fun inABlockStmt(node: ABlockStmt) = openScope()
     override fun outABlockStmt(node: ABlockStmt) = closeScope()
@@ -68,13 +79,12 @@ class SymbolTableBuilder : DepthFirstAdapter() {
         }
     }
 
-
     override fun outAVardcl(node: AVardcl) {
         val name = node.identifier.text
-        val type = (node.parent() as ADclStmt).type.toString()
+        val type = (node.parent() as ADclStmt).type
 
         try {
-            add(name, Identifier(type, node.expr, node))
+            add(name, Identifier(type, node))
         }
         catch (e:IdentifierAlreadyDeclaredException) {
             throw e
