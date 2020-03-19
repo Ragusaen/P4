@@ -6,11 +6,9 @@ import java.io.PushbackReader
 
 fun main() {
     val input = """
-        Int a = 0;
+        String a = "Quote: \"Test\" !";
         
         template module thismodule {
-            Int a = 3;
-            Float k = 3.5;
             
             every (1000) {
                 ; 
@@ -18,13 +16,10 @@ fun main() {
         }
     """
 
-
     val lexer = Lexer(PushbackReader(input.reader(), 1024))
     val parser = Parser(lexer)
 
     val a = parser.parse()
-
-
 
     PrettyPrinter().print(a)
 }
