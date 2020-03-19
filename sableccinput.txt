@@ -169,7 +169,6 @@ Productions
          {term} term
             {-> term.expr};
 
-
     term {-> expr} =
         {addition} expr addition factor
             {-> New expr.binop(expr, New binop.addition(), factor.expr)}
@@ -181,8 +180,10 @@ Productions
     factor {-> expr} =
         {multiplication} factor multiplication unary
             {-> New expr.binop(factor.expr, New binop.multiplication(), unary.expr)}
-        | {division} factor division value
-            {-> New expr.binop(factor.expr, New binop.division(), value.expr)}
+        | {division} factor division unary
+            {-> New expr.binop(factor.expr, New binop.division(), unary.expr)}
+        | {modulo} factor modulo unary
+            {-> New expr.binop(factor.expr, New binop.modulo(), unary.expr)}
         | {unary} unary
             {-> unary.expr};
 
@@ -232,6 +233,6 @@ Abstract Syntax Tree
 
 /* Expression */
     expr = {binop} [l]:expr binop [r]:expr | {unop} unop expr | {parenthesis} expr | {value} value;
-    binop = {addition} | {subtraction} | {multiplication} | {division};
+    binop = {addition} | {subtraction} | {multiplication} | {division} | {modulo};
     unop = {minus} | {plus} | {not};
     value = {identifier} identifier | {int} intliteral | {float} floatliteral;
