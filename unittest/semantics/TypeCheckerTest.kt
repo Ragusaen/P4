@@ -11,21 +11,19 @@ import org.junit.jupiter.api.assertThrows
 internal class TypeCheckerTest {
     @Test
     fun typeEqualsTest(){
-        val a = Type("Int")
-        val b = Type("Int")
+        val a = Type.INT
+        val b = Type.INT
 
         assertTrue { a == b }
     }
 
     @Test
     fun assigmentOfFloatExprToIntIdentifierThrowsError() {
-        val input = "a = 5.5;"
+        val input = "Int a = 5.5;"
         val lexer = Lexer(PushbackReader(input.reader()))
         val parser = Parser(lexer)
         val s = parser.parse()
-
         val st = SymbolTableBuilder().buildSymbolTable(s)
-        TypeChecker(st).start(s)
 
         assertThrows<IllegalImplicitTypeConversionException> { TypeChecker(st).start(s) }
     }
@@ -43,8 +41,9 @@ internal class TypeCheckerTest {
         val input = "Int a = 4.5;"
         val lexer = Lexer(PushbackReader(input.reader()))
         val parser = Parser(lexer)
-        val a = parser.parse()
+        val s = parser.parse()
+        val st = SymbolTableBuilder().buildSymbolTable(s)
 
-
+        assertThrows<IllegalImplicitTypeConversionException> { TypeChecker(st).start(s) }
     }
 }

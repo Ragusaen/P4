@@ -3,8 +3,7 @@ package semantics
 import sablecc.analysis.Analysis
 import sablecc.node.*
 
-class IntToFloatConversionNode(private val child:AIntValue) : PExpr() {
-
+class IntToFloatConversionNode(val child: PExpr) : PExpr() {
     override fun apply(sw: Switch?) {
         DecoratedDepthFirstAdapter().caseIntToFloatConversion(this);
     }
