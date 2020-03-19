@@ -6,7 +6,7 @@ import java.io.PushbackReader
 
 fun main() {
     val input = """
-        String a = "Quote: \"Test\" !";
+        Char b = '\'';
         
         template module thismodule {
             

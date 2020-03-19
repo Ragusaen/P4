@@ -76,6 +76,7 @@ Tokens
     floatliteral = '-'?digit+'.'digit*|digit*'.'digit+;
     timeliteral = (digit*'.')?digit+('ms'|'s'|'m'|'h');
     stringliteral = '"'('\'all | [[all - '"'] - '\'])*'"';
+    charliteral = '''('\'all | [[all - '''] - '\'])''';
     identifier = anychar (anychar|digit)*;
     whitespace = (' ' | tab | lf | eol)+;
     comment = '/*' all* '*/' | '//'all*eol;
@@ -215,8 +216,11 @@ Productions
         | {float} floatliteral
             {-> New expr.value(New value.float(floatliteral))}
         | {string} stringliteral
-            {-> New expr.value(New value.string(stringliteral))};
-
+            {-> New expr.value(New value.string(stringliteral))}
+        | {char} charliteral
+            {-> New expr.value(New value.char(charliteral))}
+        | {bool} boolliteral
+            {-> New expr.value(New value.bool(boolliteral))};
 
 Abstract Syntax Tree
     program = root_element*;
@@ -238,4 +242,4 @@ Abstract Syntax Tree
     expr = {binop} [l]:expr binop [r]:expr | {unop} unop expr | {parenthesis} expr | {value} value;
     binop = {addition} | {subtraction} | {multiplication} | {division} | {modulo};
     unop = {minus} | {plus} | {not};
-    value = {identifier} identifier | {int} intliteral | {float} floatliteral | {string} stringliteral;
+    value = {identifier} identifier | {int} intliteral | {float} floatliteral | {string} stringliteral | {char} charliteral | {bool} boolliteral;
