@@ -15,11 +15,11 @@ Tokens
     inttype = 'Int';
     floattype = 'Float';
     booltype = 'Bool';
+    timetype = 'Time';
     digitaloutputpintype = 'DigitalOutputPin';
     digitalinputpintype = 'DigitalInputPin';
     analogoutputpintype = 'AnalogOutputPin';
     analoginputpintype = 'AnalogInputPin';
-    time = 'Time';
     every = 'every';
     if = 'if';
     on = 'on';
@@ -160,6 +160,7 @@ Productions
         | {int} inttype {-> New type.int()}
         | {float} floattype {-> New type.float()}
         | {bool} booltype {-> New type.bool()}
+        | {time} timetype {-> New type.time()}
         | {digitaloutputpin} digitaloutputpintype {-> New type.digitaloutputpin()}
         | {digitalinputpin} digitalinputpintype {-> New type.digitalinputpin()}
         | {analogoutputpin} analogoutputpintype {-> New type.analogoutputpin()}
@@ -220,7 +221,9 @@ Productions
         | {char} charliteral
             {-> New expr.value(New value.char(charliteral))}
         | {bool} boolliteral
-            {-> New expr.value(New value.bool(boolliteral))};
+            {-> New expr.value(New value.bool(boolliteral))}
+        | {time} timeliteral
+            {-> New expr.value(New value.time(timeliteral))};
 
 Abstract Syntax Tree
     program = root_element*;
@@ -236,10 +239,10 @@ Abstract Syntax Tree
 
 /* Declaration subnodes*/
     vardcl = identifier expr?;
-    type = {string} | {char} | {int} | {float} | {bool} | {digitaloutputpin} | {digitalinputpin} | {analogoutputpin} | {analoginputpin};
+    type = {string} | {char} | {int} | {float} | {bool} | {time} | {digitaloutputpin} | {digitalinputpin} | {analogoutputpin} | {analoginputpin};
 
 /* Expression */
     expr = {binop} [l]:expr binop [r]:expr | {unop} unop expr | {parenthesis} expr | {value} value;
     binop = {addition} | {subtraction} | {multiplication} | {division} | {modulo};
     unop = {minus} | {plus} | {not};
-    value = {identifier} identifier | {int} intliteral | {float} floatliteral | {string} stringliteral | {char} charliteral | {bool} boolliteral;
+    value = {identifier} identifier | {int} intliteral | {float} floatliteral | {string} stringliteral | {char} charliteral | {bool} boolliteral | {time} timeliteral;
