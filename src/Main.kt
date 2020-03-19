@@ -1,12 +1,14 @@
 import sablecc.lexer.Lexer
 import sablecc.parser.Parser
+import semantics.ScopePrinter
+import semantics.ScopedTraverser
 import semantics.SymbolTableBuilder
 import java.io.PushbackReader
 
 
 fun main() {
     val input = """
-        String a = "Quote: \"Test\" !";
+        Time t = 2.5s;
         
         template module thismodule {
             
@@ -20,6 +22,11 @@ fun main() {
     val parser = Parser(lexer)
 
     val a = parser.parse()
+
+    val scope = SymbolTableBuilder().buildSymbolTable(a)
+    ScopedTraverser(scope).traverse(a)
+
+    ScopePrinter(scope).traverse(a)
 
     PrettyPrinter().print(a)
 }
