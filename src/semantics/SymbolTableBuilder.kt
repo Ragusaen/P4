@@ -56,9 +56,9 @@ class SymbolTableBuilder : DepthFirstAdapter() {
             is AIntType -> Type.INT
             is AFloatType -> Type.FLOAT
             is AStringType -> Type.STRING
+            is ABoolType -> Type.BOOL
             else -> throw Exception("Unsupported node type")
         }
-
     }
 
 /* Tree traversal */
@@ -81,10 +81,10 @@ class SymbolTableBuilder : DepthFirstAdapter() {
 
     override fun outAVardcl(node: AVardcl) {
         val name = node.identifier.text
-        val type = (node.parent() as ADclStmt).type
+        val ptype = (node.parent() as ADclStmt).type
 
         try {
-            add(name, Identifier(type, node))
+            add(name, Identifier(getTypeFromPType(ptype), node))
         }
         catch (e:IdentifierAlreadyDeclaredException) {
             throw e
