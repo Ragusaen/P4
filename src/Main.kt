@@ -1,5 +1,7 @@
 import sablecc.lexer.Lexer
 import sablecc.parser.Parser
+import semantics.ScopePrinter
+import semantics.ScopedTraverser
 import semantics.SymbolTableBuilder
 import java.io.PushbackReader
 
@@ -24,7 +26,10 @@ fun main() {
 
     val a = parser.parse()
 
+    val scope = SymbolTableBuilder().buildSymbolTable(a)
+    ScopedTraverser(scope).traverse(a)
 
+    ScopePrinter(scope).traverse(a)
 
     PrettyPrinter().print(a)
 }
