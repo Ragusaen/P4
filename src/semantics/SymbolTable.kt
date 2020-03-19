@@ -1,5 +1,0 @@
-package semantics
-
-class SymbolTable {
-
-}

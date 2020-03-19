@@ -74,7 +74,7 @@ class SymbolTableBuilder : DepthFirstAdapter() {
         val type = (node.parent() as ADclStmt).type.toString()
 
         try {
-            add(name, Identifier(type, null, node))
+            add(name, Identifier(type, node.expr, node))
         }
         catch (e:IdentifierAlreadyDeclaredException) {
             throw e
