@@ -18,7 +18,7 @@ fun main() {
         }
     """
 
-    val lexer = Lexer(PushbackReader(input.reader(), 1024))
+    val lexer = StringLexer(input)
     val parser = Parser(lexer)
 
     val a = parser.parse()

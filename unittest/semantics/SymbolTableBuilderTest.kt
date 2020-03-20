@@ -1,5 +1,6 @@
 package semantics
 
+import StringLexer
 import org.junit.jupiter.api.Test
 
 import org.junit.jupiter.api.Assertions.*
@@ -14,7 +15,7 @@ internal class SymbolTableBuilderTest {
     fun symbolTableBuilderThrowsErrorWhenVariableHasAlreadyBeenDeclared() {
         val stb = SymbolTableBuilder()
         val input = "Int a = 8; Int a = 5;"
-        val lexer = Lexer(PushbackReader(input.reader()))
+        val lexer = StringLexer(input)
         val parser = Parser(lexer)
 
         val s = parser.parse()
@@ -26,7 +27,7 @@ internal class SymbolTableBuilderTest {
     fun symbolTableBuilderThrowsErrorIfVariableIsUsedBeforeDeclaration() {
         val stb = SymbolTableBuilder()
         val input = "Int b = a + 2;"
-        val lexer = Lexer(PushbackReader(input.reader()))
+        val lexer = StringLexer(input)
         val parser = Parser(lexer)
 
         val s = parser.parse()
@@ -46,7 +47,7 @@ internal class SymbolTableBuilderTest {
             }
             Int b = a + 2;
         """
-        val lexer = Lexer(PushbackReader(input.reader()))
+        val lexer = StringLexer(input)
         val parser = Parser(lexer)
 
         val s = parser.parse()
@@ -68,7 +69,7 @@ internal class SymbolTableBuilderTest {
                 }
             }
         """
-        val lexer = Lexer(PushbackReader(input.reader()))
+        val lexer = StringLexer(input)
         val parser = Parser(lexer)
 
         val s = parser.parse()
@@ -88,7 +89,7 @@ internal class SymbolTableBuilderTest {
                 }
             }
         """
-        val lexer = Lexer(PushbackReader(input.reader()))
+        val lexer = StringLexer(input)
         val parser = Parser(lexer)
 
         val s = parser.parse()
