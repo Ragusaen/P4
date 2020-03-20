@@ -184,8 +184,8 @@ Productions
 
 /* Expression */
     expr {-> expr} =
-        {term} term
-            {-> term.expr};
+        {orexpr} orexpr
+            {-> orexpr.expr};
 
     orexpr {-> expr} =
         {or} expr or andexpr
