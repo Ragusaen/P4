@@ -11,7 +11,7 @@ import kotlin.test.assertFailsWith
 
 internal class TypeCheckerTest {
     @Test
-    fun typeEqualsTest(){
+    fun typeEqualsTest() {
         val a = Type.INT
         val b = Type.INT
 

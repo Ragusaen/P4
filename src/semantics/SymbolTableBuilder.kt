@@ -57,6 +57,11 @@ class SymbolTableBuilder : DepthFirstAdapter() {
             is AFloatType -> Type.FLOAT
             is AStringType -> Type.STRING
             is ABoolType -> Type.BOOL
+            is ADigitalinputpinType -> Type.DIGITALINPUTPIN
+            is ADigitaloutputpinType -> Type.DIGITALOUTPUTPIN
+            is AAnaloginputpinType -> Type.ANALOGINPUTPIN
+            is AAnalogoutputpinType -> Type.ANALOGOUTPUTPIN
+            is ATimeType -> Type.TIME
             else -> throw Exception("Unsupported node type")
         }
     }

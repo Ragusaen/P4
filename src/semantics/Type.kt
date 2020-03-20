@@ -1,5 +1,8 @@
 package semantics
 
 enum class Type {
-    INT, FLOAT, STRING, BOOL;
+    INT, FLOAT, STRING, BOOL,
+    DIGITALINPUTPIN, DIGITALOUTPUTPIN,
+    ANALOGINPUTPIN, ANALOGOUTPUTPIN,
+    TIME,
 }
