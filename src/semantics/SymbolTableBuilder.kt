@@ -7,7 +7,7 @@ import kotlin.reflect.typeOf
 class SymbolTableBuilder : DepthFirstAdapter() {
     private var currentScope = Scope(null)
 
-    fun add(name:String, identifier: Identifier) {
+    private fun add(name:String, identifier: Identifier) {
         // If the name is already used within this scope throw exception
         if (currentScope.contains(name))
             throw IdentifierAlreadyDeclaredException("The variable $name is already declared.")
@@ -15,7 +15,7 @@ class SymbolTableBuilder : DepthFirstAdapter() {
             currentScope[name] = identifier
     }
 
-    fun checkHasBeenDeclared(name: String) {
+    private fun checkHasBeenDeclared(name: String) {
         var tempScope:Scope? = currentScope
 
         while(tempScope != null) {
@@ -27,17 +27,13 @@ class SymbolTableBuilder : DepthFirstAdapter() {
         throw IdentifierUsedBeforeDeclarationException("Variable $name was used before it was declared.")
     }
 
-    fun declaredLocally(name:String):Boolean {
-        return currentScope.contains(name)
-    }
-
-    fun openScope() {
+    private fun openScope() {
         val newScope = Scope(currentScope)
         currentScope.children.add(newScope)
         currentScope = newScope
     }
 
-    fun closeScope() {
+    private fun closeScope() {
         val parent = currentScope.parent
 
         if (parent != null)
@@ -51,7 +47,7 @@ class SymbolTableBuilder : DepthFirstAdapter() {
         return currentScope
     }
 
-    fun getTypeFromPType(node:PType):Type {
+    private fun getTypeFromPType(node:PType):Type {
         return when(node) {
             is AIntType -> Type.INT
             is AFloatType -> Type.FLOAT
@@ -66,7 +62,7 @@ class SymbolTableBuilder : DepthFirstAdapter() {
         }
     }
 
-/* Tree traversal */
+    /* Tree traversal */
     override fun inABlockStmt(node: ABlockStmt) = openScope()
     override fun outABlockStmt(node: ABlockStmt) = closeScope()
 

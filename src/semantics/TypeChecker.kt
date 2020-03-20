@@ -8,9 +8,9 @@ class TypeChecker(scope:Scope) : ScopedTraverser(scope) {
         caseStart(s)
     }
 
-    val ts = Stack<Type>()
+    private val typeStack = Stack<Type>()
 
-    fun convertExpr(from: Type, to: Type, exprNode: PExpr): Type? {
+    private fun convertExpr(from: Type, to: Type, exprNode: PExpr): Type? {
         if (from == to) {
             return from
         }
@@ -28,7 +28,7 @@ class TypeChecker(scope:Scope) : ScopedTraverser(scope) {
         val expr = node.expr
 
         if (expr != null) {
-            val typeE = ts.pop()
+            val typeE = typeStack.pop()
             identifier.isInitialised = true
             if (convertExpr(typeE, identifier.type, expr) == null)
                 throw IllegalImplicitTypeConversionException("Cannot initialise variable ${node.identifier.text} of type ${identifier.type} with value of type $typeE.")
@@ -36,8 +36,8 @@ class TypeChecker(scope:Scope) : ScopedTraverser(scope) {
     }
 
     override fun outABinopExpr(node: ABinopExpr) {
-        val right = ts.pop()
-        val left = ts.pop()
+        val right = typeStack.pop()
+        val left = typeStack.pop()
 
         var newType = convertExpr(left, right, node.l)
         if (newType == null)
@@ -46,11 +46,11 @@ class TypeChecker(scope:Scope) : ScopedTraverser(scope) {
         if (newType == null)
             throw IllegalImplicitTypeConversionException("Cannot apply binary operations between types $left and $right")
 
-        ts.push(newType)
+        typeStack.push(newType)
     }
 
     override fun outAAssignStmt(node: AAssignStmt) {
-        val typeExpr = ts.pop()
+        val typeExpr = typeStack.pop()
         val typeId = scope.find(node.identifier.text)!!.type
 
         if (convertExpr(typeExpr, typeId, node.expr) == null){
@@ -62,24 +62,24 @@ class TypeChecker(scope:Scope) : ScopedTraverser(scope) {
     // This is only for variables used in expressions as values
     override fun outAIdentifierValue(node: AIdentifierValue) {
         val identifier = scope.find(node.identifier.text)
-        ts.push(identifier!!.type)
+        typeStack.push(identifier!!.type)
         if (!identifier.isInitialised)
             throw IdentifierUsedBeforeAssignmentException("The variable ${node.identifier.text} was used before being initialised.")
     }
 
     override fun caseTIntliteral(node: TIntliteral) {
-        ts.push(Type.INT)
+        typeStack.push(Type.INT)
     }
 
     override fun caseTFloatliteral(node: TFloatliteral?) {
-        ts.push(Type.FLOAT)
+        typeStack.push(Type.FLOAT)
     }
 
     override fun caseTBoolliteral(node: TBoolliteral?) {
-        ts.push(Type.BOOL)
+        typeStack.push(Type.BOOL)
     }
 
     override fun caseTStringliteral(node: TStringliteral?) {
-        ts.push(Type.STRING)
+        typeStack.push(Type.STRING)
     }
 }
