@@ -8,14 +8,13 @@ import java.io.PushbackReader
 
 fun main() {
     val input = """
-        Int i = 5;
-
+        Bool a = true;
+        
         template module thismodule {
-            every (1000) {
-                i += 1;
-                start(blink1);
-                delay(500ms);
-                stop;
+            every (1000ms) {
+                if(a)
+                    while(a) if(a) ; else ;
+                delay until(a);
             }
         }
     """
