@@ -188,42 +188,42 @@ Productions
             {-> orexpr.expr};
 
     orexpr {-> expr} =
-        {or} expr or andexpr
-            {-> New expr.binop(expr, New binop.or(), andexpr.expr)}
+        {or} orexpr or andexpr
+            {-> New expr.binop(orexpr.expr, New binop.or(), andexpr.expr)}
         | {andexpr} andexpr
             {-> andexpr.expr};
 
     andexpr {-> expr} =
-        {and} expr and equalsexpr
-            {-> New expr.binop(expr, New binop.and(), equalsexpr.expr)}
+        {and} andexpr and equalsexpr
+            {-> New expr.binop(andexpr.expr, New binop.and(), equalsexpr.expr)}
         | {equalsexpr} equalsexpr
             {-> equalsexpr.expr};
 
     equalsexpr {-> expr} =
-        {equals} expr equal relation
-            {-> New expr.binop(expr, New binop.equal(), relation.expr)}
-        | {not_equals} expr notequal relation
-            {-> New expr.unop(New unop.not(), New expr.binop(expr, New binop.equal(), relation.expr))}
+        {equals} equalsexpr equal relation
+            {-> New expr.binop(equalsexpr.expr, New binop.equal(), relation.expr)}
+        | {not_equals} equalsexpr notequal relation
+            {-> New expr.unop(New unop.not(), New expr.binop(equalsexpr.expr, New binop.equal(), relation.expr))}
         | {relation} relation
             {-> relation.expr};
 
     relation {-> expr} =
-        {greaterthan} expr greaterthan term
-            {-> New expr.binop(expr, New binop.greaterthan(), term.expr)}
-        | {lessthan} expr lessthan term
-            {-> New expr.binop(expr, New binop.lessthan(), term.expr)}
-        | {lessthanorequalto} expr greaterthan term
-            {-> New expr.unop(New unop.not(), New expr.binop(expr, New binop.greaterthan(), term.expr))}
-        | {greaterthanorequalto} expr lessthan term
-            {-> New expr.unop(New unop.not(), New expr.binop(expr, New binop.lessthan(), term.expr))}
+        {greaterthan} relation greaterthan term
+            {-> New expr.binop(relation.expr, New binop.greaterthan(), term.expr)}
+        | {lessthan} relation lessthan term
+            {-> New expr.binop(relation.expr, New binop.lessthan(), term.expr)}
+        | {lessthanorequalto} relation lessthanorequalto term
+            {-> New expr.unop(New unop.not(), New expr.binop(relation.expr, New binop.greaterthan(), term.expr))}
+        | {greaterthanorequalto} relation greaterthanorequalto term
+            {-> New expr.unop(New unop.not(), New expr.binop(relation.expr, New binop.lessthan(), term.expr))}
         | {term} term
             {-> term.expr};
 
     term {-> expr} =
-        {addition} expr addition factor
-            {-> New expr.binop(expr, New binop.addition(), factor.expr)}
-        | {subtraction} expr subtraction factor
-            {-> New expr.binop(expr, New binop.subtraction(), factor.expr)}
+        {addition} term addition factor
+            {-> New expr.binop(term.expr, New binop.addition(), factor.expr)}
+        | {subtraction} term subtraction factor
+            {-> New expr.binop(term.expr, New binop.subtraction(), factor.expr)}
         | {factor} factor
             {-> factor.expr};
 
