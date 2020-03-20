@@ -50,13 +50,13 @@ Tokens
     modulo = '%';
     greaterthan = '>';
     lessthan = '<';
+    greaterthanorequalto = '>=';
+    lessthanorequalto = '<=';
     additionassign = '+=';
     subtractionassign = '-=';
     multiplicationassign = '*=';
     divisionassign = '/=';
     moduloassign = '%=';
-    greaterthanorequalto = '>=';
-    lessthanorequalto = '<=';
     semicolon = ';';
     not = '!';
     colon = ':';
@@ -184,7 +184,39 @@ Productions
 
 /* Expression */
     expr {-> expr} =
-         {term} term
+        {term} term
+            {-> term.expr};
+
+    orexpr {-> expr} =
+        {or} expr or andexpr
+            {-> New expr.binop(expr, New binop.or(), andexpr.expr)}
+        | {andexpr} andexpr
+            {-> andexpr.expr};
+
+    andexpr {-> expr} =
+        {and} expr and equalsexpr
+            {-> New expr.binop(expr, New binop.and(), equalsexpr.expr)}
+        | {equalsexpr} equalsexpr
+            {-> equalsexpr.expr};
+
+    equalsexpr {-> expr} =
+        {equals} expr equal relation
+            {-> New expr.binop(expr, New binop.equal(), relation.expr)}
+        | {not_equals} expr notequal relation
+            {-> New expr.unop(New unop.not(), New expr.binop(expr, New binop.equal(), relation.expr))}
+        | {relation} relation
+            {-> relation.expr};
+
+    relation {-> expr} =
+        {greaterthan} expr greaterthan term
+            {-> New expr.binop(expr, New binop.greaterthan(), term.expr)}
+        | {lessthan} expr lessthan term
+            {-> New expr.binop(expr, New binop.lessthan(), term.expr)}
+        | {lessthanorequalto} expr greaterthan term
+            {-> New expr.unop(New unop.not(), New expr.binop(expr, New binop.greaterthan(), term.expr))}
+        | {greaterthanorequalto} expr lessthan term
+            {-> New expr.unop(New unop.not(), New expr.binop(expr, New binop.lessthan(), term.expr))}
+        | {term} term
             {-> term.expr};
 
     term {-> expr} =
@@ -259,6 +291,6 @@ Abstract Syntax Tree
 
 /* Expression */
     expr = {binop} [l]:expr binop [r]:expr | {unop} unop expr | {parenthesis} expr | {value} value;
-    binop = {addition} | {subtraction} | {multiplication} | {division} | {modulo};
+    binop = {addition} | {subtraction} | {multiplication} | {division} | {modulo} | {or} | {and} | {equal} | {relation} | {greaterthan} | {lessthan};
     unop = {minus} | {plus} | {not};
     value = {identifier} identifier | {int} intliteral | {float} floatliteral | {string} stringliteral | {char} charliteral | {bool} boolliteral | {time} timeliteral;
