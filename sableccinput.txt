@@ -122,12 +122,6 @@ Productions
         | {unmatched} unmatched
             {-> unmatched.stmt};
 
-    simple_stmt {-> stmt} =
-        {single_stmt} single_stmt semicolon
-            {-> single_stmt.stmt}
-        | {block} lbrace stmt* rbrace
-            {-> New stmt.block([stmt])};
-
     matched {-> stmt} =
         {matched_if_else} if lparen expr rparen [if_body]:matched else [else_body]:matched
             {-> New stmt.if(expr, if_body.stmt, else_body.stmt)}
@@ -147,6 +141,12 @@ Productions
             {-> New stmt.while(condition, body.stmt)}
         | {for} for lparen [init]:single_stmt [a]:semicolon [condition]:expr [b]:semicolon [update]:single_stmt rparen [body]:unmatched
             {-> New stmt.for(init.stmt, condition, update.stmt, body.stmt)};
+
+    simple_stmt {-> stmt} =
+         {single_stmt} single_stmt semicolon
+             {-> single_stmt.stmt}
+         | {block} lbrace stmt* rbrace
+              {-> New stmt.block([stmt])};
 
     single_stmt {-> stmt} =
         {dcl} dcl
@@ -169,6 +169,8 @@ Productions
             {-> New stmt.stop()}
         | {delay} delay lparen expr rparen
             {-> New stmt.delay(expr)}
+        | {delay_until} delay until lparen expr rparen
+            {-> New stmt.delayuntil(expr)}
         | {no_stmt}
             {-> New stmt.no_stmt()};
 
@@ -304,7 +306,7 @@ Abstract Syntax Tree
     module_structure = {every} expr [body]:stmt | {on} expr [body]:stmt;
 
 /* Statement */
-    stmt = {no_stmt} | {dcl} type vardcl* | {start} identifier | {stop} | {delay} expr | {assign} identifier expr binop? | {block} stmt* | {if} expr [if_body]:stmt [else_body]:stmt? | {while} [condition]:expr [body]:stmt | {for} [init]:stmt [condition]:expr [update]:stmt [body]:stmt;
+    stmt = {no_stmt} | {dcl} type vardcl* | {start} identifier | {stop} | {delay} expr | {delayuntil} expr | {assign} identifier expr binop? | {block} stmt* | {if} expr [if_body]:stmt [else_body]:stmt? | {while} [condition]:expr [body]:stmt | {for} [init]:stmt [condition]:expr [update]:stmt [body]:stmt;
 
 /* Declaration subnodes*/
     vardcl = identifier expr?;

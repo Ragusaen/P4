@@ -14,6 +14,7 @@ fun main() {
             every (1000ms) {
                 if(a)
                     while(a) if(a) ; else ;
+                delay until(a);
             }
         }
     """
