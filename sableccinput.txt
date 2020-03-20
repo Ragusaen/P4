@@ -112,8 +112,10 @@ Productions
     module_structure {-> module_structure} =
         {every} every lparen expr rparen stmt
             {-> New module_structure.every(expr, stmt)}
-        | {on} on lparen expr rparen stmt
-            {-> New module_structure.on(expr, stmt)};
+        | {on_rising} on rising lparen expr rparen stmt
+            {-> New module_structure.on(New statechange.rising(), expr, stmt)}
+        | {on_falling} on falling lparen expr rparen stmt
+            {-> New module_structure.on(New statechange.falling(), expr, stmt)};
 
 /* Statement */
     stmt {-> stmt} =
@@ -303,7 +305,8 @@ Abstract Syntax Tree
 /* Module */
     moduledcl = {template} identifier inner_module | {anonymous} inner_module;
     inner_module = [dcls]:stmt* module_structure;
-    module_structure = {every} expr [body]:stmt | {on} expr [body]:stmt;
+    module_structure = {every} expr [body]:stmt | {on} statechange expr [body]:stmt;
+    statechange = {rising} | {falling};
 
 /* Statement */
     stmt = {no_stmt} | {dcl} type vardcl* | {start} identifier | {stop} | {delay} expr | {delayuntil} expr | {assign} identifier expr binop? | {block} stmt* | {if} expr [if_body]:stmt [else_body]:stmt? | {while} [condition]:expr [body]:stmt | {for} [init]:stmt [condition]:expr [update]:stmt [body]:stmt;
