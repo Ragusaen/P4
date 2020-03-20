@@ -55,17 +55,16 @@ internal class SymbolTableBuilderTest {
         assertThrows<IdentifierUsedBeforeDeclarationException> { stb.buildSymbolTable(s) }
     }
 
-    //TODO: UNCOMMENT WHEN BOOLEAN/CONDITIONS IS IMPLEMENTED
-    /*Test
+
+    @Test
     fun symbolTableBuilderThrowsErrorIfForLoopVariablesAreUsedInForLoopParens(){
         val stb = SymbolTableBuilder()
         val input = """
             template module thismodule {
-                for(Int i = b; i < 2; i += 2){
-                    Int b = 1;
-                }
                 every (1000) {
-                    ; 
+                    for(Int i = b; i < 2; i += 2) {
+                        Int b = 1;
+                    }
                 }
             }
         """
@@ -75,7 +74,7 @@ internal class SymbolTableBuilderTest {
         val s = parser.parse()
 
         assertThrows<IdentifierUsedBeforeDeclarationException> { stb.buildSymbolTable(s) }
-    }*/
+    }
 
     @Test
     fun symbolTableContainsVariablesWithSameNameInDiffirentScopes(){
