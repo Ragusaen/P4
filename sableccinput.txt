@@ -208,6 +208,10 @@ Productions
             {-> New stmt.function_call(identifier, [arglist.expr])}
         | {return} return expr?
             {-> New stmt.return(expr)}
+        | {break} break
+            {-> New stmt.break()}
+        | {continue} continue
+            {-> New stmt.continue()}
         | {no_stmt}
             {-> New stmt.no_stmt()};
 
@@ -349,7 +353,7 @@ Abstract Syntax Tree
     statechange = {rising} | {falling};
 
 /* Statement */
-    stmt = {no_stmt} | {dcl} type vardcl* | {start} identifier | {stop} | {delay} expr | {delayuntil} expr | {assign} identifier expr binop? | {block} stmt* | {if} expr [if_body]:stmt [else_body]:stmt? | {while} [condition]:expr [body]:stmt | {for} [init]:stmt [condition]:expr [update]:stmt [body]:stmt | {function_call} identifier expr* | {return} expr?;
+    stmt = {no_stmt} | {dcl} type vardcl* | {start} identifier | {stop} | {delay} expr | {delayuntil} expr | {assign} identifier expr binop? | {block} stmt* | {if} expr [if_body]:stmt [else_body]:stmt? | {while} [condition]:expr [body]:stmt | {for} [init]:stmt [condition]:expr [update]:stmt [body]:stmt | {function_call} identifier expr* | {return} expr? | {break} | {continue};
 
 /* Declaration subnodes*/
     vardcl = identifier expr?;
