@@ -91,7 +91,38 @@ Productions
         {dcl} dcl_stmt
             {-> New root_element.dcl(dcl_stmt.stmt)}
         | {module} moduledcl
-            {-> New root_element.moduledcl(moduledcl)};
+            {-> New root_element.moduledcl(moduledcl)}
+        | {function} functiondcl
+            {-> New root_element.functiondcl(functiondcl)};
+
+/* Function */
+    functiondcl {-> functiondcl} =
+        fun identifier lparen paramlist rparen return_type? [body]:inner_function
+            {-> New functiondcl(identifier, [paramlist.param], return_type.type, body)};
+
+    return_type {-> type} =
+        colon type
+            {-> type};
+
+    inner_function {-> inner_function} =
+        lbrace stmt* rbrace
+            {-> New inner_function([stmt])};
+
+    paramlist {-> param*} =
+        type identifier paramtail*
+            {-> [New param(identifier, type), paramtail.param]};
+
+    paramtail {-> param} =
+        comma type identifier
+            {-> New param(identifier, type)};
+
+    arglist {-> expr*} =
+        expr argtail*
+            {-> [expr, argtail.expr]};
+
+    argtail {-> expr} =
+        comma expr
+            {-> expr};
 
 /* Module */
     moduledcl {-> moduledcl} =
@@ -173,6 +204,10 @@ Productions
             {-> New stmt.delay(expr)}
         | {delay_until} delay until lparen expr rparen
             {-> New stmt.delayuntil(expr)}
+        | {function_call} identifier lparen arglist rparen
+            {-> New stmt.function_call(identifier, [arglist.expr])}
+        | {return} return expr?
+            {-> New stmt.return(expr)}
         | {no_stmt}
             {-> New stmt.no_stmt()};
 
@@ -300,7 +335,12 @@ Productions
 
 Abstract Syntax Tree
     program = root_element*;
-    root_element = {dcl} stmt | {moduledcl} moduledcl;
+    root_element = {dcl} stmt | {moduledcl} moduledcl | {functiondcl} functiondcl;
+
+/* Function */
+    functiondcl = identifier param* type? inner_function;
+    inner_function = stmt*;
+    param = identifier type;
 
 /* Module */
     moduledcl = {template} identifier inner_module | {anonymous} inner_module;
@@ -309,7 +349,7 @@ Abstract Syntax Tree
     statechange = {rising} | {falling};
 
 /* Statement */
-    stmt = {no_stmt} | {dcl} type vardcl* | {start} identifier | {stop} | {delay} expr | {delayuntil} expr | {assign} identifier expr binop? | {block} stmt* | {if} expr [if_body]:stmt [else_body]:stmt? | {while} [condition]:expr [body]:stmt | {for} [init]:stmt [condition]:expr [update]:stmt [body]:stmt;
+    stmt = {no_stmt} | {dcl} type vardcl* | {start} identifier | {stop} | {delay} expr | {delayuntil} expr | {assign} identifier expr binop? | {block} stmt* | {if} expr [if_body]:stmt [else_body]:stmt? | {while} [condition]:expr [body]:stmt | {for} [init]:stmt [condition]:expr [update]:stmt [body]:stmt | {function_call} identifier expr* | {return} expr?;
 
 /* Declaration subnodes*/
     vardcl = identifier expr?;

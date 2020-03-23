@@ -15,6 +15,10 @@ fun main() {
                 delay until(a);
             }
         }
+        
+        fun test(String s){
+            return 2;
+        }
     """
 
     val lexer = StringLexer(input)
