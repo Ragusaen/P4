@@ -10,7 +10,7 @@ fun main() {
     val input = """
         Bool a = true;
         
-        template module thismodule {
+        template module thismodule(String p, Bool b) {
             every (1000ms) {
                 if(a)
                     while(a) if(a) ; else ;
