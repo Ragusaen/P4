@@ -4,11 +4,11 @@ import StringLexer
 import org.junit.jupiter.api.Test
 
 import org.junit.jupiter.api.Assertions.*
-import sablecc.lexer.Lexer
 import sablecc.parser.Parser
-import java.io.PushbackReader
 import org.junit.jupiter.api.assertThrows
-import kotlin.Exception
+import semantics.SymbolTable.Exceptions.IdentifierAlreadyDeclaredException
+import semantics.SymbolTable.Exceptions.IdentifierUsedBeforeDeclarationException
+import semantics.SymbolTable.SymbolTableBuilder
 
 internal class SymbolTableBuilderTest {
     @Test

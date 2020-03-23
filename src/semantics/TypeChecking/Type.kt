@@ -1,4 +1,4 @@
-package semantics
+package semantics.TypeChecking
 
 enum class Type {
     INT, FLOAT, STRING, BOOL,

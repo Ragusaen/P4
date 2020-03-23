@@ -1,7 +1,7 @@
-package semantics
+package semantics.TypeChecking
 
-import sablecc.analysis.Analysis
 import sablecc.node.*
+import semantics.DecoratedDepthFirstAdapter
 
 class IntToFloatConversionNode(val child: PExpr) : PExpr() {
     override fun apply(sw: Switch?) {

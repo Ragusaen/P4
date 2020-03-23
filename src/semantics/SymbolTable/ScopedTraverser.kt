@@ -1,4 +1,4 @@
-package semantics
+package semantics.SymbolTable
 
 import sablecc.analysis.DepthFirstAdapter
 import sablecc.node.ABlockStmt

@@ -1,15 +1,7 @@
-import sablecc.lexer.Lexer
-import sablecc.node.AAdditionBinop
-import sablecc.node.ABinopExpr
-import sablecc.node.ASubtractionBinop
-import sablecc.node.PBinop
 import sablecc.parser.Parser
 import semantics.ScopePrinter
-import semantics.ScopedTraverser
-import semantics.SymbolTableBuilder
-import semantics.Type
-import java.io.PushbackReader
-import kotlin.reflect.typeOf
+import semantics.SymbolTable.ScopedTraverser
+import semantics.SymbolTable.SymbolTableBuilder
 
 
 fun main() {

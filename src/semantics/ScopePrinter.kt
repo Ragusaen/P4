@@ -3,6 +3,8 @@ package semantics
 import sablecc.node.ABlockStmt
 import sablecc.node.AInnerModule
 import sablecc.node.AProgram
+import semantics.SymbolTable.Scope
+import semantics.SymbolTable.ScopedTraverser
 
 class ScopePrinter(scope: Scope) : ScopedTraverser(scope) {
 

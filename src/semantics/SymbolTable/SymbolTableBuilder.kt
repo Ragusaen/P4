@@ -1,22 +1,27 @@
-package semantics
+package semantics.SymbolTable
 
 import sablecc.analysis.DepthFirstAdapter
 import sablecc.node.*
-import kotlin.reflect.typeOf
+import semantics.SymbolTable.Exceptions.CloseScopeZeroException
+import semantics.SymbolTable.Exceptions.IdentifierAlreadyDeclaredException
+import semantics.SymbolTable.Exceptions.IdentifierUsedBeforeDeclarationException
+import semantics.TypeChecking.Type
 
 class SymbolTableBuilder : DepthFirstAdapter() {
     private var currentScope = Scope(null)
 
+    private val functionTable = mapOf<Pair<String, List<Type>>, Identifier>()
+
     private fun add(name:String, identifier: Identifier) {
         // If the name is already used within this scope throw exception
         if (currentScope.contains(name))
-            throw IdentifierAlreadyDeclaredException("The variable $name is already declared.")
+            throw IdentifierAlreadyDeclaredException("The $name is already declared.")
         else
             currentScope[name] = identifier
     }
 
     private fun checkHasBeenDeclared(name: String) {
-        var tempScope:Scope? = currentScope
+        var tempScope: Scope? = currentScope
 
         while(tempScope != null) {
             if (tempScope.contains(name))
@@ -47,7 +52,7 @@ class SymbolTableBuilder : DepthFirstAdapter() {
         return currentScope
     }
 
-    private fun getTypeFromPType(node:PType):Type {
+    private fun getTypeFromPType(node:PType): Type {
         return when(node) {
             is AIntType -> Type.INT
             is AFloatType -> Type.FLOAT
@@ -84,13 +89,7 @@ class SymbolTableBuilder : DepthFirstAdapter() {
         val name = node.identifier.text
         val ptype = (node.parent() as ADclStmt).type
 
-        try {
-            add(name, Identifier(getTypeFromPType(ptype), node))
-        }
-        catch (e:IdentifierAlreadyDeclaredException) {
-            throw e
-            // todo "Append to error list"
-        }
+        add(name, Identifier(getTypeFromPType(ptype)))
     }
 
     override fun outAIdentifierValue(node: AIdentifierValue) {
@@ -99,7 +98,7 @@ class SymbolTableBuilder : DepthFirstAdapter() {
         try {
             checkHasBeenDeclared(name)
         }
-        catch (e:IdentifierUsedBeforeDeclarationException) {
+        catch (e: IdentifierUsedBeforeDeclarationException) {
             throw e
         }
     }

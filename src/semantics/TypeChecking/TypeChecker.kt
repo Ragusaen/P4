@@ -1,9 +1,14 @@
-package semantics
+package semantics.TypeChecking
 
 import sablecc.node.*
+import semantics.TypeChecking.Exceptions.IllegalImplicitTypeConversionException
+import semantics.TypeChecking.Exceptions.IncompatibleOperatorException
+import semantics.TypeChecking.Exceptions.IdentifierUsedBeforeAssignmentException
+import semantics.SymbolTable.Scope
+import semantics.SymbolTable.ScopedTraverser
 import java.util.*
 
-class TypeChecker(scope:Scope) : ScopedTraverser(scope) {
+class TypeChecker(scope: Scope) : ScopedTraverser(scope) {
     fun start(s: Start) {
         caseStart(s)
     }
@@ -45,7 +50,7 @@ class TypeChecker(scope:Scope) : ScopedTraverser(scope) {
     }
 
     override fun outAVardcl(node: AVardcl) {
-        val identifier = scope.find(node.identifier.text)!!
+        val identifier = scope.findVar(node.identifier.text)!!
         val expr = node.expr
 
         if (expr != null) {
@@ -71,17 +76,17 @@ class TypeChecker(scope:Scope) : ScopedTraverser(scope) {
 
     override fun outAAssignStmt(node: AAssignStmt) {
         val typeExpr = typeStack.pop()
-        val typeId = scope.find(node.identifier.text)!!.type
+        val typeId = scope.findVar(node.identifier.text)!!.type
 
-        if (convertExpr(typeExpr, typeId, node.expr) == null){
+        if (!convertExpr(typeExpr, typeId, node.expr)){
             throw IllegalImplicitTypeConversionException("Cannot assign variable ${node.identifier.text} of type $typeId with value of type $typeExpr.")
         }
-        scope.find(node.identifier.text)!!.isInitialised = true
+        scope.findVar(node.identifier.text)!!.isInitialised = true
     }
 
     // This is only for variables used in expressions as values
     override fun outAIdentifierValue(node: AIdentifierValue) {
-        val identifier = scope.find(node.identifier.text)
+        val identifier = scope.findVar(node.identifier.text)
         typeStack.push(identifier!!.type)
         if (!identifier.isInitialised)
             throw IdentifierUsedBeforeAssignmentException("The variable ${node.identifier.text} was used before being initialised.")

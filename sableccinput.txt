@@ -183,7 +183,7 @@ Productions
 
     vardcls {-> vardcl* } =
         varinit vardcls_tail*
-            {-> [varinit.vardcl, vardcls_tail.vardcl]};
+            {-> [varinit.vardcl,+ vardcls_tail.vardcl]};
 
     vardcls_tail {-> vardcl} =
         comma varinit
