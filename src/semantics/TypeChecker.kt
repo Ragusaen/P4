@@ -10,17 +10,38 @@ class TypeChecker(scope:Scope) : ScopedTraverser(scope) {
 
     private val typeStack = Stack<Type>()
 
-    private fun convertExpr(from: Type, to: Type, exprNode: PExpr): Type? {
-        if (from == to) {
-            return from
-        }
+    private fun convertExpr(from: Type, to: Type, exprNode: PExpr): Boolean {
+        if (from == to)
         else if (from == Type.INT && to == Type.FLOAT) {
             val newNode = IntToFloatConversionNode(exprNode)
             exprNode.replaceBy(newNode)
-            return Type.FLOAT
         }
         else
-            return null
+            return false
+        return true
+    }
+
+    override fun outABinopExpr(node: ABinopExpr) {
+        val right = typeStack.pop()
+        val left = typeStack.pop()
+        val op = node.binop
+
+        val convertedType = when {
+            convertExpr(left, right, node.l) -> right
+            convertExpr(right, left, node.r) -> left
+            else -> throw IllegalImplicitTypeConversionException("Cannot apply binary operations between types $left and $right")
+        }
+
+        if(convertedType !in OperatorType.getOperandTypes(node.binop.javaClass.simpleName))
+            throw IncompatibleOperatorException("Exception1")
+
+        var newType = Type.BOOL
+        if (convertedType in OperatorType.getReturnTypes(node.binop.javaClass.simpleName))
+            newType = convertedType
+        else if (newType !in OperatorType.getReturnTypes(node.binop.javaClass.simpleName))
+            throw IncompatibleOperatorException("Exception")
+
+        typeStack.push(newType)
     }
 
     override fun outAVardcl(node: AVardcl) {
@@ -30,23 +51,22 @@ class TypeChecker(scope:Scope) : ScopedTraverser(scope) {
         if (expr != null) {
             val typeE = typeStack.pop()
             identifier.isInitialised = true
-            if (convertExpr(typeE, identifier.type, expr) == null)
+            if (!convertExpr(typeE, identifier.type, expr))
                 throw IllegalImplicitTypeConversionException("Cannot initialise variable ${node.identifier.text} of type ${identifier.type} with value of type $typeE.")
         }
     }
 
-    override fun outABinopExpr(node: ABinopExpr) {
-        val right = typeStack.pop()
-        val left = typeStack.pop()
+    override fun outAUnopExpr(node: AUnopExpr) {
+        val exprType = typeStack.peek()
 
-        var newType = convertExpr(left, right, node.l)
-        if (newType == null)
-            newType = convertExpr(right, left, node.r)
-
-        if (newType == null)
-            throw IllegalImplicitTypeConversionException("Cannot apply binary operations between types $left and $right")
-
-        typeStack.push(newType)
+        when(node.unop) {
+            is ANotUnop -> if (exprType != Type.BOOL)
+                throw IncompatibleOperatorException("Cannot apply conditional unary '!' operator to expression of $exprType")
+            is APlusUnop -> if (exprType != Type.INT && exprType != Type.FLOAT)
+                throw IncompatibleOperatorException("Cannot apply conditional unary '+' operator to expression of $exprType")
+            is AMinusUnop -> if (exprType != Type.INT && exprType != Type.FLOAT)
+                throw IncompatibleOperatorException("Cannot apply conditional unary '-' operator to expression of $exprType")
+        }
     }
 
     override fun outAAssignStmt(node: AAssignStmt) {

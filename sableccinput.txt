@@ -112,42 +112,67 @@ Productions
     module_structure {-> module_structure} =
         {every} every lparen expr rparen stmt
             {-> New module_structure.every(expr, stmt)}
-        | {on} on lparen expr rparen stmt
-            {-> New module_structure.on(expr, stmt)};
+        | {on_rising} on rising lparen expr rparen stmt
+            {-> New module_structure.on(New statechange.rising(), expr, stmt)}
+        | {on_falling} on falling lparen expr rparen stmt
+            {-> New module_structure.on(New statechange.falling(), expr, stmt)};
 
 /* Statement */
     stmt {-> stmt} =
-        {single_stmt} single_stmt semicolon
-            {-> single_stmt.stmt}
-        | {block} lbrace stmt* rbrace
-            {-> New stmt.block([stmt])}
-        | {for} for lparen [init]:single_stmt [a]:semicolon [condition]:expr [b]:semicolon [update]:single_stmt rparen [body]:stmt
-            {-> New stmt.for(init.stmt, condition, update.stmt, body)}
-        | {while} while lparen [condition]:expr rparen [body]:stmt
-            {-> New stmt.while(condition, body)};
+        {matched} matched
+            {-> matched.stmt}
+        | {unmatched} unmatched
+            {-> unmatched.stmt};
 
+    matched {-> stmt} =
+        {matched_if_else} if lparen expr rparen [if_body]:matched else [else_body]:matched
+            {-> New stmt.if(expr, if_body.stmt, else_body.stmt)}
+        | {while} while lparen [condition]:expr rparen [body]:matched
+            {-> New stmt.while(condition, body.stmt)}
+        | {for} for lparen [init]:single_stmt [a]:semicolon [condition]:expr [b]:semicolon [update]:single_stmt rparen [body]:matched
+            {-> New stmt.for(init.stmt, condition, update.stmt, body.stmt)}
+        | {simple_stmt} simple_stmt
+            {-> simple_stmt.stmt};
+
+    unmatched {-> stmt} =
+        {unmatched_if_simple} if lparen expr rparen stmt
+            {-> New stmt.if(expr, stmt, Null)}
+        | {unmatched_if_else} if lparen expr rparen matched else unmatched
+            {-> New stmt.if(expr, matched.stmt, unmatched.stmt)}
+        | {while} while lparen [condition]:expr rparen [body]:unmatched
+            {-> New stmt.while(condition, body.stmt)}
+        | {for} for lparen [init]:single_stmt [a]:semicolon [condition]:expr [b]:semicolon [update]:single_stmt rparen [body]:unmatched
+            {-> New stmt.for(init.stmt, condition, update.stmt, body.stmt)};
+
+    simple_stmt {-> stmt} =
+         {single_stmt} single_stmt semicolon
+             {-> single_stmt.stmt}
+         | {block} lbrace stmt* rbrace
+              {-> New stmt.block([stmt])};
 
     single_stmt {-> stmt} =
         {dcl} dcl
             {-> dcl.stmt}
         | {assign} identifier assign expr
-            {-> New stmt.assign(identifier, expr)}
+            {-> New stmt.assign(identifier, expr, Null)}
         | {additionassign} identifier additionassign expr
-            {-> New stmt.additionassign(identifier, expr)}
+            {-> New stmt.assign(identifier, expr, New binop.addition())}
         | {subtractionassign} identifier subtractionassign expr
-            {-> New stmt.subtractionassign(identifier, expr)}
+            {-> New stmt.assign(identifier, expr, New binop.subtraction())}
         | {divisionassign} identifier divisionassign expr
-            {-> New stmt.divisionassign(identifier, expr)}
+            {-> New stmt.assign(identifier, expr, New binop.division())}
         | {multiplicationassign} identifier multiplicationassign expr
-            {-> New stmt.multiplicationassign(identifier, expr)}
+            {-> New stmt.assign(identifier, expr, New binop.multiplication())}
         | {moduloassign} identifier moduloassign expr
-            {-> New stmt.moduloassign(identifier, expr)}
+            {-> New stmt.assign(identifier, expr, New binop.modulo())}
         | {start} start lparen identifier rparen
             {-> New stmt.start(identifier)}
         | {stop} stop
             {-> New stmt.stop()}
         | {delay} delay lparen expr rparen
             {-> New stmt.delay(expr)}
+        | {delay_until} delay until lparen expr rparen
+            {-> New stmt.delayuntil(expr)}
         | {no_stmt}
             {-> New stmt.no_stmt()};
 
@@ -280,10 +305,11 @@ Abstract Syntax Tree
 /* Module */
     moduledcl = {template} identifier inner_module | {anonymous} inner_module;
     inner_module = [dcls]:stmt* module_structure;
-    module_structure = {every} expr [body]:stmt | {on} expr [body]:stmt;
+    module_structure = {every} expr [body]:stmt | {on} statechange expr [body]:stmt;
+    statechange = {rising} | {falling};
 
 /* Statement */
-    stmt = {no_stmt} | {dcl} type vardcl* | {start} identifier | {stop} | {delay} expr | {assign} identifier expr | {additionassign} identifier expr | {subtractionassign} identifier expr | {divisionassign} identifier expr | {multiplicationassign} identifier expr | {moduloassign} identifier expr | {block} stmt* | {for} [init]:stmt [condition]:expr [update]:stmt [body]:stmt | {while} [condition]:expr [body]:stmt;
+    stmt = {no_stmt} | {dcl} type vardcl* | {start} identifier | {stop} | {delay} expr | {delayuntil} expr | {assign} identifier expr binop? | {block} stmt* | {if} expr [if_body]:stmt [else_body]:stmt? | {while} [condition]:expr [body]:stmt | {for} [init]:stmt [condition]:expr [update]:stmt [body]:stmt;
 
 /* Declaration subnodes*/
     vardcl = identifier expr?;

@@ -7,6 +7,7 @@ import sablecc.lexer.Lexer
 import sablecc.parser.Parser
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.assertThrows
+import sablecc.node.Start
 import kotlin.test.assertFailsWith
 
 
@@ -21,38 +22,65 @@ internal class TypeCheckerTest {
 
     @Test
     fun assigningFloatToIntThrowsException() {
-        val input = "Int a = 5.5;"
-        val lexer = StringLexer(input)
-        val parser = Parser(lexer)
-        val s = parser.parse()
-        val st = SymbolTableBuilder().buildSymbolTable(s)
+        val (scope, start) = getScopeFromString("Int a = 5.5;")
 
-        assertThrows<IllegalImplicitTypeConversionException> { TypeChecker(st).start(s) }
+        assertThrows<IllegalImplicitTypeConversionException> { TypeChecker(scope).start(start) }
     }
 
     @Test
-    fun assigningIntToFloatIsOkay(){
-        val input = "Int a = 4; Float b = a;"
-        val lexer = StringLexer(input)
-        val parser = Parser(lexer)
-        val s = parser.parse()
-        val scope = SymbolTableBuilder().buildSymbolTable(s)
+    fun assigningIntToFloatIsOkay() {
+        val (scope, start) = getScopeFromString("Int a = 4; Float b = a;")
 
-        TypeChecker(scope).start(s)
+        TypeChecker(scope).start(start)
 
         assert(true)
     }
 
     @Test
     fun plusAdditionIsTypeCorrectForTwoIntegers(){
-        val input = "Int a = 5 + 8;"
+        val (scope, start) = getScopeFromString("Int a = 5 + 8;")
+
+        TypeChecker(scope).start(start)
+
+        assert(true)
+    }
+
+    @Test
+    fun conditionalOperatorIsCompatibleForTwoBooleans() {
+        val (scope, start) = getScopeFromString("Bool a = true == false;")
+
+        TypeChecker(scope).start(start)
+
+        assert(true)
+    }
+
+    @Test
+    fun conditionalOperatorIsCompatibleForTwoInts() {
+        val (scope, start) = getScopeFromString("Bool a = 6 == 8;")
+
+        TypeChecker(scope).start(start)
+
+        assert(true)
+    }
+
+    @Test
+    fun plusAdditionIsIncompatibleForTwoBooleans() {
+        val (scope, start) = getScopeFromString("Bool a = true + true;")
+
+        assertThrows<IncompatibleOperatorException> { TypeChecker(scope).start(start) }
+    }
+
+    @Test
+    fun AdditionBetweenIntAndBoolThrowsException() {
+        val (scope, start) = getScopeFromString("Int a = 6 + true;")
+
+        assertThrows<IllegalImplicitTypeConversionException> { TypeChecker(scope).start(start) }
+    }
+
+    fun getScopeFromString(input:String):Pair<Scope, Start> {
         val lexer = StringLexer(input)
         val parser = Parser(lexer)
         val s = parser.parse()
-        val scope = SymbolTableBuilder().buildSymbolTable(s)
-
-        TypeChecker(scope).start(s)
-
-        assert(true)
+        return Pair(SymbolTableBuilder().buildSymbolTable(s), s)
     }
 }
