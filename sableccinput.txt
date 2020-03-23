@@ -249,7 +249,7 @@ Productions
 
     parenthesis {-> expr} =
         {parenthesis} lparen expr rparen
-            {-> New expr.parenthesis(expr)}
+            {-> expr}
         | {value} value
              {-> value.expr};
 
@@ -290,7 +290,7 @@ Abstract Syntax Tree
     type = {string} | {char} | {int} | {float} | {bool} | {time} | {digitaloutputpin} | {digitalinputpin} | {analogoutputpin} | {analoginputpin};
 
 /* Expression */
-    expr = {binop} [l]:expr binop [r]:expr | {unop} unop expr | {parenthesis} expr | {value} value;
+    expr = {binop} [l]:expr binop [r]:expr | {unop} unop expr | {value} value;
     binop = {addition} | {subtraction} | {multiplication} | {division} | {modulo} | {or} | {and} | {equal} | {relation} | {greaterthan} | {lessthan};
     unop = {minus} | {plus} | {not};
     value = {identifier} identifier | {int} intliteral | {float} floatliteral | {string} stringliteral | {char} charliteral | {bool} boolliteral | {time} timeliteral;

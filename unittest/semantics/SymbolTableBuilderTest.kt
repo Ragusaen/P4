@@ -36,6 +36,23 @@ internal class SymbolTableBuilderTest {
     }
 
     @Test
+    fun variableDeclaredAfterUse() {
+        val stb = SymbolTableBuilder()
+        val input = """
+|           every (1000) {
+                Int a = b - 3;
+                Int b = 0;
+            }
+        """.trimMargin()
+        val lexer = StringLexer(input)
+        val parser = Parser(lexer)
+
+        val s = parser.parse()
+
+        assertThrows<IdentifierUsedBeforeDeclarationException> { stb.buildSymbolTable(s) }
+    }
+
+    @Test
     fun symbolTableBuilderThrowsErrorIfVariableIsUsedBeforeDeclarationAndDefinedInLowerScope(){
         val stb = SymbolTableBuilder()
         val input = """
