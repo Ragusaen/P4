@@ -126,8 +126,8 @@ Productions
 
 /* Module */
     moduledcl {-> moduledcl} =
-        {template} template module identifier inner_module
-            {-> New moduledcl.template(identifier, inner_module)}
+        {template} template module identifier lparen paramlist rparen inner_module
+            {-> New moduledcl.template(identifier, [paramlist.param], inner_module)}
         | {anonymous_no_dcls} module_structure
             {-> New moduledcl.anonymous(New inner_module([], module_structure))}
         | {anonymous_with_dcls} inner_module
@@ -208,6 +208,10 @@ Productions
             {-> New stmt.return(expr)}
         | {expr} expr
             {-> New stmt.expr(expr)}
+        | {break} break
+            {-> New stmt.break()}
+        | {continue} continue
+            {-> New stmt.continue()}
         | {no_stmt}
             {-> New stmt.no_stmt()};
 
@@ -349,13 +353,13 @@ Abstract Syntax Tree
     param = identifier type;
 
 /* Module */
-    moduledcl = {template} identifier inner_module | {anonymous} inner_module;
+    moduledcl = {template} identifier param* inner_module | {anonymous} inner_module;
     inner_module = [dcls]:stmt* module_structure;
     module_structure = {every} expr [body]:stmt | {on} statechange expr [body]:stmt;
     statechange = {rising} | {falling};
 
 /* Statement */
-    stmt = {no_stmt} | {dcl} type vardcl* | {start} identifier | {stop} | {delay} expr | {delayuntil} expr | {assign} identifier expr binop? | {block} stmt* | {if} expr [if_body]:stmt [else_body]:stmt? | {while} [condition]:expr [body]:stmt | {for} [init]:stmt [condition]:expr [update]:stmt [body]:stmt | {expr} expr | {return} expr?;
+    stmt = {no_stmt} | {dcl} type vardcl* | {start} identifier | {stop} | {delay} expr | {delayuntil} expr | {assign} identifier expr binop? | {block} stmt* | {if} expr [if_body]:stmt [else_body]:stmt? | {while} [condition]:expr [body]:stmt | {for} [init]:stmt [condition]:expr [update]:stmt [body]:stmt | {expr} expr | {return} expr? | {break} | {continue};
 
 /* Declaration subnodes */
     vardcl = identifier expr?;
