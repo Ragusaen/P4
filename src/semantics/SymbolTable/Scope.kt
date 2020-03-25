@@ -11,11 +11,7 @@ class Scope(val parent: Scope?) : HashMap<String, Identifier>() {
 
         while(tempScope != null) {
             if (tempScope.contains(name)) {
-                val id = tempScope[name]!!
-
-                    throw FunctionIdentifierUsedAsVariable("Attempt to use function of name $name as a variable")
-
-                return id
+                return tempScope[name]!!
             }
             tempScope = tempScope.parent
         }

@@ -10,14 +10,26 @@ import semantics.TypeChecking.Type
 class SymbolTableBuilder : DepthFirstAdapter() {
     private var currentScope = Scope(null)
 
-    private val functionTable = mapOf<Pair<String, List<Type>>, Identifier>()
+    class FunctionTable {
+        val table = mutableMapOf<Pair<String, List<Type>>, Identifier>()
+    }
 
-    private fun add(name:String, identifier: Identifier) {
+    private val functionTable = FunctionTable()
+
+    private fun addVar(name:String, identifier: Identifier) {
         // If the name is already used within this scope throw exception
         if (currentScope.contains(name))
             throw IdentifierAlreadyDeclaredException("The $name is already declared.")
         else
             currentScope[name] = identifier
+    }
+
+    private fun addFun(name:String, params: List<Type>, identifier: Identifier) {
+        // If the name is already used within this scope throw exception
+        if (functionTable.table.contains(Pair(name, params)))
+            throw IdentifierAlreadyDeclaredException(" function with $name and $params has already been declared.")
+        else
+            functionTable.table[Pair(name, params)] = identifier
     }
 
     private fun checkHasBeenDeclared(name: String) {
@@ -47,9 +59,12 @@ class SymbolTableBuilder : DepthFirstAdapter() {
             throw CloseScopeZeroException("Attempted to close the bottom scope.")
     }
 
-    fun buildSymbolTable(s: Start): Scope {
+    fun buildSymbolTable(s: Start): SymbolTable {
         caseStart(s)
-        return currentScope
+        if (currentScope.parent != null)
+            throw Exception("An unknown error occurred while building symbol table. A scope was not closed as expected.")
+
+        return SymbolTable(functionTable, currentScope)
     }
 
     private fun getTypeFromPType(node:PType): Type {
@@ -89,17 +104,26 @@ class SymbolTableBuilder : DepthFirstAdapter() {
         val name = node.identifier.text
         val ptype = (node.parent() as ADclStmt).type
 
-        add(name, Identifier(getTypeFromPType(ptype)))
+        addVar(name, Identifier(getTypeFromPType(ptype)))
     }
 
     override fun outAIdentifierValue(node: AIdentifierValue) {
         val name = node.identifier.text
 
-        try {
-            checkHasBeenDeclared(name)
-        }
-        catch (e: IdentifierUsedBeforeDeclarationException) {
-            throw e
-        }
+        checkHasBeenDeclared(name)
+    }
+
+    override fun inAFunctiondcl(node: AFunctiondcl) {
+        openScope()
+
+        // Add each parameter variable to the scope
+        node.param.forEach {addVar((it as AParam).identifier.text, Identifier(getTypeFromPType(it.type)))}
+    }
+    override fun outAFunctiondcl(node: AFunctiondcl) {
+        val name = node.identifier.text!!
+        val params = node.param.map { getTypeFromPType((it as AParam).type) }
+        addFun(name, params, Identifier(getTypeFromPType(node.type)))
+
+        closeScope()
     }
 }

@@ -6,11 +6,20 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.*
 import sablecc.parser.Parser
 import org.junit.jupiter.api.assertThrows
+import sablecc.node.Start
 import semantics.SymbolTable.Exceptions.IdentifierAlreadyDeclaredException
 import semantics.SymbolTable.Exceptions.IdentifierUsedBeforeDeclarationException
 import semantics.SymbolTable.SymbolTableBuilder
+import semantics.TypeChecking.Type
 
 internal class SymbolTableBuilderTest {
+    fun parseString(input: String): Start {
+        val lexer = StringLexer(input)
+        val parser = Parser(lexer)
+
+        return parser.parse()
+    }
+
     @Test
     fun symbolTableBuilderThrowsErrorWhenVariableHasAlreadyBeenDeclared() {
         val stb = SymbolTableBuilder()
@@ -50,6 +59,39 @@ internal class SymbolTableBuilderTest {
         val s = parser.parse()
 
         assertThrows<IdentifierUsedBeforeDeclarationException> { stb.buildSymbolTable(s) }
+    }
+
+    @Test
+    fun useOfNonDeclaredFunctionThrowsDeclarationException() {
+        val start = parseString("""
+           every (2) {
+                foo();
+           }
+        """.trimIndent())
+
+        assertThrows<IdentifierUsedBeforeDeclarationException>{ SymbolTableBuilder().buildSymbolTable(start)}
+    }
+
+    @Test
+    fun useOfDeclaredFunctionReturnsTableWithFunction() {
+        val start = parseString("""
+            fun foo(String s, Int i): String {
+                return s;
+            }
+            
+            every (2) {
+                foo("ans", 42);
+            }
+        """.trimIndent())
+
+        val st = SymbolTableBuilder().buildSymbolTable(start)
+
+        st.openScope()
+        assertNotNull(st.findVar("s"))
+        assertNotNull(st.findVar("i"))
+        st.closeScope()
+        st.openScope()
+        assertNotNull(st.findFun("foo", listOf(Type.STRING, Type.INT)))
     }
 
     @Test
@@ -109,9 +151,10 @@ internal class SymbolTableBuilderTest {
         val parser = Parser(lexer)
 
         val s = parser.parse()
-        val scope = stb.buildSymbolTable(s)
+        val st = stb.buildSymbolTable(s)
 
-        assertTrue(scope.containsKey("a"))
-        assertTrue(scope.children[0].containsKey("a"))
+        assertNotNull(st.findVar("a"))
+        st.openScope()
+        assertNotNull(st.findVar("a"))
     }
 }

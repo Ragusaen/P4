@@ -6,6 +6,7 @@ import sablecc.parser.Parser
 import org.junit.jupiter.api.assertThrows
 import sablecc.node.Start
 import semantics.SymbolTable.Scope
+import semantics.SymbolTable.SymbolTable
 import semantics.SymbolTable.SymbolTableBuilder
 import semantics.TypeChecking.Exceptions.IllegalImplicitTypeConversionException
 import semantics.TypeChecking.Exceptions.IncompatibleOperatorException
@@ -64,41 +65,48 @@ internal class TypeCheckerTest {
     }
 
     @Test
-    fun AdditionBetweenIntAndBoolThrowsException() {
+    fun additionBetweenIntAndBoolThrowsException() {
         val (scope, start) = getScopeFromString("Int a = 6 + true;")
 
         assertThrows<IllegalImplicitTypeConversionException> { TypeChecker(scope).start(start) }
     }
 
     @Test
-    fun ParenthesisOnIntExpressionYieldsIntExpression() {
+    fun parenthesisOnIntExpressionYieldsIntExpression() {
         val (scope, start) = getScopeFromString("Int a = (5 + 3);")
 
         TypeChecker(scope).start(start)
     }
 
     @Test
-    fun ChainedGreaterThanOperationsThrowsConversionException() {
+    fun chainedGreaterThanOperationsThrowsConversionException() {
         val (scope, start) = getScopeFromString("Bool a = 1 < 2 < 3;")
 
         assertThrows<IllegalImplicitTypeConversionException> { TypeChecker(scope).start(start)}
     }
 
     @Test
-    fun ChainedEqualsOperationsYieldsBoolExpression() {
+    fun chainedEqualsOperationsYieldsBoolExpression() {
         val (scope, start) = getScopeFromString("Bool a = 1 == 2 == (2 == 2);")
 
         TypeChecker(scope).start(start)
     }
 
     @Test
-    fun ComparisonBetweenFloatAndIntConvertsToFloat() {
-        val (scope, start) = getScopeFromString("Bool a = 6 == 6.6 or 7.2 == 7;")
+    fun comparisonBetweenFloatAndIntConvertsToFloat() {
+        val (st, start) = getScopeFromString("Bool a = 6 == 6.6 or 7.2 == 7;")
 
-        TypeChecker(scope).start(start)
+        TypeChecker(st).start(start)
     }
 
-    fun getScopeFromString(input:String):Pair<Scope, Start> {
+    @Test
+    fun valueOfFunctionReturningIntCannotBeAssignedToBool() {
+        val (st, start) = getScopeFromString("fun foo(): Int {;} Bool a = foo();")
+
+        assertThrows<IllegalImplicitTypeConversionException> {TypeChecker(st).start(start)}
+    }
+
+    fun getScopeFromString(input:String):Pair<SymbolTable, Start> {
         val lexer = StringLexer(input)
         val parser = Parser(lexer)
         val s = parser.parse()

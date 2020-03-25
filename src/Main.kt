@@ -26,10 +26,7 @@ fun main() {
 
     val a = parser.parse()
 
-    val scope = SymbolTableBuilder().buildSymbolTable(a)
-    ScopedTraverser(scope).traverse(a)
-
-    ScopePrinter(scope).traverse(a)
+    val st = SymbolTableBuilder().buildSymbolTable(a)
 
     PrettyPrinter().print(a)
 }

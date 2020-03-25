@@ -6,9 +6,11 @@ import semantics.TypeChecking.Exceptions.IncompatibleOperatorException
 import semantics.TypeChecking.Exceptions.IdentifierUsedBeforeAssignmentException
 import semantics.SymbolTable.Scope
 import semantics.SymbolTable.ScopedTraverser
+import semantics.SymbolTable.SymbolTable
+import semantics.TypeChecking.Exceptions.FunctionNotDeclaredException
 import java.util.*
 
-class TypeChecker(scope: Scope) : ScopedTraverser(scope) {
+class TypeChecker(symbolTable: SymbolTable) : ScopedTraverser(symbolTable) {
     fun start(s: Start) {
         caseStart(s)
     }
@@ -25,6 +27,23 @@ class TypeChecker(scope: Scope) : ScopedTraverser(scope) {
             return false
         return true
     }
+
+    override fun outAFunctionCallExpr(node: AFunctionCallExpr) {
+        val name = node.identifier.text
+        // Pop the expressions from the typeStack
+        val types = mutableListOf<Type>()
+        for (i in 0 until node.expr.size)
+            types.add(typeStack.pop())
+
+        val id = symbolTable.findFun(name, types)
+
+        if (id != null) {
+            typeStack.push(id.type)
+        }
+        else
+            throw FunctionNotDeclaredException("Function with name $name and parameter types ${types.joinToString (", ")} does not exist")
+    }
+
 
     override fun outABinopExpr(node: ABinopExpr) {
         val right = typeStack.pop()
@@ -50,7 +69,7 @@ class TypeChecker(scope: Scope) : ScopedTraverser(scope) {
     }
 
     override fun outAVardcl(node: AVardcl) {
-        val identifier = scope.findVar(node.identifier.text)!!
+        val identifier = symbolTable.findVar(node.identifier.text)!!
         val expr = node.expr
 
         if (expr != null) {
@@ -76,17 +95,17 @@ class TypeChecker(scope: Scope) : ScopedTraverser(scope) {
 
     override fun outAAssignStmt(node: AAssignStmt) {
         val typeExpr = typeStack.pop()
-        val typeId = scope.findVar(node.identifier.text)!!.type
+        val typeId = symbolTable.findVar(node.identifier.text)!!.type
 
         if (!convertExpr(typeExpr, typeId, node.expr)){
             throw IllegalImplicitTypeConversionException("Cannot assign variable ${node.identifier.text} of type $typeId with value of type $typeExpr.")
         }
-        scope.findVar(node.identifier.text)!!.isInitialised = true
+        symbolTable.findVar(node.identifier.text)!!.isInitialised = true
     }
 
     // This is only for variables used in expressions as values
     override fun outAIdentifierValue(node: AIdentifierValue) {
-        val identifier = scope.findVar(node.identifier.text)
+        val identifier = symbolTable.findVar(node.identifier.text)
         typeStack.push(identifier!!.type)
         if (!identifier.isInitialised)
             throw IdentifierUsedBeforeAssignmentException("The variable ${node.identifier.text} was used before being initialised.")
