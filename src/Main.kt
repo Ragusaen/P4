@@ -1,6 +1,4 @@
 import sablecc.parser.Parser
-import semantics.ScopePrinter
-import semantics.SymbolTable.ScopedTraverser
 import semantics.SymbolTable.SymbolTableBuilder
 
 

@@ -157,4 +157,78 @@ internal class SymbolTableBuilderTest {
         st.openScope()
         assertNotNull(st.findVar("a"))
     }
+
+    @Test
+    fun rootScopeVariablesUsedBeforeDeclarationIsOkay(){
+        val stb = SymbolTableBuilder()
+        val input = """
+            template module thismodule {
+                Int b = a;
+                every (1000) {
+                    ; 
+                }
+            }
+            Int a = 2;
+        """
+        val lexer = StringLexer(input)
+        val parser = Parser(lexer)
+
+        val s = parser.parse()
+        val st = stb.buildSymbolTable(s)
+
+        assertNotNull(st.findVar("a"))
+    }
+
+    @Test
+    fun callingFunctionThatDoesntExistGivesException() {
+        val stb = SymbolTableBuilder()
+        val input = """
+            every (1000ms) {
+                foo();
+            }
+        """
+        val lexer = StringLexer(input)
+        val parser = Parser(lexer)
+
+        val s = parser.parse()
+        assertThrows<IdentifierUsedBeforeDeclarationException> { stb.buildSymbolTable(s) }
+    }
+
+    @Test
+    fun functionCanBeRecursive() {
+        val stb = SymbolTableBuilder()
+        val input = """
+            fun foo() {
+                foo();
+            }
+        """
+        val lexer = StringLexer(input)
+        val parser = Parser(lexer)
+
+        val s = parser.parse()
+        val st = stb.buildSymbolTable(s)
+
+        assertNotNull(st.findFun("foo", listOf()))
+    }
+
+    @Test
+    fun instanceOfTemplateModuleCanBeDeclared(){
+        val stb = SymbolTableBuilder()
+        val input = """
+            template module thismodule {
+                every (1000) {
+                    ; 
+                }
+            }
+            module thismodule thisinstance;
+        """
+        val lexer = StringLexer(input)
+        val parser = Parser(lexer)
+
+        val s = parser.parse()
+        val st = stb.buildSymbolTable(s)
+
+        assertNotNull(st.findModule("thismodule"))
+        assertNotNull(st.findVar("thisinstance"))
+    }
 }

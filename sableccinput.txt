@@ -97,7 +97,7 @@ Productions
 
 /* Function */
     functiondcl {-> functiondcl} =
-        fun identifier lparen paramlist rparen return_type? [body]:inner_function
+        fun identifier lparen paramlist? rparen return_type? [body]:inner_function
             {-> New functiondcl(identifier, [paramlist.param], return_type.type, body)};
 
     return_type {-> type} =
@@ -126,12 +126,16 @@ Productions
 
 /* Module */
     moduledcl {-> moduledcl} =
-        {template} template module identifier lparen paramlist rparen inner_module
-            {-> New moduledcl.template(identifier, [paramlist.param], inner_module)}
+        {template} template module identifier params? inner_module
+            {-> New moduledcl.template(identifier, [params.param], inner_module)}
         | {anonymous_no_dcls} module_structure
             {-> New moduledcl.anonymous(New inner_module([], module_structure))}
         | {anonymous_with_dcls} inner_module
             {-> New moduledcl.anonymous(inner_module)};
+
+    params {-> param*} =
+        lparen paramlist rparen
+            {-> [paramlist.param]};
 
     inner_module {-> inner_module} =
         lbrace dcl_stmt* module_structure rbrace
@@ -217,8 +221,14 @@ Productions
 
 /* Declaration */
     dcl {-> stmt} =
-        type vardcls
-            {-> New stmt.dcl(type, [vardcls.vardcl])};
+        {vardcl} type vardcls
+            {-> New stmt.dcl(type, [vardcls.vardcl])}
+        | {module_dcl} module [template]:identifier [instance]:identifier arguments?
+            {-> New stmt.moduledcl(template, instance, [arguments.expr])};
+
+    arguments {-> expr*} =
+        lparen arglist rparen
+            {-> [arglist.expr]};
 
     vardcls {-> vardcl* } =
         varinit vardcls_tail*
@@ -359,7 +369,7 @@ Abstract Syntax Tree
     statechange = {rising} | {falling};
 
 /* Statement */
-    stmt = {no_stmt} | {dcl} type vardcl* | {start} identifier | {stop} | {delay} expr | {delayuntil} expr | {assign} identifier expr binop? | {block} stmt* | {if} expr [if_body]:stmt [else_body]:stmt? | {while} [condition]:expr [body]:stmt | {for} [init]:stmt [condition]:expr [update]:stmt [body]:stmt | {expr} expr | {return} expr? | {break} | {continue};
+    stmt = {no_stmt} | {dcl} type vardcl* | {moduledcl} [template]:identifier [instance]:identifier expr* | {start} identifier | {stop} | {delay} expr | {delayuntil} expr | {assign} identifier expr binop? | {block} stmt* | {if} expr [if_body]:stmt [else_body]:stmt? | {while} [condition]:expr [body]:stmt | {for} [init]:stmt [condition]:expr [update]:stmt [body]:stmt | {expr} expr | {return} expr? | {break} | {continue};
 
 /* Declaration subnodes */
     vardcl = identifier expr?;

@@ -4,10 +4,9 @@ import sablecc.node.*
 import semantics.TypeChecking.Exceptions.IllegalImplicitTypeConversionException
 import semantics.TypeChecking.Exceptions.IncompatibleOperatorException
 import semantics.TypeChecking.Exceptions.IdentifierUsedBeforeAssignmentException
-import semantics.SymbolTable.Scope
 import semantics.SymbolTable.ScopedTraverser
 import semantics.SymbolTable.SymbolTable
-import semantics.TypeChecking.Exceptions.FunctionNotDeclaredException
+import semantics.TypeChecking.Exceptions.IdentifierNotDeclaredException
 import java.util.*
 
 class TypeChecker(symbolTable: SymbolTable) : ScopedTraverser(symbolTable) {
@@ -17,6 +16,7 @@ class TypeChecker(symbolTable: SymbolTable) : ScopedTraverser(symbolTable) {
 
     private val typeStack = Stack<Type>()
 
+    /*
     private fun convertExpr(from: Type, to: Type, exprNode: PExpr): Boolean {
         if (from == to)
         else if (from == Type.INT && to == Type.FLOAT) {
@@ -26,6 +26,55 @@ class TypeChecker(symbolTable: SymbolTable) : ScopedTraverser(symbolTable) {
         else
             return false
         return true
+    }*/
+
+    override fun outAModuledclStmt(node: AModuledclStmt) {
+        val name = node.instance.text
+        // Pop the expressions from the typeStack
+        val types = mutableListOf<Type>()
+        for (i in 0 until node.expr.size)
+            types.add(typeStack.pop())
+
+        // The expressions are popped in reverse order
+        types.reverse()
+
+        val id = symbolTable.findModule(name)
+                ?: throw IdentifierNotDeclaredException("Module with name $name does not exist")
+
+        if (id.paramTypes != types)
+            throw IllegalImplicitTypeConversionException("Module $name expects types ${id.paramTypes}, but got $types")
+    }
+
+    override fun outAEveryModuleStructure(node: AEveryModuleStructure) {
+        val conditionType = typeStack.pop()
+
+        if (conditionType != Type.TIME)
+            throw IllegalImplicitTypeConversionException("'Every' expects expression of type Time, but got $conditionType")
+    }
+
+    override fun outAIfStmt(node: AIfStmt) {
+        val conditionType = typeStack.pop()
+
+        if (conditionType != Type.BOOL)
+            throw IllegalImplicitTypeConversionException("'If' expects expression of type Bool, but got $conditionType")
+    }
+
+    override fun outAForStmt(node: AForStmt) {
+        val conditionType = typeStack.pop()
+
+        if (conditionType != Type.BOOL)
+            throw IllegalImplicitTypeConversionException("'For' expects middle expression of type Bool, but got $conditionType")
+    }
+
+    override fun outAWhileStmt(node: AWhileStmt) {
+        val conditionType = typeStack.pop()
+
+        if (conditionType != Type.BOOL)
+            throw IllegalImplicitTypeConversionException("'While' expects expression of type Bool, but got $conditionType")
+    }
+
+    override fun outAExprStmt(node: AExprStmt) {
+        typeStack.pop() // Throw type away
     }
 
     override fun outAFunctionCallExpr(node: AFunctionCallExpr) {
@@ -35,37 +84,38 @@ class TypeChecker(symbolTable: SymbolTable) : ScopedTraverser(symbolTable) {
         for (i in 0 until node.expr.size)
             types.add(typeStack.pop())
 
-        val id = symbolTable.findFun(name, types)
+        // The expressions are popped in reverse order
+        types.reverse()
 
+        val id = symbolTable.findFun(name, types)
         if (id != null) {
             typeStack.push(id.type)
         }
         else
-            throw FunctionNotDeclaredException("Function with name $name and parameter types ${types.joinToString (", ")} does not exist")
+            throw IdentifierNotDeclaredException("Function with name $name and parameter types ${types.joinToString (", ")} does not exist")
     }
 
 
     override fun outABinopExpr(node: ABinopExpr) {
-        val right = typeStack.pop()
-        val left = typeStack.pop()
+        val rType = typeStack.pop()
+        val lType = typeStack.pop()
         val op = node.binop
 
-        val convertedType = when {
-            convertExpr(left, right, node.l) -> right
-            convertExpr(right, left, node.r) -> left
-            else -> throw IllegalImplicitTypeConversionException("Cannot apply binary operations between types $left and $right")
-        }
+        if (lType != rType)
+            throw IllegalImplicitTypeConversionException("Cannot apply binary operations between types $lType and $rType")
 
-        if(convertedType !in OperatorType.getOperandTypes(node.binop.javaClass.simpleName))
-            throw IncompatibleOperatorException("Exception1")
+        val operandType = lType
 
-        var newType = Type.BOOL
-        if (convertedType in OperatorType.getReturnTypes(node.binop.javaClass.simpleName))
-            newType = convertedType
-        else if (newType !in OperatorType.getReturnTypes(node.binop.javaClass.simpleName))
-            throw IncompatibleOperatorException("Exception")
+        if(operandType !in OperatorType.getOperandTypes(node.binop.javaClass.simpleName))
+            throw IncompatibleOperatorException("Operator $op cannot take operands of type $lType")
 
-        typeStack.push(newType)
+        var returnType = Type.BOOL
+        if (operandType in OperatorType.getReturnTypes(node.binop.javaClass.simpleName))
+            returnType = operandType
+        else if (returnType !in OperatorType.getReturnTypes(node.binop.javaClass.simpleName))
+            throw IncompatibleOperatorException("Invalid return type")
+
+        typeStack.push(returnType)
     }
 
     override fun outAVardcl(node: AVardcl) {
@@ -75,7 +125,7 @@ class TypeChecker(symbolTable: SymbolTable) : ScopedTraverser(symbolTable) {
         if (expr != null) {
             val typeE = typeStack.pop()
             identifier.isInitialised = true
-            if (!convertExpr(typeE, identifier.type, expr))
+            if (typeE != identifier.type)
                 throw IllegalImplicitTypeConversionException("Cannot initialise variable ${node.identifier.text} of type ${identifier.type} with value of type $typeE.")
         }
     }
@@ -97,7 +147,7 @@ class TypeChecker(symbolTable: SymbolTable) : ScopedTraverser(symbolTable) {
         val typeExpr = typeStack.pop()
         val typeId = symbolTable.findVar(node.identifier.text)!!.type
 
-        if (!convertExpr(typeExpr, typeId, node.expr)){
+        if (typeExpr != typeId){
             throw IllegalImplicitTypeConversionException("Cannot assign variable ${node.identifier.text} of type $typeId with value of type $typeExpr.")
         }
         symbolTable.findVar(node.identifier.text)!!.isInitialised = true
@@ -125,5 +175,9 @@ class TypeChecker(symbolTable: SymbolTable) : ScopedTraverser(symbolTable) {
 
     override fun caseTStringliteral(node: TStringliteral?) {
         typeStack.push(Type.STRING)
+    }
+
+    override fun caseTTimeliteral(node: TTimeliteral?) {
+        typeStack.push(Type.TIME)
     }
 }

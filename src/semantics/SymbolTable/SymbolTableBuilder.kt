@@ -10,15 +10,13 @@ import semantics.TypeChecking.Type
 class SymbolTableBuilder : DepthFirstAdapter() {
     private var currentScope = Scope(null)
 
-    class FunctionTable {
-        val table = mutableMapOf<Pair<String, List<Type>>, Identifier>()
-    }
+    private val functionTable = mutableMapOf<Pair<String, List<Type>>, Identifier>()
 
-    private val functionTable = FunctionTable()
+    private val moduleTable = mutableMapOf<String, ModuleIdentifier>()
 
     private fun addVar(name:String, identifier: Identifier) {
         // If the name is already used within this scope throw exception
-        if (currentScope.contains(name))
+        if (name in currentScope)
             throw IdentifierAlreadyDeclaredException("The $name is already declared.")
         else
             currentScope[name] = identifier
@@ -26,10 +24,18 @@ class SymbolTableBuilder : DepthFirstAdapter() {
 
     private fun addFun(name:String, params: List<Type>, identifier: Identifier) {
         // If the name is already used within this scope throw exception
-        if (functionTable.table.contains(Pair(name, params)))
+        if (Pair(name, params) in functionTable)
             throw IdentifierAlreadyDeclaredException(" function with $name and $params has already been declared.")
-        else
-            functionTable.table[Pair(name, params)] = identifier
+        else {
+            functionTable[Pair(name, params)] = identifier
+        }
+    }
+
+    private fun addModule(name: String, identifier: ModuleIdentifier) {
+        if (name !in moduleTable) {
+            moduleTable[name] = identifier
+        } else
+            throw IdentifierAlreadyDeclaredException("Module with name $name has already been declared.")
     }
 
     private fun checkHasBeenDeclared(name: String) {
@@ -64,7 +70,7 @@ class SymbolTableBuilder : DepthFirstAdapter() {
         if (currentScope.parent != null)
             throw Exception("An unknown error occurred while building symbol table. A scope was not closed as expected.")
 
-        return SymbolTable(functionTable, currentScope)
+        return SymbolTable(functionTable, currentScope, moduleTable)
     }
 
     private fun getTypeFromPType(node:PType): Type {
@@ -122,8 +128,32 @@ class SymbolTableBuilder : DepthFirstAdapter() {
     override fun outAFunctiondcl(node: AFunctiondcl) {
         val name = node.identifier.text!!
         val params = node.param.map { getTypeFromPType((it as AParam).type) }
-        addFun(name, params, Identifier(getTypeFromPType(node.type)))
+
+        val type = if (node.type == null) Type.VOID else getTypeFromPType(node.type)
+
+        addFun(name, params, Identifier(type))
 
         closeScope()
+    }
+
+    override fun inATemplateModuledcl(node: ATemplateModuledcl) {
+        openScope()
+
+        // Add each parameter variable to the scope
+        node.param.forEach {addVar((it as AParam).identifier.text, Identifier(getTypeFromPType(it.type)))}
+    }
+    override fun outATemplateModuledcl(node: ATemplateModuledcl) {
+        val name = node.identifier.text
+        val params = node.param.map { getTypeFromPType((it as AParam).type) }
+
+        addModule(name, ModuleIdentifier(params))
+
+        closeScope()
+    }
+
+    override fun outAModuledclStmt(node: AModuledclStmt) {
+        val name = node.instance.text
+
+        addVar(name, Identifier(Type.MODULE))
     }
 }
