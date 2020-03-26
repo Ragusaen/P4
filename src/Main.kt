@@ -5,6 +5,7 @@ import semantics.SymbolTable.SymbolTableBuilder
 fun main() {
     val input = """
         Bool a = true;
+        String jkldjas_;
         
         template module thismodule(String p, Bool b) {
             every (1000ms) {
