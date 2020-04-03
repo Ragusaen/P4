@@ -6,6 +6,7 @@ import semantics.SymbolTable.Exceptions.CloseScopeZeroException
 import semantics.SymbolTable.Exceptions.IdentifierAlreadyDeclaredException
 import semantics.SymbolTable.Exceptions.IdentifierUsedBeforeDeclarationException
 import semantics.TypeChecking.Type
+import java.util.*
 
 class SymbolTableBuilder : DepthFirstAdapter() {
     private var currentScope = Scope(null)
@@ -13,6 +14,8 @@ class SymbolTableBuilder : DepthFirstAdapter() {
     private val functionTable = mutableMapOf<Pair<String, List<Type>>, Identifier>()
 
     private val moduleTable = mutableMapOf<String, ModuleIdentifier>()
+
+    private var rootElementMode = false
 
     private fun addVar(name:String, identifier: Identifier) {
         // If the name is already used within this scope throw exception
@@ -89,6 +92,55 @@ class SymbolTableBuilder : DepthFirstAdapter() {
     }
 
     /* Tree traversal */
+
+    /* Tree traversal - Root scope */
+    override fun caseAProgram(node: AProgram) {
+        // First add all template modules and functions to the symbol table
+        rootElementMode = true
+        for (re in node.rootElement) {
+            // The root element mode is handled in each case, function and template module do no check inner code, dcl is the same.
+            // non-template modules should just be skipped
+            re.apply(this)
+        }
+
+        // Now traverse the rest of the program
+        rootElementMode = false
+        for (re in node.rootElement) {
+            re.apply(this)
+        }
+    }
+
+    // Only do root element declarations if in root element mode
+    override fun caseADclRootElement(node: ADclRootElement?) {
+        if (rootElementMode)
+            super.caseADclRootElement(node)
+    }
+
+    override fun caseAFunctiondcl(node: AFunctiondcl) {
+        if (rootElementMode)
+            outAFunctiondcl(node)
+        else
+            super.caseAFunctiondcl(node)
+    }
+
+    override fun caseATemplateModuledcl(node: ATemplateModuledcl) {
+        if (rootElementMode)
+            outATemplateModuledcl(node)
+        else
+            super.caseATemplateModuledcl(node)
+    }
+
+    override fun caseAModuledclRootElement(node: AModuledclRootElement) {
+        // Only allow template modules to be considered in root element mode
+        if (rootElementMode) {
+            if (node.moduledcl is ATemplateModuledcl)
+                node.moduledcl.apply(this)
+        } else
+            super.caseAModuledclRootElement(node)
+    }
+
+    /* Tree Traversal - Rest of program */
+
     override fun inABlockStmt(node: ABlockStmt) = openScope()
     override fun outABlockStmt(node: ABlockStmt) = closeScope()
 
@@ -119,6 +171,12 @@ class SymbolTableBuilder : DepthFirstAdapter() {
         checkHasBeenDeclared(name)
     }
 
+    override fun outAFunctionCallExpr(node: AFunctionCallExpr) {
+        val name = node.identifier.text
+        if (!functionTable.any {it.key.first == name})
+            throw IdentifierUsedBeforeDeclarationException("A function with name $name has not been declared.")
+    }
+
     override fun inAFunctiondcl(node: AFunctiondcl) {
         openScope()
 
@@ -126,14 +184,16 @@ class SymbolTableBuilder : DepthFirstAdapter() {
         node.param.forEach {addVar((it as AParam).identifier.text, Identifier(getTypeFromPType(it.type)))}
     }
     override fun outAFunctiondcl(node: AFunctiondcl) {
-        val name = node.identifier.text!!
-        val params = node.param.map { getTypeFromPType((it as AParam).type) }
+        if (rootElementMode) {
+            val name = node.identifier.text!!
+            val params = node.param.map { getTypeFromPType((it as AParam).type) }
 
-        val type = if (node.type == null) Type.VOID else getTypeFromPType(node.type)
+            val type = if (node.type == null) Type.VOID else getTypeFromPType(node.type)
 
-        addFun(name, params, Identifier(type))
-
-        closeScope()
+            addFun(name, params, Identifier(type))
+        } else {
+            closeScope()
+        }
     }
 
     override fun inATemplateModuledcl(node: ATemplateModuledcl) {
@@ -143,12 +203,14 @@ class SymbolTableBuilder : DepthFirstAdapter() {
         node.param.forEach {addVar((it as AParam).identifier.text, Identifier(getTypeFromPType(it.type)))}
     }
     override fun outATemplateModuledcl(node: ATemplateModuledcl) {
-        val name = node.identifier.text
-        val params = node.param.map { getTypeFromPType((it as AParam).type) }
+        if (rootElementMode) {
+            val name = node.identifier.text
+            val params = node.param.map { getTypeFromPType((it as AParam).type) }
 
-        addModule(name, ModuleIdentifier(params))
-
-        closeScope()
+            addModule(name, ModuleIdentifier(params))
+        }
+        else
+            closeScope()
     }
 
     override fun outAModuledclStmt(node: AModuledclStmt) {
