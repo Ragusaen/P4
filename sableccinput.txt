@@ -2,7 +2,7 @@ Package sablecc;
 
 Helpers
     all = [0 .. 0xFFFF];
-    anychar = ['A' .. 'z'];
+    anychar = ['A' .. 'Z'] | ['a' .. 'z'] | '_';
     digit = ['0' .. '9'];
     tab = 9;
     cr = 13;
