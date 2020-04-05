@@ -231,4 +231,23 @@ internal class SymbolTableBuilderTest {
         assertNotNull(st.findModule("thismodule"))
         assertNotNull(st.findVar("thisinstance"))
     }
+
+    @Test
+    fun namedModuleCanBeDeclared() {
+        val stb = SymbolTableBuilder()
+        val input = """
+            module thismodule {
+                every (1000) {
+                    ; 
+                }
+            }
+        """
+        val lexer = StringLexer(input)
+        val parser = Parser(lexer)
+
+        val s = parser.parse()
+        val st = stb.buildSymbolTable(s)
+
+        assertNotNull(st.findVar("thismodule"))
+    }
 }
