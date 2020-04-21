@@ -1,7 +1,5 @@
 package codegeneration
 
-import codegeneration.CodeGenerator.Emitter.emitGlobal
-import sablecc.analysis.DepthFirstAdapter
 import sablecc.node.*
 import semantics.SymbolTable.ScopedTraverser
 import semantics.SymbolTable.SymbolTable
@@ -43,27 +41,66 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
     }
 
     override fun caseAIfStmt(node: AIfStmt) {
-        emitGlobal("if (")
-        node.expr.apply(this)
-        emitGlobal(") ")
         node.ifBody.apply(this)
+        node.expr.apply(this)
+        val cond = codeStack.pop()
+        val ifBody = codeStack.pop()
         if (node.elseBody != null) {
-            emitGlobal("else")
             node.elseBody.apply(this)
+            val elseBody = codeStack.pop()
+            codeStack.push("if ($cond) $ifBody else $elseBody")
+        } else {
+            codeStack.push("if ($cond) $ifBody")
         }
+    }
+
+    override fun caseAWhileStmt(node: AWhileStmt) {
+        node.body.apply(this)
+        node.condition.apply(this)
+        val cond = codeStack.pop()
+        val body = codeStack.pop()
+        codeStack.push("while ($cond) $body")
+    }
+
+    override fun caseAForStmt(node: AForStmt) {
+        node.body.apply(this)
+        node.update.apply(this)
+        node.condition.apply(this)
+        node.init.apply(this)
+        val init = codeStack.pop()
+        val cond = codeStack.pop()
+        val update = codeStack.pop()
+        val body = codeStack.pop()
+
+        codeStack.push("for ($init; $cond; $update) $body")
     }
 
     override fun caseADclStmt(node: ADclStmt) {
         node.type.apply(this)
-        emitGlobal(codeStack.pop())
+        val type = codeStack.pop()
 
         node.vardcl.first().apply(this)
-        emitGlobal( " " + codeStack.pop())
-        for (vdcl in node.vardcl.drop(1)) {
-            vdcl.apply(this)
-            emitGlobal(", " + codeStack.pop() )
+        var vardcls = codeStack.pop()
+        for (v in node.vardcl.drop(1)) {
+            v.apply(this)
+            vardcls += ", " + codeStack.pop()
         }
-        emitGlobal(";")
+        codeStack.push("$type $vardcls")
+    }
+
+    override fun caseAAssignStmt(node: AAssignStmt) {
+        node.expr.apply(this)
+        node.identifier.apply(this)
+        val id = codeStack.pop()
+        val expr = codeStack.pop()
+
+        if (node.binop != null) {
+            node.binop.apply(this)
+            val binop = codeStack.pop()
+            codeStack.push("$id $binop= $expr")
+        } else {
+            codeStack.push("$id = $expr")
+        }
     }
 
     override fun outAVardcl(node: AVardcl) {

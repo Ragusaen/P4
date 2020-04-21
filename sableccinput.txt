@@ -379,6 +379,6 @@ Abstract Syntax Tree
 
 /* Expression */
     expr = {binop} [l]:expr binop [r]:expr | {unop} unop expr | {function_call} identifier expr* | {value} value;
-    binop = {addition} | {subtraction} | {multiplication} | {division} | {modulo} | {or} | {and} | {equal} | {relation} | {greaterthan} | {lessthan};
+    binop = {addition} | {subtraction} | {multiplication} | {division} | {modulo} | {or} | {and} | {equal} | {greaterthan} | {lessthan};
     unop = {minus} | {plus} | {not};
     value = {identifier} identifier | {int} intliteral | {float} floatliteral | {string} stringliteral | {char} charliteral | {bool} boolliteral | {time} timeliteral;

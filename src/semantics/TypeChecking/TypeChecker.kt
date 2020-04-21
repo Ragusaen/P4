@@ -28,6 +28,8 @@ class TypeChecker(symbolTable: SymbolTable) : ScopedTraverser(symbolTable) {
         return typeTable
     }
 
+    private var currentFunctionReturnType: Type? = null
+
     /*
     private fun convertExpr(from: Type, to: Type, exprNode: PExpr): Boolean {
         if (from == to)
@@ -39,6 +41,13 @@ class TypeChecker(symbolTable: SymbolTable) : ScopedTraverser(symbolTable) {
             return false
         return true
     }*/
+
+    override fun outAReturnStmt(node: AReturnStmt) {
+        val type = typeStack.pop()
+        if (currentFunctionReturnType!! != type) {
+            throw IllegalImplicitTypeConversionException("Expected function to return $currentFunctionReturnType but got $type")
+        }
+    }
 
     override fun outAModuledclStmt(node: AModuledclStmt) {
         val name = node.instance.text
