@@ -1,3 +1,4 @@
+import codegeneration.CodeGenerator
 import sablecc.parser.Parser
 import semantics.SymbolTable.SymbolTableBuilder
 
@@ -27,7 +28,8 @@ fun main() {
 
     val st = SymbolTableBuilder().buildSymbolTable(a)
 
-    PrettyPrinter().print(a)
+    val cg = CodeGenerator()
+    println(cg.generate(a))
 }
 
 
