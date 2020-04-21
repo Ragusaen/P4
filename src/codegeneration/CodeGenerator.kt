@@ -35,11 +35,67 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
     }
 
     override fun caseABinopExpr(node: ABinopExpr) {
+        var s:String = ""
 
+        node.l.apply(this)
+        node.r.apply(this)
+        node.binop.apply(this)
+        val operator = codeStack.pop()
+        val r = codeStack.pop()
+        val l = codeStack.pop()
 
+        if(typeTable[node] == Type.STRING) {
+            TODO()
+        }
+        else {
+            s = l + operator + r
+        }
+
+        codeStack.push(s)
     }
-    override fun caseAAdditionBinop(node: AAdditionBinop) {
 
+    override fun caseAAdditionBinop(node: AAdditionBinop?) {
+        codeStack.push("+")
+    }
+
+    override fun caseADivisionBinop(node: ADivisionBinop?) {
+        codeStack.push("/")
+    }
+
+    override fun caseAAndBinop(node: AAndBinop?) {
+        codeStack.push("&&")
+    }
+
+    override fun caseAEqualBinop(node: AEqualBinop?) {
+        codeStack.push("==")
+    }
+
+    override fun caseAGreaterthanBinop(node: AGreaterthanBinop?) {
+        codeStack.push(">")
+    }
+
+    override fun caseALessthanBinop(node: ALessthanBinop?) {
+        codeStack.push("<")
+    }
+
+    override fun caseAModuloBinop(node: AModuloBinop?) {
+        codeStack.push("%")
+    }
+
+    override fun caseAMultiplicationBinop(node: AMultiplicationBinop?) {
+        codeStack.push("*")
+    }
+
+    override fun caseAOrBinop(node: AOrBinop?) {
+        codeStack.push("||")
+    }
+
+    override fun caseARelationBinop(node: ARelationBinop?) {
+        TODO() //Unknown binary operator (?)
+    }
+
+    override fun caseASubtractionBinop(node: ASubtractionBinop?) {
+        codeStack.push("-")
     }
 
     override fun caseAIfStmt(node: AIfStmt) {
@@ -66,12 +122,14 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
         emitGlobal(";")
     }
 
-    override fun outAVardcl(node: AVardcl) {
+    override fun caseAVardcl(node: AVardcl) {
         if (node.expr != null) {
+            node.expr.apply(this)
             val expr = codeStack.pop()
+            node.identifier.apply(this)
             val identifier = codeStack.pop()
 
-            codeStack.push("$identifier = ${expr!!}")
+            codeStack.push("$identifier = $expr")
         }
         // Otherwise just leave the identifier at the top of the stack
     }
