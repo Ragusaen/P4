@@ -1,24 +1,13 @@
 import codegeneration.CodeGenerator
 import sablecc.parser.Parser
 import semantics.SymbolTable.SymbolTableBuilder
+import semantics.TypeChecking.TypeChecker
 
 
 fun main() {
     val input = """
-        Bool a = true;
-        String jkldjas_;
-        
-        template module thismodule(String p, Bool b) {
-            every (1000ms) {
-                if(a)
-                    while(a) if(a) ; else ;
-                delay until(a);
-            }
-        }
-        
-        fun test(String s){
-            return 2;
-        }
+        Int a = 3, b, c = 2;
+        Time h = 13h;
     """
 
     val lexer = StringLexer(input)
@@ -27,8 +16,9 @@ fun main() {
     val a = parser.parse()
 
     val st = SymbolTableBuilder().buildSymbolTable(a)
+    val tt = TypeChecker(st).run(a)
 
-    val cg = CodeGenerator()
+    val cg = CodeGenerator(tt, st)
     println(cg.generate(a))
 }
 

@@ -16,6 +16,18 @@ class TypeChecker(symbolTable: SymbolTable) : ScopedTraverser(symbolTable) {
 
     private val typeStack = Stack<Type>()
 
+    private val typeTable = mutableMapOf<Node, Type>()
+
+    private fun pushType(node: Node, type: Type) {
+        typeStack.push(type)
+        typeTable[node] = type
+    }
+
+    fun run(node: Start): MutableMap<Node, Type> {
+        caseStart(node)
+        return typeTable
+    }
+
     /*
     private fun convertExpr(from: Type, to: Type, exprNode: PExpr): Boolean {
         if (from == to)
@@ -89,7 +101,7 @@ class TypeChecker(symbolTable: SymbolTable) : ScopedTraverser(symbolTable) {
 
         val id = symbolTable.findFun(name, types)
         if (id != null) {
-            typeStack.push(id.type)
+            pushType(node, id.type)
         }
         else
             throw IdentifierNotDeclaredException("Function with name $name and parameter types ${types.joinToString (", ")} does not exist")
@@ -115,7 +127,7 @@ class TypeChecker(symbolTable: SymbolTable) : ScopedTraverser(symbolTable) {
         else if (returnType !in OperatorType.getReturnTypes(node.binop.javaClass.simpleName))
             throw IncompatibleOperatorException("Invalid return type")
 
-        typeStack.push(returnType)
+        pushType(node, returnType)
     }
 
     override fun outAVardcl(node: AVardcl) {
@@ -156,28 +168,28 @@ class TypeChecker(symbolTable: SymbolTable) : ScopedTraverser(symbolTable) {
     // This is only for variables used in expressions as values
     override fun outAIdentifierValue(node: AIdentifierValue) {
         val identifier = symbolTable.findVar(node.identifier.text)
-        typeStack.push(identifier!!.type)
+        pushType(node, identifier!!.type)
         if (!identifier.isInitialised)
             throw IdentifierUsedBeforeAssignmentException("The variable ${node.identifier.text} was used before being initialised.")
     }
 
     override fun caseTIntliteral(node: TIntliteral) {
-        typeStack.push(Type.INT)
+        pushType(node, Type.INT)
     }
 
-    override fun caseTFloatliteral(node: TFloatliteral?) {
-        typeStack.push(Type.FLOAT)
+    override fun caseTFloatliteral(node: TFloatliteral) {
+        pushType(node, Type.FLOAT)
     }
 
-    override fun caseTBoolliteral(node: TBoolliteral?) {
-        typeStack.push(Type.BOOL)
+    override fun caseTBoolliteral(node: TBoolliteral) {
+        pushType(node, Type.BOOL)
     }
 
-    override fun caseTStringliteral(node: TStringliteral?) {
-        typeStack.push(Type.STRING)
+    override fun caseTStringliteral(node: TStringliteral) {
+        pushType(node, Type.STRING)
     }
 
-    override fun caseTTimeliteral(node: TTimeliteral?) {
-        typeStack.push(Type.TIME)
+    override fun caseTTimeliteral(node: TTimeliteral) {
+        pushType(node, Type.TIME)
     }
 }
