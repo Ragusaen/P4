@@ -12,7 +12,6 @@ fun main() {
         fun foo(Int a, Int b): Int {
             return a * b + a / b - 3;
         }
-        String s = "Hund" + "Fisk";
     """
 
     val lexer = StringLexer(input)

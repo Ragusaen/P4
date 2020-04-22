@@ -47,6 +47,18 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
         codeStack.push("${unop}${expr}")
     }
 
+    override fun caseAMinusUnop(node: AMinusUnop) {
+        codeStack.push("-")
+    }
+
+    override fun caseAPlusUnop(node: APlusUnop?) {
+        codeStack.push("+")
+    }
+
+    override fun caseANotUnop(node: ANotUnop) {
+        codeStack.push("!")
+    }
+
     override fun caseABinopExpr(node: ABinopExpr) {
         var s:String = ""
 
@@ -204,7 +216,7 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
     override fun caseAExprStmt(node: AExprStmt) {
         node.expr.apply(this)
         val expr = codeStack.pop()
-        codeStack.push(expr)
+        codeStack.push("$expr;")
     }
 
     override fun caseAReturnStmt(node: AReturnStmt) {
@@ -312,7 +324,7 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
         val identifier = getCode(node.identifier)
         val type = getCode(node.type)
 
-        codeStack.push("$type identifier")
+        codeStack.push("$type $identifier")
     }
 
     override fun caseADigitalinputpinType(node: ADigitalinputpinType?) {
@@ -330,4 +342,20 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
     override fun caseAAnalogoutputpinType(node: AAnalogoutputpinType?) {
         codeStack.push("AnalogOutputPin")
     }
+
+    override fun caseAFunctionCallExpr(node: AFunctionCallExpr) {
+        val identifier = getCode(node.identifier)
+
+        var arguments = ""
+        if (node.expr != null) {
+            arguments += getCode(node.expr.first())
+            for (arg in node.expr.drop(1)) {
+                arguments += ", " + getCode(arg)
+            }
+        }
+
+        codeStack.push("$identifier($arguments)")
+    }
+
+    override fun caseA
 }
