@@ -29,6 +29,8 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
 
     fun generate(startNode: Start): String {
         caseStart(startNode)
+        for (i in codeStack)
+            Emitter.emitGlobal(i)
         return Emitter.finalize()
     }
 
@@ -246,6 +248,7 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
 
         codeStack.push(value.toInt().toString())
     }
+
     override fun caseTStringliteral(node: TStringliteral) {
         codeStack.push(node.text)
     }
@@ -272,7 +275,7 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
     }
 
     override fun caseATimeValue(node: ATimeValue) {
-        codeStack.push(node.timeliteral.text)
+        node.timeliteral.apply(this)
     }
 
     // Type handling

@@ -12,6 +12,11 @@ fun main() {
         fun foo(Int a, Int b): Int {
             return a * b + a / b - 3;
         }
+        
+        Time t = 2h;
+        Time t2 = t + 1h;
+        Time t3 = t2 - t;
+        Time t4 = t3;
     """
 
     val lexer = StringLexer(input)
