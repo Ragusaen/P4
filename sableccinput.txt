@@ -8,6 +8,12 @@ Helpers
     cr = 13;
     lf = 10;
     eol = cr lf | cr | lf | '\n';
+    boolliteral = ('false'|'true'|'HIGH'|'LOW');
+    intliteral = '-'?digit+;
+    floatliteral = '-'?digit+'.'digit*|digit*'.'digit+;
+    timeliteral = (digit*'.')?digit+('ms'|'s'|'m'|'h');
+    stringliteral = '"'('\'all | [[all - '"'] - '\'])*'"';
+    charliteral = '''('\'all | [[all - '''] - '\'])''';
 
 Tokens
     stringtype = 'String';
@@ -16,6 +22,7 @@ Tokens
     floattype = 'Float';
     booltype = 'Bool';
     timetype = 'Time';
+    arraytype = '[' intliteral? ']';
     digitaloutputpintype = 'DigitalOutputPin';
     digitalinputpintype = 'DigitalInputPin';
     analogoutputpintype = 'AnalogOutputPin';
@@ -77,6 +84,7 @@ Tokens
     timeliteral = (digit*'.')?digit+('ms'|'s'|'m'|'h');
     stringliteral = '"'('\'all | [[all - '"'] - '\'])*'"';
     charliteral = '''('\'all | [[all - '''] - '\'])''';
+    arrayliteral = '['((boolliteral',')* boolliteral | (intliteral',')* intliteral | (stringliteral',')* stringliteral | (charliteral',')* charliteral | (timeliteral',')* timeliteral | (floatliteral',')* floatliteral) ']';
     identifier = anychar (anychar|digit)*;
     whitespace = (' ' | tab | lf | eol)+;
     comment = '/*' all* '*/' | '//'all*eol;
@@ -186,6 +194,10 @@ Productions
             {-> dcl.stmt}
         | {assign} identifier assign expr
             {-> New stmt.assign(identifier, expr, Null)}
+        | {set_to} set identifier to boolliteral
+            {-> New stmt.set_to(identifier, boolliteral)}
+        | {read} read identifier
+            {-> New stmt.read(identifier)}
         | {additionassign} identifier additionassign expr
             {-> New stmt.assign(identifier, expr, New binop.addition())}
         | {subtractionassign} identifier subtractionassign expr
@@ -241,6 +253,7 @@ Productions
         | {float} floattype {-> New type.float()}
         | {bool} booltype {-> New type.bool()}
         | {time} timetype {-> New type.time()}
+        | {array} type arraytype {-> New type.array(type)}
         | {digitaloutputpin} digitaloutputpintype {-> New type.digitaloutputpin()}
         | {digitalinputpin} digitalinputpintype {-> New type.digitalinputpin()}
         | {analogoutputpin} analogoutputpintype {-> New type.analogoutputpin()}
@@ -248,7 +261,13 @@ Productions
 
 /* Expression */
     expr {-> expr} =
-        {orexpr} orexpr
+        {pinexpr} pinexpr
+            {-> pinexpr.expr};
+
+    pinexpr {-> expr} =
+        {pin} pin intliteral
+            {-> New expr.pin(intliteral)}
+        | {orexpr} orexpr
             {-> orexpr.expr};
 
     orexpr {-> expr} =
@@ -335,7 +354,9 @@ Productions
         | {bool} boolliteral
             {-> New expr.value(New value.bool(boolliteral))}
         | {time} timeliteral
-            {-> New expr.value(New value.time(timeliteral))};
+            {-> New expr.value(New value.time(timeliteral))}
+        | {array} arrayliteral
+            {-> New expr.value(New value.array(arrayliteral))};
 
 Abstract Syntax Tree
     program = root_element*;
@@ -353,14 +374,14 @@ Abstract Syntax Tree
     statechange = {rising} | {falling};
 
 /* Statement */
-    stmt = {no_stmt} | {dcl} type vardcl* | {start} identifier | {stop} | {delay} expr | {delayuntil} expr | {assign} identifier expr binop? | {block} stmt* | {if} expr [if_body]:stmt [else_body]:stmt? | {while} [condition]:expr [body]:stmt | {for} [init]:stmt [condition]:expr [update]:stmt [body]:stmt | {function_call} identifier expr* | {return} expr? | {break} | {continue};
+    stmt = {no_stmt} | {dcl} type vardcl* | {start} identifier | {stop} | {delay} expr | {delayuntil} expr | {assign} identifier expr binop? |{read} identifier| {set_to} identifier boolliteral| {block} stmt* | {if} expr [if_body]:stmt [else_body]:stmt? | {while} [condition]:expr [body]:stmt | {for} [init]:stmt [condition]:expr [update]:stmt [body]:stmt | {function_call} identifier expr* | {return} expr? | {break} | {continue};
 
 /* Declaration subnodes*/
     vardcl = identifier expr?;
-    type = {string} | {char} | {int} | {float} | {bool} | {time} | {digitaloutputpin} | {digitalinputpin} | {analogoutputpin} | {analoginputpin};
+    type = {string} | {char} | {int} | {float} | {bool} | {time} | {digitaloutputpin} | {digitalinputpin} | {analogoutputpin} | {analoginputpin} | {array} type;
 
 /* Expression */
-    expr = {binop} [l]:expr binop [r]:expr | {unop} unop expr | {parenthesis} expr | {value} value;
+    expr = {binop} [l]:expr binop [r]:expr | {unop} unop expr | {parenthesis} expr | {value} value | {pin} intliteral;
     binop = {addition} | {subtraction} | {multiplication} | {division} | {modulo} | {or} | {and} | {equal} | {relation} | {greaterthan} | {lessthan};
     unop = {minus} | {plus} | {not};
-    value = {identifier} identifier | {int} intliteral | {float} floatliteral | {string} stringliteral | {char} charliteral | {bool} boolliteral | {time} timeliteral;
+    value = {identifier} identifier | {int} intliteral | {float} floatliteral | {string} stringliteral | {char} charliteral | {bool} boolliteral | {time} timeliteral | {array} arrayliteral;
