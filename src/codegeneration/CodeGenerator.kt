@@ -32,6 +32,13 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
         return Emitter.finalize()
     }
 
+    override fun caseAUnopExpr(node: AUnopExpr) {
+        node.expr.apply(this)
+        val expr = codeStack.pop()
+
+
+    }
+
     override fun caseABinopExpr(node: ABinopExpr) {
         var s:String = ""
 
@@ -153,9 +160,9 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
         if (node.binop != null) {
             node.binop.apply(this)
             val binop = codeStack.pop()
-            codeStack.push("$id $binop= $expr")
+            codeStack.push("$id $binop= $expr;")
         } else {
-            codeStack.push("$id = $expr")
+            codeStack.push("$id = $expr;")
         }
     }
 
@@ -169,6 +176,43 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
             codeStack.push("$identifier = $expr")
         }
         // Otherwise just leave the identifier at the top of the stack
+    }
+
+    override fun caseABlockStmt(node: ABlockStmt) {
+        var block = ""
+        for (s in node.stmt) {
+            s.apply(this)
+            block += codeStack.pop() + "\n"
+        }
+        codeStack.push("{\n $block \n}")
+    }
+
+    override fun caseANoStmtStmt(node: ANoStmtStmt?) {
+        codeStack.push(";")
+    }
+
+    override fun caseABreakStmt(node: ABreakStmt?) {
+        codeStack.push("break;")
+    }
+
+    override fun caseAContinueStmt(node: AContinueStmt?) {
+        codeStack.push("continue;")
+    }
+
+    override fun caseAExprStmt(node: AExprStmt) {
+        node.expr.apply(this)
+        val expr = codeStack.pop()
+        codeStack.push(expr)
+    }
+
+    override fun caseAReturnStmt(node: AReturnStmt) {
+        if (node.expr != null) {
+            node.expr.apply(this)
+            val expr = codeStack.pop()
+            codeStack.push("return $expr;")
+        } else {
+            codeStack.push("return;")
+        }
     }
 
     override fun caseAIntValue(node: AIntValue) {
@@ -202,4 +246,5 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
 
         codeStack.push(value.toInt().toString())
     }
+
 }
