@@ -6,7 +6,10 @@ import semantics.TypeChecking.TypeChecker
 
 fun main() {
     val input = """
-        String s = "Hund" + "Fisk";
+        Time t = 2h;
+        Time t2 = t + 1h;
+        Time t3 = t2 - t;
+        Time t4 = t3;
     """
 
     val lexer = StringLexer(input)
