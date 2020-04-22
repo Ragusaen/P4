@@ -6,12 +6,12 @@ import semantics.SymbolTable.Exceptions.CloseScopeZeroException
 import semantics.SymbolTable.Exceptions.IdentifierAlreadyDeclaredException
 import semantics.SymbolTable.Exceptions.IdentifierUsedBeforeDeclarationException
 import semantics.TypeChecking.Type
-import java.util.*
 
 class SymbolTableBuilder : DepthFirstAdapter() {
     private var currentScope = Scope(null)
 
-    private val functionTable = mutableMapOf<Pair<String, List<Type>>, Identifier>()
+    private val namedFunctionTable = mutableMapOf<Pair<String, List<Type>>, Identifier>()
+    private val nodeFunctionTable = mutableMapOf<Node, Identifier>()
 
     private val moduleTable = mutableMapOf<String, ModuleIdentifier>()
 
@@ -25,12 +25,13 @@ class SymbolTableBuilder : DepthFirstAdapter() {
             currentScope[name] = identifier
     }
 
-    private fun addFun(name:String, params: List<Type>, identifier: Identifier) {
+    private fun addFun(node: Node, name:String, params: List<Type>, identifier: Identifier) {
         // If the name is already used within this scope throw exception
-        if (Pair(name, params) in functionTable)
+        if (Pair(name, params) in namedFunctionTable)
             throw IdentifierAlreadyDeclaredException(" function with $name and $params has already been declared.")
         else {
-            functionTable[Pair(name, params)] = identifier
+            namedFunctionTable[Pair(name, params)] = identifier
+            nodeFunctionTable[node] = identifier
         }
     }
 
@@ -73,7 +74,7 @@ class SymbolTableBuilder : DepthFirstAdapter() {
         if (currentScope.parent != null)
             throw Exception("An unknown error occurred while building symbol table. A scope was not closed as expected.")
 
-        return SymbolTable(functionTable, currentScope, moduleTable)
+        return SymbolTable(namedFunctionTable, nodeFunctionTable, currentScope, moduleTable)
     }
 
     private fun getTypeFromPType(node:PType): Type {
@@ -173,7 +174,7 @@ class SymbolTableBuilder : DepthFirstAdapter() {
 
     override fun outAFunctionCallExpr(node: AFunctionCallExpr) {
         val name = node.identifier.text
-        if (!functionTable.any {it.key.first == name})
+        if (!namedFunctionTable.any {it.key.first == name})
             throw IdentifierUsedBeforeDeclarationException("A function with name $name has not been declared.")
     }
 
@@ -181,7 +182,7 @@ class SymbolTableBuilder : DepthFirstAdapter() {
         openScope()
 
         // Add each parameter variable to the scope
-        node.param.forEach {addVar((it as AParam).identifier.text, Identifier(getTypeFromPType(it.type)))}
+        node.param.forEach {addVar((it as AParam).identifier.text, Identifier(getTypeFromPType(it.type), true))}
     }
     override fun outAFunctiondcl(node: AFunctiondcl) {
         if (rootElementMode) {
@@ -190,7 +191,7 @@ class SymbolTableBuilder : DepthFirstAdapter() {
 
             val type = if (node.type == null) Type.VOID else getTypeFromPType(node.type)
 
-            addFun(name, params, Identifier(type))
+            addFun(node, name, params, Identifier(type))
         } else {
             closeScope()
         }

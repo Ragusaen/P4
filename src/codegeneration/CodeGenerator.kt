@@ -34,11 +34,19 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
         return Emitter.finalize()
     }
 
+    private fun getCode(node: Node): String {
+        node.apply(this)
+        return codeStack.pop()
+    }
+
     override fun caseAUnopExpr(node: AUnopExpr) {
         node.expr.apply(this)
         val expr = codeStack.pop()
 
+        node.expr.apply(this)
+        val unop = codeStack.pop()
 
+        codeStack.push("${unop}${expr}")
     }
 
     override fun caseABinopExpr(node: ABinopExpr) {
@@ -97,11 +105,7 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
         codeStack.push("||")
     }
 
-    override fun caseARelationBinop(node: ARelationBinop) {
-        TODO() //Unknown binary operator (?)
-    }
-
-    override fun caseASubtractionBinop(node: ASubtractionBinop) {
+    override fun caseASubtractionBinop(node: ASubtractionBinop?) {
         codeStack.push("-")
     }
 
@@ -147,10 +151,9 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
         node.vardcl.first().apply(this)
         var vardcls = codeStack.pop()
         for (v in node.vardcl.drop(1)) {
-            v.apply(this)
-            vardcls += ", " + codeStack.pop()
+            vardcls += ", " + getCode(v)
         }
-        codeStack.push("$type $vardcls")
+        codeStack.push("$type $vardcls;")
     }
 
     override fun caseAAssignStmt(node: AAssignStmt) {
@@ -169,15 +172,14 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
     }
 
     override fun caseAVardcl(node: AVardcl) {
-        if (node.expr != null) {
-            node.expr.apply(this)
-            val expr = codeStack.pop()
-            node.identifier.apply(this)
-            val identifier = codeStack.pop()
+        val identifier = getCode(node.identifier)
 
+        if (node.expr != null) {
+            val expr = getCode(node.expr)
             codeStack.push("$identifier = $expr")
+        } else {
+            codeStack.push(identifier)
         }
-        // Otherwise just leave the identifier at the top of the stack
     }
 	
     override fun caseABlockStmt(node: ABlockStmt) {
@@ -287,6 +289,33 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
 
     override fun caseAStringType(node: AStringType) {
         codeStack.push("char *")
+    }
+
+    override fun caseAIdentifierValue(node: AIdentifierValue) {
+        codeStack.push(node.identifier.text)
+    }
+
+    override fun caseAFunctiondcl(node: AFunctiondcl) {
+        val identifier = getCode(node.identifier)
+        val type = if (node.type == null) "void" else getCode(node.type)
+
+        var param = ""
+        if (node.param != null) {
+            param += getCode(node.param.first())
+            for (p in node.param.drop(1)) {
+                param += ", " + getCode(p)
+            }
+        }
+
+        val body = getCode(node.body)
+        codeStack.push("$type $identifier ($param)\n$body")
+    }
+
+    override fun caseAParam(node: AParam) {
+        val identifier = getCode(node.identifier)
+        val type = getCode(node.type)
+
+        codeStack.push("$type identifier")
     }
 
     override fun caseADigitalinputpinType(node: ADigitalinputpinType?) {
