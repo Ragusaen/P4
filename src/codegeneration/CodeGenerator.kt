@@ -62,23 +62,26 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
     }
 
     override fun caseABinopExpr(node: ABinopExpr) {
-        var s:String = ""
+        val operator = getCode(node.binop)
+        val r = getCode(node.r)
+        val l = getCode(node.l)
 
-        node.l.apply(this)
-        node.r.apply(this)
-        node.binop.apply(this)
-        val operator = codeStack.pop()
-        val r = codeStack.pop()
-        val l = codeStack.pop()
-
+        val b = operator == "=="
+        val c = typeTable[node.l] == Type.STRING
+        val d  = typeTable[node.r] == Type.STRING
+        // Special case for strings where function calls must be made
         if(typeTable[node] == Type.STRING) {
-            TODO()
+            if (operator == "+")
+                codeStack.push("concatstr($l, $r)")
+            else
+                throw java.lang.Exception()
+        }
+        else if(operator == "==" && typeTable[node.l] == Type.STRING && typeTable[node.r] == Type.STRING) {
+            codeStack.push("equalstr($l, $r)")
         }
         else {
-            s = l + operator + r
+            codeStack.push(l + operator + r)
         }
-
-        codeStack.push(s)
     }
 
     override fun caseAAdditionBinop(node: AAdditionBinop) {
@@ -129,9 +132,9 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
         if (node.elseBody != null) {
             node.elseBody.apply(this)
             val elseBody = codeStack.pop()
-            codeStack.push("if ($cond) $ifBody else $elseBody")
+            codeStack.push("if ($cond) $ifBody else $elseBody\n")
         } else {
-            codeStack.push("if ($cond) $ifBody")
+            codeStack.push("if ($cond) $ifBody\n")
         }
     }
 
@@ -140,7 +143,7 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
         node.condition.apply(this)
         val cond = codeStack.pop()
         val body = codeStack.pop()
-        codeStack.push("while ($cond) $body")
+        codeStack.push("while ($cond) $body\n")
     }
 
     override fun caseAForStmt(node: AForStmt) {
@@ -153,7 +156,7 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
         val update = codeStack.pop()
         val body = codeStack.pop()
 
-        codeStack.push("for ($init; $cond; $update) $body")
+        codeStack.push("for ($init; $cond; $update) $body\n")
     }
 
     override fun caseADclStmt(node: ADclStmt) {
@@ -165,7 +168,7 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
         for (v in node.vardcl.drop(1)) {
             vardcls += ", " + getCode(v)
         }
-        codeStack.push("$type $vardcls;")
+        codeStack.push("$type $vardcls;\n")
     }
 
     override fun caseAAssignStmt(node: AAssignStmt) {
@@ -177,9 +180,9 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
         if (node.binop != null) {
             node.binop.apply(this)
             val binop = codeStack.pop()
-            codeStack.push("$id $binop= $expr;")
+            codeStack.push("$id $binop= $expr;\n")
         } else {
-            codeStack.push("$id = $expr;")
+            codeStack.push("$id = $expr;\n")
         }
     }
 
@@ -204,30 +207,30 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
     }
 
     override fun caseANoStmtStmt(node: ANoStmtStmt?) {
-        codeStack.push(";")
+        codeStack.push(";\n")
     }
 
     override fun caseABreakStmt(node: ABreakStmt?) {
-        codeStack.push("break;")
+        codeStack.push("break;\n")
     }
 
     override fun caseAContinueStmt(node: AContinueStmt?) {
-        codeStack.push("continue;")
+        codeStack.push("continue;\n")
     }
 
     override fun caseAExprStmt(node: AExprStmt) {
         node.expr.apply(this)
         val expr = codeStack.pop()
-        codeStack.push("$expr;")
+        codeStack.push("$expr;\n")
     }
 
     override fun caseAReturnStmt(node: AReturnStmt) {
         if (node.expr != null) {
             node.expr.apply(this)
             val expr = codeStack.pop()
-            codeStack.push("return $expr;")
+            codeStack.push("return $expr;\n")
         } else {
-            codeStack.push("return;")
+            codeStack.push("return;\n")
         }
     }
 
@@ -300,7 +303,7 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
     }
 
     override fun caseAStringType(node: AStringType) {
-        codeStack.push("char *")
+        codeStack.push("char*")
     }
 
     override fun caseAIdentifierValue(node: AIdentifierValue) {
@@ -359,6 +362,4 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
 
         codeStack.push("$identifier($arguments)")
     }
-
-    override fun caseA
 }

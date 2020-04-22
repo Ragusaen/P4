@@ -15,7 +15,7 @@ class  OperatorType {
 
             setOf(AAndBinop::class.java, AOrBinop::class.java, ANotUnop::class.java) to setOf(Type.BOOL),
 
-            setOf(AEqualBinop::class.java) to setOf(Type.BOOL, Type.INT, Type.FLOAT, Type.TIME)
+            setOf(AEqualBinop::class.java) to setOf(Type.BOOL, Type.INT, Type.FLOAT, Type.TIME, Type.STRING)
         ).map {o -> Pair(o.key.map{ it.simpleName!! }.toSet(), o.value)}
 
         private val returnTypes = mapOf(
