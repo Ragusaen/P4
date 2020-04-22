@@ -97,16 +97,12 @@ Productions
 
 /* Function */
     functiondcl {-> functiondcl} =
-        fun identifier lparen paramlist? rparen return_type? [body]:inner_function
-            {-> New functiondcl(identifier, [paramlist.param], return_type.type, body)};
+        fun identifier lparen paramlist? rparen return_type? [body]:simple_stmt
+            {-> New functiondcl(identifier, [paramlist.param], return_type.type, body.stmt)};
 
     return_type {-> type} =
         colon type
             {-> type};
-
-    inner_function {-> inner_function} =
-        lbrace stmt* rbrace
-            {-> New inner_function([stmt])};
 
     paramlist {-> param*} =
         type identifier paramtail*
@@ -360,8 +356,7 @@ Abstract Syntax Tree
     root_element = {dcl} stmt | {moduledcl} moduledcl | {functiondcl} functiondcl;
 
 /* Function */
-    functiondcl = identifier param* type? inner_function;
-    inner_function = stmt*;
+    functiondcl = identifier param* type? [body]:stmt;
     param = identifier type;
 
 /* Module */

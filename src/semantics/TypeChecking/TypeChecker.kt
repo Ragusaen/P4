@@ -151,6 +151,10 @@ class TypeChecker(symbolTable: SymbolTable) : ScopedTraverser(symbolTable) {
         }
     }
 
+    override fun inAFunctiondcl(node: AFunctiondcl) {
+        currentFunctionReturnType = symbolTable.findFun(node).type
+    }
+
     override fun outAUnopExpr(node: AUnopExpr) {
         val exprType = typeStack.peek()
 

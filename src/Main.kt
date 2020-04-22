@@ -8,6 +8,10 @@ fun main() {
     val input = """
         Int a = 3, b, c = 2;
         Time h = 13h;
+        
+        fun foo(Int a, Int b): Int {
+            return a * b + a / b - 3;
+        }
     """
 
     val lexer = StringLexer(input)
