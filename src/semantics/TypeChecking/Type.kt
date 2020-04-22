@@ -1,8 +1,8 @@
-package semantics
+package semantics.TypeChecking
 
 enum class Type {
     INT, FLOAT, STRING, BOOL,
     DIGITALINPUTPIN, DIGITALOUTPUTPIN,
     ANALOGINPUTPIN, ANALOGOUTPUTPIN,
-    TIME,
+    TIME, VOID, MODULE
 }

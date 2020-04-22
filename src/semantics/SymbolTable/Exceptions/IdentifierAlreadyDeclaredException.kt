@@ -1,4 +1,4 @@
-package semantics
+package semantics.SymbolTable.Exceptions
 
 import kotlin.Exception
 

@@ -2,7 +2,7 @@ Package sablecc;
 
 Helpers
     all = [0 .. 0xFFFF];
-    anychar = ['A' .. 'z'];
+    anychar = ['A' .. 'Z'] | ['a' .. 'z'] | '_';
     digit = ['0' .. '9'];
     tab = 9;
     cr = 13;
@@ -105,16 +105,12 @@ Productions
 
 /* Function */
     functiondcl {-> functiondcl} =
-        fun identifier lparen paramlist rparen return_type? [body]:inner_function
-            {-> New functiondcl(identifier, [paramlist.param], return_type.type, body)};
+        fun identifier lparen paramlist? rparen return_type? [body]:simple_stmt
+            {-> New functiondcl(identifier, [paramlist.param], return_type.type, body.stmt)};
 
     return_type {-> type} =
         colon type
             {-> type};
-
-    inner_function {-> inner_function} =
-        lbrace stmt* rbrace
-            {-> New inner_function([stmt])};
 
     paramlist {-> param*} =
         type identifier paramtail*
@@ -134,12 +130,18 @@ Productions
 
 /* Module */
     moduledcl {-> moduledcl} =
-        {template} template module identifier lparen paramlist rparen inner_module
-            {-> New moduledcl.template(identifier, [paramlist.param], inner_module)}
+        {template} template module identifier params? inner_module
+            {-> New moduledcl.template(identifier, [params.param], inner_module)}
+        | {named} module identifier inner_module
+            {-> New moduledcl.named(identifier, inner_module)}
         | {anonymous_no_dcls} module_structure
             {-> New moduledcl.anonymous(New inner_module([], module_structure))}
         | {anonymous_with_dcls} inner_module
             {-> New moduledcl.anonymous(inner_module)};
+
+    params {-> param*} =
+        lparen paramlist rparen
+            {-> [paramlist.param]};
 
     inner_module {-> inner_module} =
         lbrace dcl_stmt* module_structure rbrace
@@ -216,10 +218,10 @@ Productions
             {-> New stmt.delay(expr)}
         | {delay_until} delay until lparen expr rparen
             {-> New stmt.delayuntil(expr)}
-        | {function_call} identifier lparen arglist rparen
-            {-> New stmt.function_call(identifier, [arglist.expr])}
         | {return} return expr?
             {-> New stmt.return(expr)}
+        | {expr} expr
+            {-> New stmt.expr(expr)}
         | {break} break
             {-> New stmt.break()}
         | {continue} continue
@@ -229,8 +231,14 @@ Productions
 
 /* Declaration */
     dcl {-> stmt} =
-        type vardcls
-            {-> New stmt.dcl(type, [vardcls.vardcl])};
+        {vardcl} type vardcls
+            {-> New stmt.dcl(type, [vardcls.vardcl])}
+        | {module_dcl} module [template]:identifier [instance]:identifier arguments?
+            {-> New stmt.moduledcl(template, instance, [arguments.expr])};
+
+    arguments {-> expr*} =
+        lparen arglist rparen
+            {-> [arglist.expr]};
 
     vardcls {-> vardcl* } =
         varinit vardcls_tail*
@@ -332,7 +340,13 @@ Productions
 
     parenthesis {-> expr} =
         {parenthesis} lparen expr rparen
-            {-> New expr.parenthesis(expr)}
+            {-> expr}
+        | {function_call} function_call
+            {-> function_call.expr};
+
+    function_call {-> expr} =
+        {function_call} identifier lparen arglist? rparen
+            {-> New expr.function_call(identifier, [arglist.expr])}
         | {value} value
              {-> value.expr};
 
@@ -363,25 +377,24 @@ Abstract Syntax Tree
     root_element = {dcl} stmt | {moduledcl} moduledcl | {functiondcl} functiondcl;
 
 /* Function */
-    functiondcl = identifier param* type? inner_function;
-    inner_function = stmt*;
+    functiondcl = identifier param* type? [body]:stmt;
     param = identifier type;
 
 /* Module */
-    moduledcl = {template} identifier param* inner_module | {anonymous} inner_module;
+    moduledcl = {template} identifier param* inner_module | {named} identifier inner_module | {anonymous} inner_module;
     inner_module = [dcls]:stmt* module_structure;
     module_structure = {every} expr [body]:stmt | {on} statechange expr [body]:stmt;
     statechange = {rising} | {falling};
 
 /* Statement */
-    stmt = {no_stmt} | {dcl} type vardcl* | {start} identifier | {stop} | {delay} expr | {delayuntil} expr | {assign} identifier expr binop? |{read} identifier| {set_to} identifier boolliteral| {block} stmt* | {if} expr [if_body]:stmt [else_body]:stmt? | {while} [condition]:expr [body]:stmt | {for} [init]:stmt [condition]:expr [update]:stmt [body]:stmt | {function_call} identifier expr* | {return} expr? | {break} | {continue};
+    stmt = {no_stmt} | {dcl} type vardcl* | {moduledcl} [template]:identifier [instance]:identifier expr* | {start} identifier | {stop} |{read} identifier | {set_to} identifier boolliteral | {delay} expr | {delayuntil} expr | {assign} identifier expr binop? | {block} stmt* | {if} expr [if_body]:stmt [else_body]:stmt? | {while} [condition]:expr [body]:stmt | {for} [init]:stmt [condition]:expr [update]:stmt [body]:stmt | {expr} expr | {return} expr? | {break} | {continue};
 
-/* Declaration subnodes*/
+/* Declaration subnodes */
     vardcl = identifier expr?;
     type = {string} | {char} | {int} | {float} | {bool} | {time} | {digitaloutputpin} | {digitalinputpin} | {analogoutputpin} | {analoginputpin} | {array} type;
 
 /* Expression */
-    expr = {binop} [l]:expr binop [r]:expr | {unop} unop expr | {parenthesis} expr | {value} value | {pin} intliteral;
-    binop = {addition} | {subtraction} | {multiplication} | {division} | {modulo} | {or} | {and} | {equal} | {relation} | {greaterthan} | {lessthan};
+    expr = {binop} [l]:expr binop [r]:expr | {unop} unop expr | {function_call} identifier expr* | {value} value | {pin} intliteral;
+    binop = {addition} | {subtraction} | {multiplication} | {division} | {modulo} | {or} | {and} | {equal} | {greaterthan} | {lessthan};
     unop = {minus} | {plus} | {not};
     value = {identifier} identifier | {int} intliteral | {float} floatliteral | {string} stringliteral | {char} charliteral | {bool} boolliteral | {time} timeliteral | {array} arrayliteral;

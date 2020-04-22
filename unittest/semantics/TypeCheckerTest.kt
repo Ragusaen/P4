@@ -2,24 +2,18 @@ package semantics
 
 import StringLexer
 import org.junit.jupiter.api.Test
-import java.io.PushbackReader
-import sablecc.lexer.Lexer
 import sablecc.parser.Parser
-import kotlin.test.assertTrue
 import org.junit.jupiter.api.assertThrows
 import sablecc.node.Start
-import kotlin.test.assertFailsWith
+import semantics.SymbolTable.SymbolTable
+import semantics.SymbolTable.SymbolTableBuilder
+import semantics.TypeChecking.Exceptions.IdentifierNotDeclaredException
+import semantics.TypeChecking.Exceptions.IllegalImplicitTypeConversionException
+import semantics.TypeChecking.Exceptions.IncompatibleOperatorException
+import semantics.TypeChecking.TypeChecker
 
 
 internal class TypeCheckerTest {
-    @Test
-    fun typeEqualsTest() {
-        val a = Type.INT
-        val b = Type.INT
-
-        assertTrue { a == b }
-    }
-
     @Test
     fun assigningFloatToIntThrowsException() {
         val (scope, start) = getScopeFromString("Int a = 5.5;")
@@ -31,7 +25,7 @@ internal class TypeCheckerTest {
     fun assigningIntToFloatIsOkay() {
         val (scope, start) = getScopeFromString("Int a = 4; Float b = a;")
 
-        TypeChecker(scope).start(start)
+        assertThrows<IllegalImplicitTypeConversionException> { TypeChecker(scope).start(start) }
 
         assert(true)
     }
@@ -71,13 +65,76 @@ internal class TypeCheckerTest {
     }
 
     @Test
-    fun AdditionBetweenIntAndBoolThrowsException() {
+    fun additionBetweenIntAndBoolThrowsException() {
         val (scope, start) = getScopeFromString("Int a = 6 + true;")
 
         assertThrows<IllegalImplicitTypeConversionException> { TypeChecker(scope).start(start) }
     }
 
-    fun getScopeFromString(input:String):Pair<Scope, Start> {
+    @Test
+    fun parenthesisOnIntExpressionYieldsIntExpression() {
+        val (scope, start) = getScopeFromString("Int a = (5 + 3);")
+
+        TypeChecker(scope).start(start)
+    }
+
+    @Test
+    fun chainedGreaterThanOperationsThrowsConversionException() {
+        val (scope, start) = getScopeFromString("Bool a = 1 < 2 < 3;")
+
+        assertThrows<IllegalImplicitTypeConversionException> { TypeChecker(scope).start(start)}
+    }
+
+    @Test
+    fun chainedEqualsOperationsYieldsBoolExpression() {
+        val (scope, start) = getScopeFromString("Bool a = 1 == 2 == (2 == 2);")
+
+        TypeChecker(scope).start(start)
+    }
+
+    @Test
+    fun comparisonBetweenFloatAndIntFails() {
+        val (st, start) = getScopeFromString("Bool a = 6 == 6.6 or 7.2 == 7;")
+
+        assertThrows<IllegalImplicitTypeConversionException> { TypeChecker(st).start(start) }
+    }
+
+    @Test
+    fun valueOfFunctionReturningIntCannotBeAssignedToBool() {
+        val (st, start) = getScopeFromString("fun foo(): Int {;} Bool a = foo();")
+
+        assertThrows<IllegalImplicitTypeConversionException> {TypeChecker(st).start(start)}
+    }
+
+    @Test
+    fun functionWithParameterTypesBoolIntCannotBeCalledWithArgumentTypesIntBool() {
+        val (st, start) = getScopeFromString("fun foo(Bool a, Int b) {;} every (20ms) { foo(3, false); }")
+
+        assertThrows<IdentifierNotDeclaredException> {TypeChecker(st).start(start)}
+    }
+
+    @Test
+    fun everyStructuresExpressionCannotBeOfTypeInt() {
+        val (st, start) = getScopeFromString("every (45 + 8) { ; }")
+
+        assertThrows<IllegalImplicitTypeConversionException> {TypeChecker(st).start(start)}
+    }
+
+    @Test
+    fun ifStatementGivenIntExpressionThrowsException() {
+        val (st, start) = getScopeFromString("every(20ms) { if (45 + 8) ; }")
+
+        assertThrows<IllegalImplicitTypeConversionException> {TypeChecker(st).start(start)}
+    }
+
+    @Test
+    fun ifStatementGivenBoolExpressionIsOkay() {
+        val (st, start) = getScopeFromString("every(20ms) { if (true or false) ; }")
+
+        TypeChecker(st).start(start)
+    }
+
+    fun getScopeFromString(input:String):Pair<SymbolTable, Start> {
         val lexer = StringLexer(input)
         val parser = Parser(lexer)
         val s = parser.parse()

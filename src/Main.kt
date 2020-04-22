@@ -1,26 +1,22 @@
-import sablecc.lexer.Lexer
+import codegeneration.CodeGenerator
 import sablecc.parser.Parser
-import semantics.ScopePrinter
-import semantics.ScopedTraverser
-import semantics.SymbolTableBuilder
-import java.io.PushbackReader
+import semantics.SymbolTable.SymbolTableBuilder
+import semantics.TypeChecking.TypeChecker
 
 
 fun main() {
     val input = """
-        Bool a = true;
+        Int a = 3, b, c = 2;
+        Time h = 13h;
         
-        template module thismodule(String p, Bool b) {
-            every (1000ms) {
-                if(a)
-                    while(a) if(a) ; else ;
-                delay until(a);
-            }
+        fun foo(Int a, Int b): Int {
+            return a * b + a / b - 3;
         }
         
-        fun test(String s){
-            return 2;
-        }
+        Time t = 2h;
+        Time t2 = t + 1h;
+        Time t3 = t2 - t;
+        Time t4 = t3;
     """
 
     val lexer = StringLexer(input)
@@ -28,12 +24,11 @@ fun main() {
 
     val a = parser.parse()
 
-    val scope = SymbolTableBuilder().buildSymbolTable(a)
-    ScopedTraverser(scope).traverse(a)
+    val st = SymbolTableBuilder().buildSymbolTable(a)
+    val tt = TypeChecker(st).run(a)
 
-    ScopePrinter(scope).traverse(a)
-
-    PrettyPrinter().print(a)
+    val cg = CodeGenerator(tt, st)
+    println(cg.generate(a))
 }
 
 

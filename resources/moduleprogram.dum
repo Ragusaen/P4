@@ -1,0 +1,13 @@
+DigitalOutputPin led = pin 13;
+
+Int a = 2;
+
+module thismodule {
+    Int a = 3;
+    every (100 ms) {
+        set led HIGH;
+        delay(50 ms);
+        set led LOW;
+        a += 1;
+    }
+}
