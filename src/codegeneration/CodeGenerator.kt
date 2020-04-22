@@ -52,47 +52,47 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
         codeStack.push(s)
     }
 
-    override fun caseAAdditionBinop(node: AAdditionBinop?) {
+    override fun caseAAdditionBinop(node: AAdditionBinop) {
         codeStack.push("+")
     }
 
-    override fun caseADivisionBinop(node: ADivisionBinop?) {
+    override fun caseADivisionBinop(node: ADivisionBinop) {
         codeStack.push("/")
     }
 
-    override fun caseAAndBinop(node: AAndBinop?) {
+    override fun caseAAndBinop(node: AAndBinop) {
         codeStack.push("&&")
     }
 
-    override fun caseAEqualBinop(node: AEqualBinop?) {
+    override fun caseAEqualBinop(node: AEqualBinop) {
         codeStack.push("==")
     }
 
-    override fun caseAGreaterthanBinop(node: AGreaterthanBinop?) {
+    override fun caseAGreaterthanBinop(node: AGreaterthanBinop) {
         codeStack.push(">")
     }
 
-    override fun caseALessthanBinop(node: ALessthanBinop?) {
+    override fun caseALessthanBinop(node: ALessthanBinop) {
         codeStack.push("<")
     }
 
-    override fun caseAModuloBinop(node: AModuloBinop?) {
+    override fun caseAModuloBinop(node: AModuloBinop) {
         codeStack.push("%")
     }
 
-    override fun caseAMultiplicationBinop(node: AMultiplicationBinop?) {
+    override fun caseAMultiplicationBinop(node: AMultiplicationBinop) {
         codeStack.push("*")
     }
 
-    override fun caseAOrBinop(node: AOrBinop?) {
+    override fun caseAOrBinop(node: AOrBinop) {
         codeStack.push("||")
     }
 
-    override fun caseARelationBinop(node: ARelationBinop?) {
+    override fun caseARelationBinop(node: ARelationBinop) {
         TODO() //Unknown binary operator (?)
     }
 
-    override fun caseASubtractionBinop(node: ASubtractionBinop?) {
+    override fun caseASubtractionBinop(node: ASubtractionBinop) {
         codeStack.push("-")
     }
 
@@ -171,22 +171,9 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
         // Otherwise just leave the identifier at the top of the stack
     }
 
-    override fun caseAIntValue(node: AIntValue) {
-        codeStack.push(node.intliteral.text)
-    }
 
-    override fun caseTIdentifier(node: TIdentifier) {
-        codeStack.push(node.text)
-    }
 
-    override fun caseAIntType(node: AIntType) {
-        codeStack.push("int")
-    }
-
-    override fun caseATimeType(node: ATimeType) {
-        codeStack.push("Time")
-    }
-
+    // Immediate handling
     override fun caseTTimeliteral(node: TTimeliteral) {
         val li = node.text.indexOfFirst { it.isLetter() }
         val num = node.text.substring(0, li).toFloat()
@@ -201,5 +188,75 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
         }
 
         codeStack.push(value.toInt().toString())
+    }
+
+    override fun caseTStringliteral(node: TStringliteral) {
+        codeStack.push(node.text)
+    }
+
+    // Value handling
+    override fun caseTIdentifier(node: TIdentifier) {
+        codeStack.push(node.text)
+    }
+
+    override fun caseAIntValue(node: AIntValue) {
+        codeStack.push(node.intliteral.text)
+    }
+
+    override fun caseAFloatValue(node: AFloatValue) {
+        codeStack.push(node.floatliteral.text)
+    }
+
+    override fun caseABoolValue(node: ABoolValue) {
+        codeStack.push(node.boolliteral.text)
+    }
+
+    override fun caseACharValue(node: ACharValue) {
+        codeStack.push(node.charliteral.text)
+    }
+
+    override fun caseATimeValue(node: ATimeValue) {
+        codeStack.push(node.timeliteral.text)
+    }
+
+    // Type handling
+    override fun caseAIntType(node: AIntType) {
+        codeStack.push("int")
+    }
+
+    override fun caseAFloatType(node: AFloatType) {
+        codeStack.push("float")
+    }
+
+    override fun caseATimeType(node: ATimeType) {
+        codeStack.push("Time")
+    }
+
+    override fun caseABoolType(node: ABoolType) {
+        codeStack.push("Bool")
+    }
+
+    override fun caseACharType(node: ACharType) {
+        codeStack.push("char")
+    }
+
+    override fun caseAStringType(node: AStringType) {
+        codeStack.push("char *")
+    }
+
+    override fun caseADigitalinputpinType(node: ADigitalinputpinType?) {
+        codeStack.push("DigitalInputPin")
+    }
+
+    override fun caseADigitaloutputpinType(node: ADigitaloutputpinType?) {
+        codeStack.push("DigitalOutputPin")
+    }
+
+    override fun caseAAnaloginputpinType(node: AAnaloginputpinType?) {
+        codeStack.push("AnalogOutputPin")
+    }
+
+    override fun caseAAnalogoutputpinType(node: AAnalogoutputpinType?) {
+        codeStack.push("AnalogOutputPin")
     }
 }
