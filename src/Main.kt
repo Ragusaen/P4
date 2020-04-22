@@ -6,12 +6,16 @@ import semantics.TypeChecking.TypeChecker
 
 fun main() {
     val input = """
+<<<<<<< HEAD
         Int a = 3, b, c = 2;
         Time h = 13h;
         
         fun foo(Int a, Int b): Int {
             return a * b + a / b - 3;
         }
+=======
+        String s = "Hund" + "Fisk";
+>>>>>>> 7e4ace305274c15042ef0b8d0bb0b5ed14b1bbfb
     """
 
     val lexer = StringLexer(input)
