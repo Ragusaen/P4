@@ -44,7 +44,7 @@ class TypeChecker(symbolTable: SymbolTable) : ScopedTraverser(symbolTable) {
 
     override fun outAReturnStmt(node: AReturnStmt) {
         val type = typeStack.pop()
-        if (currentFunctionReturnType!! != type) {
+        if (currentFunctionReturnType!! == type) {
             throw IllegalImplicitTypeConversionException("Expected function to return $currentFunctionReturnType but got $type")
         }
     }
@@ -69,28 +69,28 @@ class TypeChecker(symbolTable: SymbolTable) : ScopedTraverser(symbolTable) {
     override fun outAEveryModuleStructure(node: AEveryModuleStructure) {
         val conditionType = typeStack.pop()
 
-        if (conditionType != Type.TIME)
+        if (conditionType != Type.Bool)
             throw IllegalImplicitTypeConversionException("'Every' expects expression of type Time, but got $conditionType")
     }
 
     override fun outAIfStmt(node: AIfStmt) {
         val conditionType = typeStack.pop()
 
-        if (conditionType != Type.BOOL)
+        if (conditionType != Type.Bool)
             throw IllegalImplicitTypeConversionException("'If' expects expression of type Bool, but got $conditionType")
     }
 
     override fun outAForStmt(node: AForStmt) {
         val conditionType = typeStack.pop()
 
-        if (conditionType != Type.BOOL)
+        if (conditionType != Type.Bool)
             throw IllegalImplicitTypeConversionException("'For' expects middle expression of type Bool, but got $conditionType")
     }
 
     override fun outAWhileStmt(node: AWhileStmt) {
         val conditionType = typeStack.pop()
 
-        if (conditionType != Type.BOOL)
+        if (conditionType != Type.Bool)
             throw IllegalImplicitTypeConversionException("'While' expects expression of type Bool, but got $conditionType")
     }
 
@@ -122,7 +122,12 @@ class TypeChecker(symbolTable: SymbolTable) : ScopedTraverser(symbolTable) {
         val lType = typeStack.pop()
         val op = node.binop
 
-        if (lType != rType)
+        val returnType = OperatorType.getReturnType(lType, op, rType)
+                ?: throw IncompatibleOperatorException("Cannot apply binary operator $op between types $lType and $rType")
+
+        pushType(node, returnType)
+
+        /*if (lType != rType)
             throw IllegalImplicitTypeConversionException("Cannot apply binary operations between types $lType and $rType")
 
         val operandType = lType
@@ -136,7 +141,7 @@ class TypeChecker(symbolTable: SymbolTable) : ScopedTraverser(symbolTable) {
         else if (returnType !in OperatorType.getReturnTypes(node.binop.javaClass.simpleName))
             throw IncompatibleOperatorException("Invalid return type")
 
-        pushType(node, returnType)
+        pushType(node, returnType)*/
     }
 
     override fun outAVardcl(node: AVardcl) {
@@ -159,11 +164,11 @@ class TypeChecker(symbolTable: SymbolTable) : ScopedTraverser(symbolTable) {
         val exprType = typeStack.peek()
 
         when(node.unop) {
-            is ANotUnop -> if (exprType != Type.BOOL)
+            is ANotUnop -> if (exprType != Type.Bool)
                 throw IncompatibleOperatorException("Cannot apply conditional unary '!' operator to expression of $exprType")
-            is APlusUnop -> if (exprType != Type.INT && exprType != Type.FLOAT)
+            is APlusUnop -> if (exprType != Type.Int && exprType != Type.Float)
                 throw IncompatibleOperatorException("Cannot apply conditional unary '+' operator to expression of $exprType")
-            is AMinusUnop -> if (exprType != Type.INT && exprType != Type.FLOAT)
+            is AMinusUnop -> if (exprType != Type.Int && exprType != Type.Float)
                 throw IncompatibleOperatorException("Cannot apply conditional unary '-' operator to expression of $exprType")
         }
     }
@@ -191,22 +196,48 @@ class TypeChecker(symbolTable: SymbolTable) : ScopedTraverser(symbolTable) {
     }
 
     override fun caseTIntliteral(node: TIntliteral) {
-        pushType(node, Type.INT)
+        pushType(node, Type.Int)
     }
 
     override fun caseTFloatliteral(node: TFloatliteral) {
-        pushType(node, Type.FLOAT)
+        pushType(node, Type.Float)
     }
 
     override fun caseTBoolliteral(node: TBoolliteral) {
-        pushType(node, Type.BOOL)
+        pushType(node, Type.Bool)
     }
 
     override fun caseTStringliteral(node: TStringliteral) {
-        pushType(node, Type.STRING)
+        pushType(node, Type.String)
     }
 
     override fun caseTTimeliteral(node: TTimeliteral) {
-        pushType(node, Type.TIME)
+        pushType(node, Type.Time)
+    }
+
+    override fun outAIndexExpr(node: AIndexExpr) {
+        val index = typeStack.pop()
+        val value = typeStack.pop()
+
+        if (value.isArray())
+            if (index == Type.Int)
+                pushType(node, value.getArraySubType())
+            else throw IllegalImplicitTypeConversionException("Indexing must be of type Int, but got $index")
+        else
+            throw IllegalImplicitTypeConversionException("Indexing can only be done on type Array, but got $value")
+    }
+
+    override fun outAArrayValue(node: AArrayValue) {
+        if (node.expr.size > 0) {
+            val type = typeStack.pop()
+            for (i in node.expr.drop(1).indices) {
+                val ntype = typeStack.pop()
+                if (ntype != type) {
+                    throw IllegalImplicitTypeConversionException("Last argument indicates array literal of type $type, but argument ${node.expr.size - (i + 1)} was of type $ntype")
+                }
+            }
+            pushType(node, Type.createArrayOf(type))
+        } else
+            throw Exception("Array literal was of size 0 (should have been caught in parser)")
     }
 }

@@ -66,17 +66,14 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
         val r = getCode(node.r)
         val l = getCode(node.l)
 
-        val b = operator == "=="
-        val c = typeTable[node.l] == Type.STRING
-        val d  = typeTable[node.r] == Type.STRING
         // Special case for strings where function calls must be made
-        if(typeTable[node] == Type.STRING) {
+        if(typeTable[node] == Type.String) {
             if (operator == "+")
                 codeStack.push("concatstr($l, $r)")
             else
                 throw java.lang.Exception()
         }
-        else if(operator == "==" && typeTable[node.l] == Type.STRING && typeTable[node.r] == Type.STRING) {
+        else if(operator == "==" && typeTable[node.l] == Type.String && typeTable[node.r] == Type.String) {
             codeStack.push("equalstr($l, $r)")
         }
         else {

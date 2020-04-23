@@ -22,7 +22,6 @@ Tokens
     floattype = 'Float';
     booltype = 'Bool';
     timetype = 'Time';
-    arraytype = '[' intliteral? ']';
     digitaloutputpintype = 'DigitalOutputPin';
     digitalinputpintype = 'DigitalInputPin';
     analogoutputpintype = 'AnalogOutputPin';
@@ -84,7 +83,6 @@ Tokens
     timeliteral = (digit*'.')?digit+('ms'|'s'|'m'|'h');
     stringliteral = '"'('\'all | [[all - '"'] - '\'])*'"';
     charliteral = '''('\'all | [[all - '''] - '\'])''';
-    arrayliteral = '['((boolliteral',')* boolliteral | (intliteral',')* intliteral | (stringliteral',')* stringliteral | (charliteral',')* charliteral | (timeliteral',')* timeliteral | (floatliteral',')* floatliteral) ']';
     identifier = anychar (anychar|digit)*;
     whitespace = (' ' | tab | lf | eol)+;
     comment = '/*' all* '*/' | '//'all*eol;
@@ -220,8 +218,8 @@ Productions
             {-> New stmt.delayuntil(expr)}
         | {return} return expr?
             {-> New stmt.return(expr)}
-        | {expr} expr
-            {-> New stmt.expr(expr)}
+        | {function_call} identifier lparen arglist? rparen
+            {-> New stmt.expr(New expr.function_call(identifier, [arglist.expr]))}
         | {break} break
             {-> New stmt.break()}
         | {continue} continue
@@ -261,11 +259,21 @@ Productions
         | {float} floattype {-> New type.float()}
         | {bool} booltype {-> New type.bool()}
         | {time} timetype {-> New type.time()}
-        | {array} type arraytype {-> New type.array(type)}
+        | {array} type lbracket indexlist rbracket {-> New type.array(type, indexlist)}
         | {digitaloutputpin} digitaloutputpintype {-> New type.digitaloutputpin()}
         | {digitalinputpin} digitalinputpintype {-> New type.digitalinputpin()}
         | {analogoutputpin} analogoutputpintype {-> New type.analogoutputpin()}
         | {analoginputpin} analoginputpintype {-> New type.analoginputpin()};
+
+    indexlist {-> indexlist} =
+        {empty} filler*
+            {-> New indexlist.empty([filler])}
+        | {filled} arglist
+            {-> New indexlist.filled([arglist.expr])};
+
+    filler {-> filler} =
+        comma
+            {-> New filler()};
 
 /* Expression */
     expr {-> expr} =
@@ -341,18 +349,18 @@ Productions
     parenthesis {-> expr} =
         {parenthesis} lparen expr rparen
             {-> expr}
-        | {function_call} function_call
-            {-> function_call.expr};
+        | {index} index
+            {-> index.expr};
 
-    function_call {-> expr} =
-        {function_call} identifier lparen arglist? rparen
-            {-> New expr.function_call(identifier, [arglist.expr])}
-        | {value} value
-             {-> value.expr};
+    index {-> expr} =
+        value lbracket expr rbracket
+            {-> New expr.index(value.expr, expr)};
 
     value {-> expr} =
         {identifier} identifier
             {-> New expr.value(New value.identifier(identifier))}
+        | {function_call} identifier lparen arglist? rparen
+            {-> New expr.function_call(identifier, [arglist.expr])}
         | {literal} literal
             {-> literal.expr};
 
@@ -369,8 +377,8 @@ Productions
             {-> New expr.value(New value.bool(boolliteral))}
         | {time} timeliteral
             {-> New expr.value(New value.time(timeliteral))}
-        | {array} arrayliteral
-            {-> New expr.value(New value.array(arrayliteral))};
+        | {array} lbracket arglist rbracket
+            {-> New expr.value(New value.array([arglist.expr]))};
 
 Abstract Syntax Tree
     program = root_element*;
@@ -391,10 +399,12 @@ Abstract Syntax Tree
 
 /* Declaration subnodes */
     vardcl = identifier expr?;
-    type = {string} | {char} | {int} | {float} | {bool} | {time} | {digitaloutputpin} | {digitalinputpin} | {analogoutputpin} | {analoginputpin} | {array} type;
+    type = {string} | {char} | {int} | {float} | {bool} | {time} | {digitaloutputpin} | {digitalinputpin} | {analogoutputpin} | {analoginputpin} | {array} type [sizes]:indexlist;
+    indexlist = {empty} filler* | {filled} expr*;
+    filler = ;
 
 /* Expression */
-    expr = {binop} [l]:expr binop [r]:expr | {unop} unop expr | {function_call} identifier expr* | {value} value | {pin} intliteral;
+    expr = {binop} [l]:expr binop [r]:expr | {unop} unop expr | {function_call} identifier expr* | {value} value | {pin} intliteral | {index} [value]:expr [index]:expr;
     binop = {addition} | {subtraction} | {multiplication} | {division} | {modulo} | {or} | {and} | {equal} | {greaterthan} | {lessthan};
     unop = {minus} | {plus} | {not};
-    value = {identifier} identifier | {int} intliteral | {float} floatliteral | {string} stringliteral | {char} charliteral | {bool} boolliteral | {time} timeliteral | {array} arrayliteral;
+    value = {identifier} identifier | {int} intliteral | {float} floatliteral | {string} stringliteral | {char} charliteral | {bool} boolliteral | {time} timeliteral | {array} expr*;
