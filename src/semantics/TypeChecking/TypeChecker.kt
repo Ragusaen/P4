@@ -183,6 +183,10 @@ class TypeChecker(symbolTable: SymbolTable) : ScopedTraverser(symbolTable) {
             throw IdentifierUsedBeforeAssignmentException("The variable ${node.identifier.text} was used before being initialised.")
     }
 
+    override fun outAValueExpr(node: AValueExpr) {
+        pushType(node, typeStack.pop())
+    }
+
     override fun caseTIntliteral(node: TIntliteral) {
         pushType(node, Type.Int)
     }
