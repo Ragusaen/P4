@@ -88,9 +88,17 @@ class SymbolTableBuilder : DepthFirstAdapter() {
             is AAnaloginputpinType -> Type.AnalogInputPin
             is AAnalogoutputpinType -> Type.AnalogOutputPin
             is ATimeType -> Type.Time
-            is AArrayType -> Type.createArrayOf(getTypeFromPType(node.type))
+            is AArrayType -> createArrayOfDepth(getTypeFromPType(node.type), (node.sizes as AEmptyIndexlist).filler.size + 1)
             else -> throw Exception("Unsupported node type")
         }
+    }
+
+    private fun createArrayOfDepth(type: Type, n: Int): Type {
+        var cArr = Type.createArrayOf(type)
+        for (i in 1 until n) {
+            cArr = Type.createArrayOf(cArr)
+        }
+        return cArr
     }
 
     /* Tree traversal */

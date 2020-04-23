@@ -353,8 +353,10 @@ Productions
             {-> index.expr};
 
     index {-> expr} =
-        value lbracket expr rbracket
-            {-> New expr.index(value.expr, expr)};
+        {index} value lbracket expr rbracket
+            {-> New expr.index(value.expr, expr)}
+        | {value} value
+            {-> value.expr};
 
     value {-> expr} =
         {identifier} identifier

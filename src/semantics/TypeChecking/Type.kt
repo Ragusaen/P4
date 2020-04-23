@@ -41,6 +41,10 @@ class Type private constructor(private val main: EType, private val sub: Type? =
     fun isArray(): Boolean = main == EType.ARRAY
     fun getArraySubType(): Type = sub!!
 
+    override fun toString(): String {
+        return "$main " + if (isArray()) "<$sub>" else ""
+    }
+
     override fun hashCode(): Int {
         var result = main.hashCode()
         result = 31 * result + (sub?.hashCode() ?: 0)
