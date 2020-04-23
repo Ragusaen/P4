@@ -71,7 +71,7 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
         val r = codeStack.pop()
         val l = codeStack.pop()
 
-        if(typeTable[node] == Type.STRING) {
+        if(typeTable[node] == Type.String) {
             TODO()
         }
         else {
@@ -359,6 +359,4 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
 
         codeStack.push("$identifier($arguments)")
     }
-
-    override fun caseA
 }

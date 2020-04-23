@@ -79,15 +79,16 @@ class SymbolTableBuilder : DepthFirstAdapter() {
 
     private fun getTypeFromPType(node:PType): Type {
         return when(node) {
-            is AIntType -> Type.INT
-            is AFloatType -> Type.FLOAT
-            is AStringType -> Type.STRING
-            is ABoolType -> Type.BOOL
-            is ADigitalinputpinType -> Type.DIGITALINPUTPIN
-            is ADigitaloutputpinType -> Type.DIGITALOUTPUTPIN
-            is AAnaloginputpinType -> Type.ANALOGINPUTPIN
-            is AAnalogoutputpinType -> Type.ANALOGOUTPUTPIN
-            is ATimeType -> Type.TIME
+            is AIntType -> Type.Int
+            is AFloatType -> Type.Float
+            is AStringType -> Type.String
+            is ABoolType -> Type.Bool
+            is ADigitalinputpinType -> Type.DigitalInputPin
+            is ADigitaloutputpinType -> Type.DigitalOututPin
+            is AAnaloginputpinType -> Type.AnalogInputPin
+            is AAnalogoutputpinType -> Type.AnalogOutputPin
+            is ATimeType -> Type.Time
+            is AArrayType -> Type.createArrayOf(getTypeFromPType(node.type))
             else -> throw Exception("Unsupported node type")
         }
     }
@@ -189,7 +190,7 @@ class SymbolTableBuilder : DepthFirstAdapter() {
             val name = node.identifier.text!!
             val params = node.param.map { getTypeFromPType((it as AParam).type) }
 
-            val type = if (node.type == null) Type.VOID else getTypeFromPType(node.type)
+            val type = if (node.type == null) Type.Void else getTypeFromPType(node.type)
 
             addFun(node, name, params, Identifier(type))
         } else {
@@ -217,12 +218,12 @@ class SymbolTableBuilder : DepthFirstAdapter() {
     override fun outAModuledclStmt(node: AModuledclStmt) {
         val name = node.instance.text
 
-        addVar(name, Identifier(Type.MODULE))
+        addVar(name, Identifier(Type.Module))
     }
 
     override fun outANamedModuledcl(node: ANamedModuledcl) {
         val name = node.identifier.text
 
-        addVar(name, Identifier(Type.MODULE))
+        addVar(name, Identifier(Type.Module))
     }
 }

@@ -8,7 +8,7 @@ struct thismodule_t {
     Int a;
 } thismodule;
 
-void thismodule_1() {
+void thismodule() {
     digitalWrite(led, HIGH);
 
     schedule(currentTime + 50)

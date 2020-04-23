@@ -6,17 +6,7 @@ import semantics.TypeChecking.TypeChecker
 
 fun main() {
     val input = """
-        Int a = 3, b, c = 2;
-        Time h = 13h;
-        
-        fun foo(Int a, Int b): Int {
-            return a * b + a / b - 3;
-        }
-        
-        Time t = 2h;
-        Time t2 = t + 1h;
-        Time t3 = t2 - t;
-        Time t4 = t3;
+        Int[] array = [[5], [18], [9]];
     """
 
     val lexer = StringLexer(input)
