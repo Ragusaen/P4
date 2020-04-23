@@ -38,6 +38,9 @@ class Type private constructor(private val main: EType, private val sub: Type? =
         return false
     }
 
+    fun isArray(): Boolean = main == EType.ARRAY
+    fun getArraySubType(): Type = sub!!
+
     override fun hashCode(): Int {
         var result = main.hashCode()
         result = 31 * result + (sub?.hashCode() ?: 0)

@@ -207,6 +207,18 @@ class TypeChecker(symbolTable: SymbolTable) : ScopedTraverser(symbolTable) {
         pushType(node, Type.Time)
     }
 
+    override fun outAIndexExpr(node: AIndexExpr) {
+        val index = typeStack.pop()
+        val value = typeStack.pop()
+
+        if (value.isArray())
+            if (index == Type.Int)
+                pushType(node, value.getArraySubType())
+            else throw IllegalImplicitTypeConversionException("Indexing must be of type Int, but got $index")
+        else
+            throw IllegalImplicitTypeConversionException("Indexing can only be done on type Array, but got $value")
+    }
+
     override fun outAArrayValue(node: AArrayValue) {
         if (node.expr.size > 0) {
             val type = typeStack.pop()
@@ -216,7 +228,7 @@ class TypeChecker(symbolTable: SymbolTable) : ScopedTraverser(symbolTable) {
                     throw IllegalImplicitTypeConversionException("Last argument indicates array literal of type $type, but argument ${node.expr.size - (i + 1)} was of type $ntype")
                 }
             }
-            typeStack.push(Type.createArrayOf(type))
+            pushType(node, Type.createArrayOf(type))
         } else
             throw Exception("Array literal was of size 0 (should have been caught in parser)")
     }
