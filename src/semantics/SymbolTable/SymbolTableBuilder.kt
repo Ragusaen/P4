@@ -221,7 +221,7 @@ class SymbolTableBuilder : DepthFirstAdapter() {
         addVar(name, Identifier(Type.Module))
     }
 
-    override fun outANamedModuledcl(node: ANamedModuledcl) {
+    override fun outAInstanceModuledcl(node: AInstanceModuledcl) {
         val name = node.identifier.text
 
         addVar(name, Identifier(Type.Module))
