@@ -91,7 +91,7 @@ internal class SymbolTableBuilderTest {
         assertNotNull(st.findVar("i"))
         st.closeScope()
         st.openScope()
-        assertNotNull(st.findFun("foo", listOf(Type.STRING, Type.INT)))
+        assertNotNull(st.findFun("foo", listOf(Type.String, Type.Int)))
     }
 
     @Test

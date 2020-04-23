@@ -122,18 +122,26 @@ class TypeChecker(symbolTable: SymbolTable) : ScopedTraverser(symbolTable) {
         val lType = typeStack.pop()
         val op = node.binop
 
+        val returnType = OperatorType.getReturnType(lType, op, rType)
+                ?: throw IncompatibleOperatorException("Cannot apply binary operator $op between types $lType and $rType")
+
+        pushType(node, returnType)
+
+        /*if (lType != rType)
+            throw IllegalImplicitTypeConversionException("Cannot apply binary operations between types $lType and $rType")
+
         val operandType = lType
 
         if(operandType !in OperatorType.getOperandTypes(node.binop.javaClass.simpleName))
             throw IncompatibleOperatorException("Operator $op cannot take operands of type $lType")
 
-        var returnType = Type.Bool
+        var returnType = Type.BOOL
         if (operandType in OperatorType.getReturnTypes(node.binop.javaClass.simpleName))
             returnType = operandType
         else if (returnType !in OperatorType.getReturnTypes(node.binop.javaClass.simpleName))
             throw IncompatibleOperatorException("Invalid return type")
 
-        pushType(node, returnType)
+        pushType(node, returnType)*/
     }
 
     override fun outAVardcl(node: AVardcl) {
