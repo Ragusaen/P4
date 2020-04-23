@@ -6,7 +6,7 @@ import semantics.TypeChecking.TypeChecker
 
 fun main() {
     val input = """
-        Int[] array = [[5], [18], [9]];
+        Int[,] array = [[5], [18], [9]];
         String s1 = "hans" + "vb";
         String s2 = s1 + "hej";
         Bool b = s1 == s2;
