@@ -8,18 +8,15 @@ fun main() {
     val input = """
         Int a = 5;
         Int b = -5;
-        Int c = +5;
-        Float d = 3.5;
-        Float e = -3.5;
-        Float f = +3.5;
-        Float g = .3;
-        Float h = 5.;
-        Time i = 6s;
-        Time j = 5.h;
-        Time k = .6m;
-        Time l = 5.6ms;
-        Time m = -5ms;
-        Time n = +8m;
+        Float c = 3.5;
+        Float d = -3.5;
+        Float e = .3;
+        Float f = 5.;
+        Time g = 6s;
+        Time h = 5.h;
+        Time i = .6m;
+        Time j = 5.6ms;
+        Time k = -5ms;
     """
 
     val lexer = StringLexer(input)
