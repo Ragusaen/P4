@@ -134,10 +134,40 @@ internal class TypeCheckerTest {
         TypeChecker(st).start(start)
     }
 
+    @Test
+    fun intArray1DVarCanBeInitialisedWith1DIntArrayLiteral() {
+        val (st, start) = getScopeFromString("Int[] a = [13, 14, 45, 6];")
+
+        TypeChecker(st).start(start)
+    }
+
+    @Test
+    fun intArray1DVarInitialisedWith2DIntArrayLiteralThrowsException() {
+        val (st, start) = getScopeFromString("Int[] a = [[13]];")
+
+        assertThrows<IllegalImplicitTypeConversionException> {TypeChecker(st).start(start)}
+    }
+
+    @Test
+    fun indexingIntArrayReturnsIntType() {
+        val (st, start) = getScopeFromString("Int a = [23, 14][0];")
+
+        TypeChecker(st).start(start)
+    }
+
+    @Test
+    fun intArrayCannotBeAssignedToVariableOfTypeStringArray() {
+        val (st, start) = getScopeFromString("String[] a = [23, 14];")
+
+        assertThrows<IllegalImplicitTypeConversionException> {TypeChecker(st).start(start)}
+    }
+
+
     fun getScopeFromString(input:String):Pair<SymbolTable, Start> {
         val lexer = StringLexer(input)
         val parser = Parser(lexer)
         val s = parser.parse()
         return Pair(SymbolTableBuilder().buildSymbolTable(s), s)
     }
+
 }

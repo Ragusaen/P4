@@ -157,11 +157,9 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
     }
 
     override fun caseADclStmt(node: ADclStmt) {
-        node.type.apply(this)
-        val type = codeStack.pop()
+        val type = getCode(node.type)
 
-        node.vardcl.first().apply(this)
-        var vardcls = codeStack.pop()
+        var vardcls = getCode(node.vardcl.first())
         for (v in node.vardcl.drop(1)) {
             vardcls += ", " + getCode(v)
         }

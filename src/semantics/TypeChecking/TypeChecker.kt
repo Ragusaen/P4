@@ -69,7 +69,7 @@ class TypeChecker(symbolTable: SymbolTable) : ScopedTraverser(symbolTable) {
     override fun outAEveryModuleStructure(node: AEveryModuleStructure) {
         val conditionType = typeStack.pop()
 
-        if (conditionType != Type.Bool)
+        if (conditionType != Type.Time)
             throw IllegalImplicitTypeConversionException("'Every' expects expression of type Time, but got $conditionType")
     }
 
