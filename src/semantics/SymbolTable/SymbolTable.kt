@@ -21,6 +21,12 @@ class SymbolTable(private val namedFunctions: Map<Pair<String, List<Type>>, Iden
 
     private val childN = mutableListOf(0)
 
+    fun reset(): SymbolTable {
+        childN.clear()
+        childN.add(0)
+        return this
+    }
+
     fun openScope() {
         variables = variables.children[childN.last()]
         childN[childN.lastIndex]++

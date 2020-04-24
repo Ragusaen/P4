@@ -11,6 +11,7 @@ import java.util.*
 
 class TypeChecker(symbolTable: SymbolTable) : ScopedTraverser(symbolTable) {
     fun start(s: Start) {
+        symbolTable.reset()
         caseStart(s)
     }
 

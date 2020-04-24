@@ -9,6 +9,11 @@ open class ScopedTraverser(protected val symbolTable: SymbolTable) : DepthFirstA
         caseStart(startNode)
     }
 
+    override fun caseStart(node: Start) {
+        symbolTable.reset()
+        super.caseStart(node)
+    }
+
     override fun inABlockStmt(node: ABlockStmt) = symbolTable.openScope()
     override fun outABlockStmt(node: ABlockStmt) = symbolTable.closeScope()
 

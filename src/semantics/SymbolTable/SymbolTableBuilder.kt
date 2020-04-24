@@ -74,7 +74,7 @@ class SymbolTableBuilder : DepthFirstAdapter() {
         if (currentScope.parent != null)
             throw Exception("An unknown error occurred while building symbol table. A scope was not closed as expected.")
 
-        return SymbolTable(namedFunctionTable, nodeFunctionTable, currentScope, moduleTable)
+        return SymbolTable(namedFunctionTable, nodeFunctionTable, currentScope, moduleTable).reset()
     }
 
     private fun getTypeFromPType(node:PType): Type {
