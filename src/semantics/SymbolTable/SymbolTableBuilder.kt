@@ -19,10 +19,10 @@ class SymbolTableBuilder : DepthFirstAdapter() {
 
     private fun addVar(name:String, identifier: Identifier) {
         // If the name is already used within this scope throw exception
-        if (name in currentScope)
+        if (name in currentScope.variables)
             throw IdentifierAlreadyDeclaredException("The $name is already declared.")
         else
-            currentScope[name] = identifier
+            currentScope.variables[name] = identifier
     }
 
     private fun addFun(node: Node, name:String, params: List<Type>, identifier: Identifier) {
@@ -46,7 +46,7 @@ class SymbolTableBuilder : DepthFirstAdapter() {
         var tempScope: Scope? = currentScope
 
         while(tempScope != null) {
-            if (tempScope.contains(name))
+            if (tempScope.variables.contains(name))
                 return
             tempScope = tempScope.parent
         }
@@ -88,17 +88,9 @@ class SymbolTableBuilder : DepthFirstAdapter() {
             is AAnaloginputpinType -> Type.AnalogInputPin
             is AAnalogoutputpinType -> Type.AnalogOutputPin
             is ATimeType -> Type.Time
-            is AArrayType -> createArrayOfDepth(getTypeFromPType(node.type), (node.sizes as AEmptyIndexlist).filler.size + 1)
+            is AArrayType -> Type.createArrayOf(getTypeFromPType(node.type))
             else -> throw Exception("Unsupported node type")
         }
-    }
-
-    private fun createArrayOfDepth(type: Type, n: Int): Type {
-        var cArr = Type.createArrayOf(type)
-        for (i in 1 until n) {
-            cArr = Type.createArrayOf(cArr)
-        }
-        return cArr
     }
 
     /* Tree traversal */
@@ -127,15 +119,25 @@ class SymbolTableBuilder : DepthFirstAdapter() {
     }
 
     override fun caseAFunctiondcl(node: AFunctiondcl) {
-        if (rootElementMode)
-            outAFunctiondcl(node)
+        if (rootElementMode) {
+            val name = node.identifier.text!!
+            val params = node.param.map { getTypeFromPType((it as AParam).type) }
+
+            val type = if (node.type == null) Type.Void else getTypeFromPType(node.type)
+
+            addFun(node, name, params, Identifier(type))
+        }
         else
             super.caseAFunctiondcl(node)
     }
 
     override fun caseATemplateModuledcl(node: ATemplateModuledcl) {
-        if (rootElementMode)
-            outATemplateModuledcl(node)
+        if (rootElementMode) {
+            val name = node.identifier.text
+            val params = node.param.map { getTypeFromPType((it as AParam).type) }
+
+            addModule(name, ModuleIdentifier(params))
+        }
         else
             super.caseATemplateModuledcl(node)
     }
@@ -156,17 +158,6 @@ class SymbolTableBuilder : DepthFirstAdapter() {
 
     override fun inAForStmt(node: AForStmt) = openScope()
     override fun outAForStmt(node: AForStmt) = closeScope()
-
-    override fun inAInnerModule(node: AInnerModule) {
-        if (!node.dcls.isEmpty()) {
-            openScope()
-        }
-    }
-    override fun outAInnerModule(node: AInnerModule) {
-        if (!node.dcls.isEmpty()) {
-            closeScope()
-        }
-    }
 
     override fun outAVardcl(node: AVardcl) {
         val name = node.identifier.text
@@ -194,16 +185,7 @@ class SymbolTableBuilder : DepthFirstAdapter() {
         node.param.forEach {addVar((it as AParam).identifier.text, Identifier(getTypeFromPType(it.type), true))}
     }
     override fun outAFunctiondcl(node: AFunctiondcl) {
-        if (rootElementMode) {
-            val name = node.identifier.text!!
-            val params = node.param.map { getTypeFromPType((it as AParam).type) }
-
-            val type = if (node.type == null) Type.Void else getTypeFromPType(node.type)
-
-            addFun(node, name, params, Identifier(type))
-        } else {
-            closeScope()
-        }
+        closeScope()
     }
 
     override fun inATemplateModuledcl(node: ATemplateModuledcl) {
@@ -212,15 +194,9 @@ class SymbolTableBuilder : DepthFirstAdapter() {
         // Add each parameter variable to the scope
         node.param.forEach {addVar((it as AParam).identifier.text, Identifier(getTypeFromPType(it.type)))}
     }
-    override fun outATemplateModuledcl(node: ATemplateModuledcl) {
-        if (rootElementMode) {
-            val name = node.identifier.text
-            val params = node.param.map { getTypeFromPType((it as AParam).type) }
 
-            addModule(name, ModuleIdentifier(params))
-        }
-        else
-            closeScope()
+    override fun outATemplateModuledcl(node: ATemplateModuledcl) {
+        closeScope()
     }
 
     override fun outAModuledclStmt(node: AModuledclStmt) {
@@ -229,9 +205,11 @@ class SymbolTableBuilder : DepthFirstAdapter() {
         addVar(name, Identifier(Type.Module))
     }
 
-    override fun outAInstanceModuledcl(node: AInstanceModuledcl) {
-        val name = node.identifier.text
+    override fun inAInstanceModuledcl(node: AInstanceModuledcl) = openScope()
 
+    override fun outAInstanceModuledcl(node: AInstanceModuledcl) {
+        closeScope()
+        val name = node.identifier.text
         addVar(name, Identifier(Type.Module))
     }
 }

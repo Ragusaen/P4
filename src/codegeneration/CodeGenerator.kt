@@ -358,23 +358,48 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
         codeStack.push("$identifier($arguments)")
     }
 
-    override fun caseAInstanceModuledcl(node: AInstanceModuledcl) {
+    override fun caseATemplateModuledcl(node: ATemplateModuledcl) {
+        inATemplateModuledcl(node)
         var moduleStruct = "struct "
         val identifier = getCode(node.identifier)
         moduleStruct += identifier + "_t {"
 
-        val vars = getCode(node.innerModule)
+        node.innerModule.apply(this)
+
+        moduleStruct += codeStack.pop()
         val rest = codeStack.pop()
 
+
+
         moduleStruct += "\n}"
+        codeStack.push(moduleStruct)
+        outATemplateModuledcl(node)
+    }
+
+    override fun caseAInstanceModuledcl(node: AInstanceModuledcl) {
+        inAInstanceModuledcl(node)
+        var moduleStruct = "struct "
+        val identifier = getCode(node.identifier)
+        moduleStruct += identifier + "_t {"
+
+        node.innerModule.apply(this)
+
+        val vars = codeStack.pop()
+        val rest = codeStack.pop()
+
+        moduleStruct += "}"
+        outAInstanceModuledcl(node)
     }
 
     override fun caseAInnerModule(node: AInnerModule) {
         var dcls = ""
 
-        for (i in node.dcls)
+        for (i in node.dcls) {
             dcls += getCode(i)
+        }
+        val structure = getCode(node.moduleStructure)
 
+        codeStack.push(structure)
         codeStack.push(dcls)
     }
 }
