@@ -119,15 +119,25 @@ class SymbolTableBuilder : DepthFirstAdapter() {
     }
 
     override fun caseAFunctiondcl(node: AFunctiondcl) {
-        if (rootElementMode)
-            outAFunctiondcl(node)
+        if (rootElementMode) {
+            val name = node.identifier.text!!
+            val params = node.param.map { getTypeFromPType((it as AParam).type) }
+
+            val type = if (node.type == null) Type.Void else getTypeFromPType(node.type)
+
+            addFun(node, name, params, Identifier(type))
+        }
         else
             super.caseAFunctiondcl(node)
     }
 
     override fun caseATemplateModuledcl(node: ATemplateModuledcl) {
-        if (rootElementMode)
-            outATemplateModuledcl(node)
+        if (rootElementMode) {
+            val name = node.identifier.text
+            val params = node.param.map { getTypeFromPType((it as AParam).type) }
+
+            addModule(name, ModuleIdentifier(params))
+        }
         else
             super.caseATemplateModuledcl(node)
     }
@@ -175,16 +185,7 @@ class SymbolTableBuilder : DepthFirstAdapter() {
         node.param.forEach {addVar((it as AParam).identifier.text, Identifier(getTypeFromPType(it.type), true))}
     }
     override fun outAFunctiondcl(node: AFunctiondcl) {
-        if (rootElementMode) {
-            val name = node.identifier.text!!
-            val params = node.param.map { getTypeFromPType((it as AParam).type) }
-
-            val type = if (node.type == null) Type.Void else getTypeFromPType(node.type)
-
-            addFun(node, name, params, Identifier(type))
-        } else {
-            closeScope()
-        }
+        closeScope()
     }
 
     override fun inATemplateModuledcl(node: ATemplateModuledcl) {
@@ -193,15 +194,9 @@ class SymbolTableBuilder : DepthFirstAdapter() {
         // Add each parameter variable to the scope
         node.param.forEach {addVar((it as AParam).identifier.text, Identifier(getTypeFromPType(it.type)))}
     }
-    override fun outATemplateModuledcl(node: ATemplateModuledcl) {
-        if (rootElementMode) {
-            val name = node.identifier.text
-            val params = node.param.map { getTypeFromPType((it as AParam).type) }
 
-            addModule(name, ModuleIdentifier(params))
-        }
-        else
-            closeScope()
+    override fun outATemplateModuledcl(node: ATemplateModuledcl) {
+        closeScope()
     }
 
     override fun outAModuledclStmt(node: AModuledclStmt) {

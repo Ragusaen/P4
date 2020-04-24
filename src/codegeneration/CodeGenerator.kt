@@ -361,6 +361,7 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
     }
 
     override fun caseATemplateModuledcl(node: ATemplateModuledcl) {
+        inATemplateModuledcl(node)
         var moduleStruct = "struct "
         val identifier = getCode(node.identifier)
         moduleStruct += identifier + "_t {"
@@ -374,6 +375,7 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
 
         moduleStruct += "\n}"
         codeStack.push(moduleStruct)
+        outATemplateModuledcl(node)
     }
 
     override fun caseAInstanceModuledcl(node: AInstanceModuledcl) {
