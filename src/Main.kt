@@ -7,10 +7,19 @@ import semantics.TypeChecking.TypeChecker
 fun main() {
     val input = """
         Int a = 5;
-        Float b = -3.5;
-        Float c = -.3;
-        Float d = -5.;
-        Time g = 5s;
+        Int b = -5;
+        Int c = +5;
+        Float d = 3.5;
+        Float e = -3.5;
+        Float f = +3.5;
+        Float g = .3;
+        Float h = 5.;
+        Time i = 6s;
+        Time j = 5.h;
+        Time k = .6m;
+        Time l = 5.6ms;
+        Time m = -5ms;
+        Time n = +8m;
     """
 
     val lexer = StringLexer(input)

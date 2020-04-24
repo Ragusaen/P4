@@ -8,10 +8,11 @@ Helpers
     cr = 13;
     lf = 10;
     eol = cr lf | cr | lf | '\n';
+    sign = '-' | '+';
     boolliteral = ('false'|'true'|'HIGH'|'LOW');
-    intliteral = '-'?digit+;
-    floatliteral = '-'?(digit+'.'digit*|digit*'.'digit+);
-    timeliteral = (digit*'.')?digit+('ms'|'s'|'m'|'h');
+    intliteral = sign?digit+;
+    floatliteral = sign?(digit+('.'digit*)?|'.'digit+);
+    timeliteral = sign?(intliteral | floatliteral)('ms'|'s'|'m'|'h');
     stringliteral = '"'('\'all | [[all - '"'] - '\'])*'"';
     charliteral = '''('\'all | [[all - '''] - '\'])''';
 
@@ -78,9 +79,9 @@ Tokens
     lbracket = '[';
     rbracket = ']';
     boolliteral = ('false'|'true'|'HIGH'|'LOW');
-    intliteral = '-'?digit+;
-    floatliteral = '-'?digit+'.'digit*|digit*'.'digit+;
-    timeliteral = (digit*'.')?digit+('ms'|'s'|'m'|'h');
+    intliteral = sign?digit+;
+    floatliteral = sign?(digit+('.'digit*)?|'.'digit+);
+    timeliteral = sign?(intliteral | floatliteral)('ms'|'s'|'m'|'h');
     stringliteral = '"'('\'all | [[all - '"'] - '\'])*'"';
     charliteral = '''('\'all | [[all - '''] - '\'])''';
     identifier = anychar (anychar|digit)*;
