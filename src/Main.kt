@@ -9,7 +9,8 @@ fun main() {
         template module A {
             Int a = 3;
             every (1000ms) {
-                ;
+                a += 8;
+                a -= 2;
             }
         }
     """
