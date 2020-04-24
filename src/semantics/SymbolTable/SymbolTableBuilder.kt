@@ -88,17 +88,9 @@ class SymbolTableBuilder : DepthFirstAdapter() {
             is AAnaloginputpinType -> Type.AnalogInputPin
             is AAnalogoutputpinType -> Type.AnalogOutputPin
             is ATimeType -> Type.Time
-            is AArrayType -> createArrayOfDepth(getTypeFromPType(node.type), (node.sizes as AEmptyIndexlist).filler.size + 1)
+            is AArrayType -> Type.createArrayOf(getTypeFromPType(node.type))
             else -> throw Exception("Unsupported node type")
         }
-    }
-
-    private fun createArrayOfDepth(type: Type, n: Int): Type {
-        var cArr = Type.createArrayOf(type)
-        for (i in 1 until n) {
-            cArr = Type.createArrayOf(cArr)
-        }
-        return cArr
     }
 
     /* Tree traversal */
@@ -156,17 +148,6 @@ class SymbolTableBuilder : DepthFirstAdapter() {
 
     override fun inAForStmt(node: AForStmt) = openScope()
     override fun outAForStmt(node: AForStmt) = closeScope()
-
-    override fun inAInnerModule(node: AInnerModule) {
-        if (!node.dcls.isEmpty()) {
-            openScope()
-        }
-    }
-    override fun outAInnerModule(node: AInnerModule) {
-        if (!node.dcls.isEmpty()) {
-            closeScope()
-        }
-    }
 
     override fun outAVardcl(node: AVardcl) {
         val name = node.identifier.text
@@ -229,9 +210,11 @@ class SymbolTableBuilder : DepthFirstAdapter() {
         addVar(name, Identifier(Type.Module))
     }
 
-    override fun outAInstanceModuledcl(node: AInstanceModuledcl) {
-        val name = node.identifier.text
+    override fun inAInstanceModuledcl(node: AInstanceModuledcl) = openScope()
 
+    override fun outAInstanceModuledcl(node: AInstanceModuledcl) {
+        closeScope()
+        val name = node.identifier.text
         addVar(name, Identifier(Type.Module))
     }
 }

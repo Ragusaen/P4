@@ -1,10 +1,7 @@
 package semantics.SymbolTable
 
 import sablecc.analysis.DepthFirstAdapter
-import sablecc.node.ABlockStmt
-import sablecc.node.AForStmt
-import sablecc.node.AInnerModule
-import sablecc.node.Start
+import sablecc.node.*
 
 open class ScopedTraverser(protected val symbolTable: SymbolTable) : DepthFirstAdapter() {
 
@@ -18,15 +15,9 @@ open class ScopedTraverser(protected val symbolTable: SymbolTable) : DepthFirstA
     override fun inAForStmt(node: AForStmt) = symbolTable.openScope()
     override fun outAForStmt(node: AForStmt) = symbolTable.closeScope()
 
-    override fun inAInnerModule(node: AInnerModule) {
-        if (!node.dcls.isEmpty()) {
-            symbolTable.openScope()
-        }
-    }
-    override fun outAInnerModule(node: AInnerModule) {
-        if (!node.dcls.isEmpty()) {
-            symbolTable.closeScope()
-        }
-    }
+    override fun inATemplateModuledcl(node: ATemplateModuledcl) = symbolTable.openScope()
+    override fun outATemplateModuledcl(node: ATemplateModuledcl) = symbolTable.closeScope()
 
+    override fun inAInstanceModuledcl(node: AInstanceModuledcl) = symbolTable.openScope()
+    override fun outAInstanceModuledcl(node: AInstanceModuledcl) = symbolTable.closeScope()
 }
