@@ -177,6 +177,9 @@ internal class SymbolTableBuilderTest {
         val st = stb.buildSymbolTable(s)
 
         assertNotNull(st.findVar("a"))
+        st.openScope()
+        st.openScope()
+        assertNotNull(st.findVar("b"))
     }
 
     @Test

@@ -6,17 +6,12 @@ import semantics.TypeChecking.TypeChecker
 
 fun main() {
     val input = """
-        Int a = 5;
-        Int b = -5;
-        Float c = 3.5;
-        Float d = -3.5;
-        Float e = .3;
-        Float f = 5.;
-        Time g = 6s;
-        Time h = 5.h;
-        Time i = .6m;
-        Time j = 5.6ms;
-        Time k = -5ms;
+        template module A {
+            Int a = 3;
+            every (1000ms) {
+                ;
+            }
+        }
     """
 
     val lexer = StringLexer(input)
