@@ -13,9 +13,16 @@ class SymbolTableBuilder : DepthFirstAdapter() {
     private val namedFunctionTable = mutableMapOf<Pair<String, List<Type>>, Identifier>()
     private val nodeFunctionTable = mutableMapOf<Node, Identifier>()
 
-    private val moduleTable = mutableMapOf<String, ModuleIdentifier>()
+    private val templateModuleTable = mutableMapOf<String, TemplateModuleIdentifier>()
+    private val moduleTable = mutableListOf<String>()
+    private val nodeModuleTable = mutableMapOf<Node, String>()
 
     private var rootElementMode = false
+
+    private var anonModuleCount = 0
+    private fun nextAnonName(): String {
+        return "AnonymousModule$anonModuleCount"
+    }
 
     private fun addVar(name:String, identifier: Identifier) {
         // If the name is already used within this scope throw exception
@@ -35,11 +42,20 @@ class SymbolTableBuilder : DepthFirstAdapter() {
         }
     }
 
-    private fun addModule(name: String, identifier: ModuleIdentifier) {
-        if (name !in moduleTable) {
-            moduleTable[name] = identifier
+    private fun addTemplateModule(node: Node, name: String, identifier: TemplateModuleIdentifier) {
+        if (name !in templateModuleTable) {
+            templateModuleTable[name] = identifier
+            nodeModuleTable[node] = name
         } else
-            throw IdentifierAlreadyDeclaredException("Module with name $name has already been declared.")
+            throw IdentifierAlreadyDeclaredException("Template module with name $name has already been declared.")
+    }
+
+    private fun addModule(node: Node, name: String) {
+        if ( name !in moduleTable) {
+            moduleTable.add(name)
+            nodeModuleTable[node] = name
+        } else
+            throw IdentifierAlreadyDeclaredException("Module with name $name has already been declared")
     }
 
     private fun checkHasBeenDeclared(name: String) {
@@ -74,7 +90,7 @@ class SymbolTableBuilder : DepthFirstAdapter() {
         if (currentScope.parent != null)
             throw Exception("An unknown error occurred while building symbol table. A scope was not closed as expected.")
 
-        return SymbolTable(namedFunctionTable, nodeFunctionTable, currentScope, moduleTable).reset()
+        return SymbolTable(namedFunctionTable, nodeFunctionTable, currentScope, templateModuleTable).reset()
     }
 
     private fun getTypeFromPType(node:PType): Type {
@@ -136,10 +152,19 @@ class SymbolTableBuilder : DepthFirstAdapter() {
             val name = node.identifier.text
             val params = node.param.map { getTypeFromPType((it as AParam).type) }
 
-            addModule(name, ModuleIdentifier(params))
+            addTemplateModule(node, name, TemplateModuleIdentifier(params))
         }
         else
             super.caseATemplateModuledcl(node)
+    }
+
+    override fun caseAInstanceModuledcl(node: AInstanceModuledcl) {
+        if (rootElementMode) {
+            val name = node.identifier.text ?: nextAnonName()
+            addModule(node, name)
+        }
+        else
+            super.caseAInstanceModuledcl(node)
     }
 
     override fun caseAModuledclRootElement(node: AModuledclRootElement) {
@@ -201,8 +226,10 @@ class SymbolTableBuilder : DepthFirstAdapter() {
 
     override fun outAModuledclStmt(node: AModuledclStmt) {
         val name = node.instance.text
+        val template = node.template
 
-        addVar(name, Identifier(Type.Module))
+
+        addModule(node, name)
     }
 
     override fun inAInstanceModuledcl(node: AInstanceModuledcl) = openScope()

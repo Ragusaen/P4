@@ -30,6 +30,8 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
 
     private val singleIndent = "    "
 
+    private val taskPrefix = "Task"
+
     private fun Stack<String>.pushLineIndented(s:String, indentation:Int = indentLevel) = codeStack.push(singleIndent.repeat(indentation) + s +"\n")
 
     private fun getIndent():String = singleIndent.repeat(indentLevel)
@@ -39,6 +41,7 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
     }
 
     private var codeStack = Stack<String>()
+
 
     fun generate(startNode: Start): String {
         caseStart(startNode)
@@ -442,47 +445,48 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
 
     override fun caseAInstanceModuledcl(node: AInstanceModuledcl) {
         inAInstanceModuledcl(node)
-        var moduleStruct = "struct "
-        val identifier = getCode(node.identifier)
-        moduleStruct += identifier + "_t {"
+        val name = getCode(node.identifier)
+        val inner = getCode(node.innerModule)
 
-        node.innerModule.apply(this)
+        codeStack.push("void Task$name(void *pvParameters) {\n$inner\n}\n")
 
-        val vars = codeStack.pop()
-        val rest = codeStack.pop()
-
-        moduleStruct += "}"
         outAInstanceModuledcl(node)
     }
 
     override fun caseAInnerModule(node: AInnerModule) {
-        var dcls = ""
         indentLevel++
-        for (i in node.dcls) {
-            dcls += getCode(i)
-        }
+        val dcls = node.dcls.map {getCode(it)}.joinToString("\n")
+        val mstruct = getCode(node.moduleStructure)
         indentLevel--
 
-        val structure = getCode(node.moduleStructure)
-
-        codeStack.push(structure)
-        codeStack.push(dcls)
+        codeStack.push("$dcls\n" +
+                "${singleIndent}while (1) {\n" +
+                "$mstruct" +
+                "${singleIndent.repeat(2)}vTaskSuspend(${taskPrefix})\n" +
+                "}")
     }
 
     override fun caseAEveryModuleStructure(node: AEveryModuleStructure) {
         val expr = getCode(node.expr)
-        var body = ""
+        indentLevel++
+        val body = getCode(node.body)
+        indentLevel--
 
-        if (node.body is ABlockStmt)
-            body = getCode(node.body)
-        else {
-            indentLevel++
-            body = "{\n" + getCode(node.body) + "}"
-            indentLevel--
-        }
+        codeStack.push("\n" + // Main loop of structure that runs forever
+                "$body\n" + // Insert the body of the structure
+                "" + // Delay the task for the amount of time given in the expression
+                "${singleIndent}}")
+    }
 
-        //codeStack.push(expr)
-        codeStack.push(body)
+    override fun caseAOnModuleStructure(node: AOnModuleStructure) {
+        val expr = getCode(node.expr)
+        indentLevel++
+        val body = getCode(node.body)
+        indentLevel--
+
+        codeStack.push("${singleIndent}while (1) {\n" + // Main loop of structure that runs forever
+                "$body\n" + // Insert the body of the structure
+                "${singleIndent}}")
     }
 
     override fun caseAArrayType(node: AArrayType) {
@@ -500,4 +504,5 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
 
         codeStack.push("$value[$index]")
     }
+
 }

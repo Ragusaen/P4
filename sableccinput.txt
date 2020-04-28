@@ -133,9 +133,7 @@ Productions
         | {named} module identifier inner_module
             {-> New moduledcl.instance(identifier, inner_module)}
         | {anonymous_no_dcls} module_structure
-            {-> New moduledcl.instance(Null, New inner_module([], module_structure))}
-        | {anonymous_with_dcls} inner_module
-            {-> New moduledcl.instance(Null, inner_module)};
+            {-> New moduledcl.instance(Null, New inner_module([], module_structure))};
 
     params {-> param*} =
         lparen paramlist rparen

@@ -6,4 +6,5 @@ import semantics.TypeChecking.Type
 class Identifier(val type: Type, var isInitialised: Boolean = false) {
 }
 
-class ModuleIdentifier(val paramTypes: List<Type>)
+
+class TemplateModuleIdentifier(val paramTypes: List<Type>)
