@@ -121,7 +121,7 @@ internal class SymbolTableBuilderTest {
         val input = """
             template module thismodule {
                 every (1000) {
-                    for(Int i = b; i < 2; i += 2) {
+                    for (Int i = b; i < 2; i += 2) {
                         Int b = 1;
                     }
                 }

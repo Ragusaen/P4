@@ -1,12 +1,9 @@
 package semantics.TypeChecking
 
 import sablecc.node.*
-import semantics.TypeChecking.Exceptions.IllegalImplicitTypeConversionException
-import semantics.TypeChecking.Exceptions.IncompatibleOperatorException
-import semantics.TypeChecking.Exceptions.IdentifierUsedBeforeAssignmentException
 import semantics.SymbolTable.ScopedTraverser
 import semantics.SymbolTable.SymbolTable
-import semantics.TypeChecking.Exceptions.IdentifierNotDeclaredException
+import semantics.TypeChecking.Exceptions.*
 import java.util.*
 
 class TypeChecker(symbolTable: SymbolTable) : ScopedTraverser(symbolTable) {
@@ -127,29 +124,22 @@ class TypeChecker(symbolTable: SymbolTable) : ScopedTraverser(symbolTable) {
                 ?: throw IncompatibleOperatorException("Cannot apply binary operator $op between types $lType and $rType")
 
         pushType(node, returnType)
-
-        /*if (lType != rType)
-            throw IllegalImplicitTypeConversionException("Cannot apply binary operations between types $lType and $rType")
-
-        val operandType = lType
-
-        if(operandType !in OperatorType.getOperandTypes(node.binop.javaClass.simpleName))
-            throw IncompatibleOperatorException("Operator $op cannot take operands of type $lType")
-
-        var returnType = Type.BOOL
-        if (operandType in OperatorType.getReturnTypes(node.binop.javaClass.simpleName))
-            returnType = operandType
-        else if (returnType !in OperatorType.getReturnTypes(node.binop.javaClass.simpleName))
-            throw IncompatibleOperatorException("Invalid return type")
-
-        pushType(node, returnType)*/
     }
 
     override fun outAVardcl(node: AVardcl) {
         val identifier = symbolTable.findVar(node.identifier.text)!!
-        val expr = node.expr
 
-        if (expr != null) {
+        // Add to typetable
+        typeTable[node] = identifier.type
+
+        if (identifier.type.isArray()) {
+            val typeNode = ((node.parent() as ADclStmt).type as AArrayType)
+            if (typeNode.size == null && node.expr == null) {
+                throw ArrayInitilizationException("Cannot declare array ${node.identifier.text} with no size parameters")
+            }
+        }
+
+        if (node.expr != null) {
             val typeE = typeStack.pop()
             identifier.isInitialised = true
             if (typeE != identifier.type)

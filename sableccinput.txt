@@ -259,21 +259,11 @@ Productions
         | {float} floattype {-> New type.float()}
         | {bool} booltype {-> New type.bool()}
         | {time} timetype {-> New type.time()}
-        | {array} type lbracket indexlist rbracket {-> New type.array(type, indexlist)}
+        | {array} type lbracket expr? rbracket {-> New type.array(type, expr)}
         | {digitaloutputpin} digitaloutputpintype {-> New type.digitaloutputpin()}
         | {digitalinputpin} digitalinputpintype {-> New type.digitalinputpin()}
         | {analogoutputpin} analogoutputpintype {-> New type.analogoutputpin()}
         | {analoginputpin} analoginputpintype {-> New type.analoginputpin()};
-
-    indexlist {-> indexlist} =
-        {empty} filler*
-            {-> New indexlist.empty([filler])}
-        | {filled} arglist
-            {-> New indexlist.filled([arglist.expr])};
-
-    filler {-> filler} =
-        comma
-            {-> New filler()};
 
 /* Expression */
     expr {-> expr} =
@@ -401,9 +391,7 @@ Abstract Syntax Tree
 
 /* Declaration subnodes */
     vardcl = identifier expr?;
-    type = {string} | {char} | {int} | {float} | {bool} | {time} | {digitaloutputpin} | {digitalinputpin} | {analogoutputpin} | {analoginputpin} | {array} type [sizes]:indexlist;
-    indexlist = {empty} filler* | {filled} expr*;
-    filler = ;
+    type = {string} | {char} | {int} | {float} | {bool} | {time} | {digitaloutputpin} | {digitalinputpin} | {analogoutputpin} | {analoginputpin} | {array} type [size]:expr?;
 
 /* Expression */
     expr = {binop} [l]:expr binop [r]:expr | {unop} unop expr | {function_call} identifier expr* | {value} value | {pin} intliteral | {index} [value]:expr [index]:expr;
