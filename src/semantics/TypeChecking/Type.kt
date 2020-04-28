@@ -1,6 +1,8 @@
 package semantics.TypeChecking
 
-class Type private constructor(private val main: EType, private val sub: Type? = null) {
+import semantics.TypeChecking.Exceptions.ArrayInitilizationException
+
+class Type private constructor(private val main: EType, private val subType: Type? = null) {
     private enum class EType {
         INT, FLOAT, STRING, BOOL,
         DIGITALINPUTPIN, DIGITALOUTPUTPIN,
@@ -30,7 +32,7 @@ class Type private constructor(private val main: EType, private val sub: Type? =
         if (other is Type) {
             if (other.main == this.main) {
                 if (main == EType.ARRAY) {
-                    return this.sub == other.sub
+                    return this.subType!! == other.subType!!
                 } else
                     return true
             }
@@ -39,15 +41,15 @@ class Type private constructor(private val main: EType, private val sub: Type? =
     }
 
     fun isArray(): Boolean = main == EType.ARRAY
-    fun getArraySubType(): Type = sub!!
+    fun getArraySubType(): Type = subType!!
 
     override fun toString(): String {
-        return "$main " + if (isArray()) "<$sub>" else ""
+        return "$main " + if (isArray()) "<${subType!!}>" else ""
     }
 
     override fun hashCode(): Int {
         var result = main.hashCode()
-        result = 31 * result + (sub?.hashCode() ?: 0)
+        result = 31 * result + (subType?.hashCode() ?: 0)
         return result
     }
 }

@@ -4,6 +4,7 @@ import sablecc.node.*
 import semantics.SymbolTable.ScopedTraverser
 import semantics.SymbolTable.SymbolTable
 import semantics.TypeChecking.Type
+import java.lang.reflect.Array
 import java.util.*
 
 class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: SymbolTable) : ScopedTraverser(symbolTable) {
@@ -191,7 +192,10 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
     }
 
     override fun caseADclStmt(node: ADclStmt) {
-        val type = getCode(node.type)
+        val type = if (node.type is AArrayType)
+            getCode((node.type as AArrayType).type)
+        else
+            getCode(node.type)
 
         var vardcls = getCode(node.vardcl.first())
         for (v in node.vardcl.drop(1)) {
@@ -215,11 +219,30 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
     override fun caseAVardcl(node: AVardcl) {
         val identifier = getCode(node.identifier)
 
-        if (node.expr != null) {
-            val expr = getCode(node.expr)
-            codeStack.push("$identifier = $expr")
+        if (typeTable[node]!!.isArray()) {
+            if (node.expr != null) {
+                val expr = getCode(node.expr)
+                codeStack.push("$identifier[] = $expr")
+            } else {
+                val typeNode = ((node.parent() as ADclStmt).type as AArrayType)
+                val size = getCode(typeNode.size)
+                val eType = getCode(typeNode.type)
+
+                val cec = ConstantExpressionChecker()
+                typeNode.size.apply(cec)
+                if (cec.isConstant) {
+                    codeStack.push("$identifier[$size]")
+                } else {
+                    codeStack.push("*$identifier = malloc($size * sizeof($eType))")
+                }
+            }
         } else {
-            codeStack.push(identifier)
+            if (node.expr != null) {
+                val expr = getCode(node.expr)
+                codeStack.push("$identifier = $expr")
+            } else {
+                codeStack.push(identifier)
+            }
         }
     }
 	
@@ -460,5 +483,21 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
 
         //codeStack.push(expr)
         codeStack.push(body)
+    }
+
+    override fun caseAArrayType(node: AArrayType) {
+        codeStack.push(getCode(node.type) + "*")
+    }
+
+    override fun caseAArrayValue(node: AArrayValue) {
+        val exprs = node.expr.map {getCode(it)}.joinToString(", ")
+        codeStack.push("{ $exprs }")
+    }
+
+    override fun caseAIndexExpr(node: AIndexExpr) {
+        val index = getCode(node.index)
+        val value = getCode(node.value)
+
+        codeStack.push("$value[$index]")
     }
 }

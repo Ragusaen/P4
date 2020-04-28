@@ -7,7 +7,6 @@ import semantics.TypeChecking.TypeChecker
 fun main() {
     val input = """
         Int global_a = 0;
-        
         template module A {
             Int a = 0;
             every (1000ms) {
