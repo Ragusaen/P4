@@ -8,10 +8,13 @@ fun main() {
     val input = """
         Int[] arr = [0, 1, 2, 5];
         Int[arr[0]] subArr;
-        
-        template module arfr {
-            every (100s)
-            ;
+            
+        template module A {
+            Int a = 3;
+            every (1000ms) {
+                a += 8;
+                a -= 2;
+            }
         }
     """
 
