@@ -68,6 +68,7 @@ class TypeChecker(symbolTable: SymbolTable) : ScopedTraverser(symbolTable) {
     }
 
     override fun outAEveryModuleStructure(node: AEveryModuleStructure) {
+        super.outAEveryModuleStructure(node)
         val conditionType = typeStack.pop()
 
         if (conditionType != Type.Time)
@@ -82,6 +83,7 @@ class TypeChecker(symbolTable: SymbolTable) : ScopedTraverser(symbolTable) {
     }
 
     override fun outAForStmt(node: AForStmt) {
+        super.outAForStmt(node)
         val conditionType = typeStack.pop()
 
         if (conditionType != Type.Bool)
@@ -158,6 +160,7 @@ class TypeChecker(symbolTable: SymbolTable) : ScopedTraverser(symbolTable) {
     }
 
     override fun inAFunctiondcl(node: AFunctiondcl) {
+        super.inAFunctiondcl(node)
         currentFunctionReturnType = symbolTable.findFun(node).type
     }
 

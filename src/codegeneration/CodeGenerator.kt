@@ -27,9 +27,15 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
 
     private var indentLevel = 0
 
-    private fun Stack<String>.pushLineIndented(s:String, indentation:Int = indentLevel) = codeStack.push("    ".repeat(indentation) + s +"\n")
+    private val singleIndent = "    "
 
-    private fun getIndent():String = "    ".repeat(indentLevel)
+    private fun Stack<String>.pushLineIndented(s:String, indentation:Int = indentLevel) = codeStack.push(singleIndent.repeat(indentation) + s +"\n")
+
+    private fun getIndent():String = singleIndent.repeat(indentLevel)
+
+    private fun toSimpleCode(s:String):String {
+        return s.trim().trim { it == ';' }
+    }
 
     private var codeStack = Stack<String>()
 
@@ -46,11 +52,8 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
     }
 
     override fun caseAUnopExpr(node: AUnopExpr) {
-        node.expr.apply(this)
-        val expr = codeStack.pop()
-
-        node.expr.apply(this)
-        val unop = codeStack.pop()
+        val expr = getCode(node.expr)
+        val unop = getCode(node.unop)
 
         codeStack.push("${unop}${expr}")
     }
@@ -128,38 +131,63 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
     }
 
     override fun caseAIfStmt(node: AIfStmt) {
-        node.ifBody.apply(this)
-        node.expr.apply(this)
-        val cond = codeStack.pop()
-        val ifBody = codeStack.pop()
-        if (node.elseBody != null) {
-            node.elseBody.apply(this)
-            val elseBody = codeStack.pop()
-            codeStack.push("if ($cond) $ifBody else $elseBody\n")
-        } else {
-            codeStack.push("if ($cond) $ifBody\n")
+        val cond = getCode(node.condition)
+        var res = getIndent() + "if ($cond)\n"
+
+        if (node.ifBody is ABlockStmt)
+            res += getCode(node.ifBody)
+        else {
+            indentLevel++
+            res += getCode(node.ifBody)
+            indentLevel--
         }
+
+        if (node.elseBody != null) {
+            res += getIndent() + "else\n"
+            if (node.elseBody is ABlockStmt)
+                res += getCode(node.elseBody)
+            else {
+                indentLevel++
+                res += getCode(node.elseBody)
+                indentLevel--
+            }
+        }
+
+        codeStack.push(res)
     }
 
     override fun caseAWhileStmt(node: AWhileStmt) {
-        node.body.apply(this)
-        node.condition.apply(this)
-        val cond = codeStack.pop()
-        val body = codeStack.pop()
-        codeStack.pushLineIndented("while ($cond)\n$body")
+        val cond = getCode(node.condition)
+        var res = getIndent() + "while ($cond)\n"
+
+        if (node.body is ABlockStmt)
+            res += getCode(node.body)
+        else {
+            indentLevel++
+            res += getCode(node.body)
+            indentLevel--
+        }
+
+        codeStack.push(res)
     }
 
     override fun caseAForStmt(node: AForStmt) {
-        node.body.apply(this)
-        node.update.apply(this)
-        node.condition.apply(this)
-        node.init.apply(this)
-        val init = codeStack.pop()
-        val cond = codeStack.pop()
-        val update = codeStack.pop()
-        val body = codeStack.pop()
+        inAForStmt(node)
+        val init = getCode(node.init)
+        val cond = getCode(node.condition)
+        val update = getCode(node.update)
+        var res = getIndent() + "for (${toSimpleCode(init)}; ${toSimpleCode(cond)}; ${toSimpleCode(update)})\n"
 
-        codeStack.pushLineIndented("for ($init; $cond; $update)\n$body")
+        if (node.body is ABlockStmt)
+            res += getCode(node.body)
+        else {
+            indentLevel++
+            res += getCode(node.body)
+            indentLevel--
+        }
+
+        codeStack.push(res)
+        outAForStmt(node)
     }
 
     override fun caseADclStmt(node: ADclStmt) {
@@ -204,38 +232,35 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
             block += getCode(s)
         }
         indentLevel--
-
         block += getIndent() + "}\n"
-        codeStack.push(block)
 
+        codeStack.push(block)
         outABlockStmt(node)
     }
 
     override fun caseANoStmtStmt(node: ANoStmtStmt?) {
-        codeStack.push(";\n")
+        codeStack.pushLineIndented(";")
     }
 
     override fun caseABreakStmt(node: ABreakStmt?) {
-        codeStack.push("break;\n")
+        codeStack.pushLineIndented("break;")
     }
 
     override fun caseAContinueStmt(node: AContinueStmt?) {
-        codeStack.push("continue;\n")
+        codeStack.pushLineIndented("continue;")
     }
 
     override fun caseAExprStmt(node: AExprStmt) {
-        node.expr.apply(this)
-        val expr = codeStack.pop()
-        codeStack.push("$expr;\n")
+        val expr = getCode(node.expr)
+        codeStack.pushLineIndented("$expr;")
     }
 
     override fun caseAReturnStmt(node: AReturnStmt) {
         if (node.expr != null) {
-            node.expr.apply(this)
-            val expr = codeStack.pop()
-            codeStack.push("return $expr;\n")
+            val expr = getCode(node)
+            codeStack.pushLineIndented("return $expr;")
         } else {
-            codeStack.push("return;\n")
+            codeStack.pushLineIndented("return;")
         }
     }
 
@@ -376,7 +401,7 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
         var moduleCode = ""
         val identifier =  getCode(node.identifier)
         moduleStruct += identifier + "_t {\n"
-        moduleFunDcl += identifier + "_f {\n"
+        moduleFunDcl += identifier + "_f() "
 
         node.innerModule.apply(this)
 
@@ -384,7 +409,7 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
         moduleCode += codeStack.pop()
 
         moduleStruct += "}\n\n"
-        moduleCode += "}\n\n"
+        moduleCode += "\n\n"
 
         codeStack.push(moduleStruct)
         codeStack.push(moduleFunDcl)
@@ -408,26 +433,32 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
     }
 
     override fun caseAInnerModule(node: AInnerModule) {
-        indentLevel++
         var dcls = ""
-
+        indentLevel++
         for (i in node.dcls) {
             dcls += getCode(i)
         }
+        indentLevel--
+
         val structure = getCode(node.moduleStructure)
 
         codeStack.push(structure)
         codeStack.push(dcls)
-        indentLevel--
     }
 
     override fun caseAEveryModuleStructure(node: AEveryModuleStructure) {
-        val body = getCode(node.body)
         val expr = getCode(node.expr)
+        var body = ""
 
-        val res = "$body"
+        if (node.body is ABlockStmt)
+            body = getCode(node.body)
+        else {
+            indentLevel++
+            body = "{\n" + getCode(node.body) + "}"
+            indentLevel--
+        }
 
         //codeStack.push(expr)
-        codeStack.push(res)
+        codeStack.push(body)
     }
 }

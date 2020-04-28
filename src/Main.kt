@@ -6,12 +6,22 @@ import semantics.TypeChecking.TypeChecker
 
 fun main() {
     val input = """
+        Int global_a = 0;
+        
         template module A {
-            Int a = 3;
+            Int a = 0;
             every (1000ms) {
-                a += 8;
-                a -= 2;
+                while(a < 10) {
+                    a += 1;
+                    global_a += 1;
+                }
             }
+        }
+
+        template module BA {
+            Int a = 0;
+            every (1000ms)
+                {a += 3;}
         }
     """
 

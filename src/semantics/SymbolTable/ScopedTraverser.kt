@@ -24,9 +24,7 @@ open class ScopedTraverser(protected val symbolTable: SymbolTable) : DepthFirstA
     override fun outAFunctiondcl(node: AFunctiondcl) = symbolTable.closeScope()
 
     override fun inATemplateModuledcl(node: ATemplateModuledcl) = symbolTable.openScope()
-
     override fun outATemplateModuledcl(node: ATemplateModuledcl) = symbolTable.closeScope()
-
 
     override fun inAInstanceModuledcl(node: AInstanceModuledcl) = symbolTable.openScope()
     override fun outAInstanceModuledcl(node: AInstanceModuledcl) = symbolTable.closeScope()
