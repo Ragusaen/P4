@@ -7,13 +7,11 @@ import semantics.TypeChecking.TypeChecker
 fun main() {
     val input = """
         Int global_a = 0;
+        
         module A {
             Int a = 0;
-            every (1000ms) {
-                while(a < 10) {
-                    a += 1;
-                    global_a += 1;
-                }
+            on rising (a > 3) {
+                ;
             }
         }
     """

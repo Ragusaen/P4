@@ -57,7 +57,7 @@ class TypeChecker(symbolTable: SymbolTable) : ScopedTraverser(symbolTable) {
         // The expressions are popped in reverse order
         types.reverse()
 
-        val id = symbolTable.findModule(name)
+        val id = symbolTable.findTemplateModule(name)
                 ?: throw IdentifierNotDeclaredException("Module with name $name does not exist")
 
         if (id.paramTypes != types)

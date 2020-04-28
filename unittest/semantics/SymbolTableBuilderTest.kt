@@ -231,7 +231,7 @@ internal class SymbolTableBuilderTest {
         val s = parser.parse()
         val st = stb.buildSymbolTable(s)
 
-        assertNotNull(st.findModule("thismodule"))
+        assertNotNull(st.findTemplateModule("thismodule"))
         assertNotNull(st.findVar("thisinstance"))
     }
 
