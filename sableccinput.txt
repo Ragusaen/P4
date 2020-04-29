@@ -83,9 +83,11 @@ Tokens
     timeliteral = (intliteral | floatliteral)('ms'|'s'|'m'|'h');
     stringliteral = '"'('\'all | [[all - '"'] - '\'])*'"';
     charliteral = '''('\'all | [[all - '''] - '\'])''';
-    identifier = anychar (anychar|digit)*;
     whitespace = (' ' | tab | lf | eol)+;
     comment = '/*' all* '*/' | '//'all*eol;
+    digitalpinliteral = 'D'digit+;
+    analogpinliteral = 'A'digit+;
+    identifier = anychar (anychar|digit)*;
 
 Ignored Tokens
     whitespace, comment;
@@ -149,10 +151,8 @@ Productions
     module_structure {-> module_structure} =
         {every} every lparen expr rparen stmt
             {-> New module_structure.every(expr, stmt)}
-        | {on_rising} on rising lparen expr rparen stmt
-            {-> New module_structure.on(New statechange.rising(), expr, stmt)}
-        | {on_falling} on falling lparen expr rparen stmt
-            {-> New module_structure.on(New statechange.falling(), expr, stmt)};
+        | {on} on lparen expr rparen stmt
+            {-> New module_structure.on(expr, stmt)};
 
 /* Statement */
     stmt {-> stmt} =
@@ -192,10 +192,8 @@ Productions
             {-> dcl.stmt}
         | {assign} identifier assign expr
             {-> New stmt.assign(identifier, expr, Null)}
-        | {set_to} set identifier to boolliteral
-            {-> New stmt.set_to(identifier, boolliteral)}
-        | {read} read identifier
-            {-> New stmt.read(identifier)}
+        | {set_to} set [pin]:expr to [value]:expr
+            {-> New stmt.set_to(pin, value)}
         | {additionassign} identifier additionassign expr
             {-> New stmt.assign(identifier, expr, New binop.addition())}
         | {subtractionassign} identifier subtractionassign expr
@@ -303,6 +301,12 @@ Productions
             {-> New expr.unop(New unop.not(), New expr.binop(relation.expr, New binop.greaterthan(), term.expr))}
         | {greaterthanorequalto} relation greaterthanorequalto term
             {-> New expr.unop(New unop.not(), New expr.binop(relation.expr, New binop.lessthan(), term.expr))}
+        | {read} read_expr
+            {-> read_expr.expr};
+
+    read_expr {-> expr} =
+        {read} read [pin]:term
+            {-> New expr.read(pin.expr)}
         | {term} term
             {-> term.expr};
 
@@ -368,7 +372,11 @@ Productions
         | {time} timeliteral
             {-> New expr.value(New value.time(timeliteral))}
         | {array} lbracket arglist rbracket
-            {-> New expr.value(New value.array([arglist.expr]))};
+            {-> New expr.value(New value.array([arglist.expr]))}
+        | {digitalpinliteral} digitalpinliteral
+            {-> New expr.value(New value.digitalpin(digitalpinliteral))}
+        | {analogpinliteral} analogpinliteral
+            {-> New expr.value(New value.analogpin(analogpinliteral))};
 
 Abstract Syntax Tree
     program = root_element*;
@@ -381,18 +389,17 @@ Abstract Syntax Tree
 /* Module */
     moduledcl = {template} identifier param* inner_module | {instance} identifier? inner_module;
     inner_module = [dcls]:stmt* module_structure;
-    module_structure = {every} expr [body]:stmt | {on} statechange expr [body]:stmt;
-    statechange = {rising} | {falling};
+    module_structure = {every} expr [body]:stmt | {on} expr [body]:stmt;
 
 /* Statement */
-    stmt = {no_stmt} | {dcl} type vardcl* | {moduledcl} [template]:identifier [instance]:identifier expr* | {start} identifier | {stop} |{read} identifier | {set_to} identifier boolliteral | {delay} expr | {delayuntil} expr | {assign} identifier expr binop? | {block} stmt* | {if} [condition]:expr [if_body]:stmt [else_body]:stmt? | {while} [condition]:expr [body]:stmt | {for} [init]:stmt [condition]:expr [update]:stmt [body]:stmt | {expr} expr | {return} expr? | {break} | {continue};
+    stmt = {no_stmt} | {dcl} type vardcl* | {moduledcl} [template]:identifier [instance]:identifier expr* | {start} identifier | {stop} | {set_to} [pin]:expr [value]:expr | {delay} expr | {delayuntil} expr | {assign} identifier expr binop? | {block} stmt* | {if} [condition]:expr [if_body]:stmt [else_body]:stmt? | {while} [condition]:expr [body]:stmt | {for} [init]:stmt [condition]:expr [update]:stmt [body]:stmt | {expr} expr | {return} expr? | {break} | {continue};
 
 /* Declaration subnodes */
     vardcl = identifier expr?;
     type = {string} | {char} | {int} | {float} | {bool} | {time} | {digitaloutputpin} | {digitalinputpin} | {analogoutputpin} | {analoginputpin} | {array} type [size]:expr?;
 
 /* Expression */
-    expr = {binop} [l]:expr binop [r]:expr | {unop} unop expr | {function_call} identifier expr* | {value} value | {pin} intliteral | {index} [value]:expr [index]:expr;
+    expr = {binop} [l]:expr binop [r]:expr | {unop} unop expr | {function_call} identifier expr* | {value} value | {pin} intliteral | {index} [value]:expr [index]:expr | {read} [pin]:expr;
     binop = {addition} | {subtraction} | {multiplication} | {division} | {modulo} | {or} | {and} | {equal} | {greaterthan} | {lessthan};
     unop = {minus} | {plus} | {not};
-    value = {identifier} identifier | {int} intliteral | {float} floatliteral | {string} stringliteral | {char} charliteral | {bool} boolliteral | {time} timeliteral | {array} expr*;
+    value = {identifier} identifier | {int} intliteral | {float} floatliteral | {string} stringliteral | {char} charliteral | {bool} boolliteral | {time} timeliteral | {array} expr* | {digitalpin} digitalpinliteral | {analogpin} analogpinliteral;

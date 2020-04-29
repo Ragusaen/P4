@@ -7,6 +7,7 @@ class Type private constructor(private val main: EType, private val subType: Typ
         INT, FLOAT, STRING, BOOL,
         DIGITALINPUTPIN, DIGITALOUTPUTPIN,
         ANALOGINPUTPIN, ANALOGOUTPUTPIN,
+        DIGITALPIN, ANALOGPIN,
         TIME, VOID, MODULE, ARRAY;
     }
 
@@ -18,6 +19,8 @@ class Type private constructor(private val main: EType, private val subType: Typ
         val Time = Type(EType.TIME)
         val Void = Type(EType.VOID)
         val Module = Type(EType.MODULE)
+        val DigitalPin = Type(EType.DIGITALPIN)
+        val AnalogPin = Type(EType.ANALOGPIN)
         val DigitalInputPin = Type(EType.DIGITALINPUTPIN)
         val DigitalOututPin = Type(EType.DIGITALOUTPUTPIN)
         val AnalogInputPin = Type(EType.ANALOGINPUTPIN)
@@ -42,6 +45,8 @@ class Type private constructor(private val main: EType, private val subType: Typ
 
     fun isArray(): Boolean = main == EType.ARRAY
     fun getArraySubType(): Type = subType!!
+
+    fun isPin(): Boolean = (main in EType.DIGITALINPUTPIN..EType.ANALOGPIN)
 
     override fun toString(): String {
         return "$main " + if (isArray()) "<${subType!!}>" else ""

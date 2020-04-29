@@ -144,7 +144,15 @@ class TypeChecker(symbolTable: SymbolTable) : ScopedTraverser(symbolTable) {
         if (node.expr != null) {
             val typeE = typeStack.pop()
             identifier.isInitialised = true
-            if (typeE != identifier.type)
+            if (identifier.type.isPin()) {
+                if (typeE != identifier.type) {
+                    if ((identifier.type == Type.AnalogOutputPin || identifier.type == Type.AnalogInputPin) && typeE != Type.AnalogPin)
+                        throw IllegalImplicitTypeConversionException("Cannot assign type $typeE to an analog pin.")
+                    else if ((identifier.type == Type.DigitalOututPin || identifier.type == Type.DigitalInputPin) && typeE != Type.DigitalPin)
+                        throw IllegalImplicitTypeConversionException("Cannot assign type $typeE to an analog pin.")
+                }
+            }
+            else if (typeE != identifier.type)
                 throw IllegalImplicitTypeConversionException("Cannot initialise variable ${node.identifier.text} of type ${identifier.type} with value of type $typeE.")
         }
     }
@@ -209,6 +217,14 @@ class TypeChecker(symbolTable: SymbolTable) : ScopedTraverser(symbolTable) {
         pushType(node, Type.Time)
     }
 
+    override fun caseTDigitalpinliteral(node: TDigitalpinliteral) {
+        pushType(node, Type.DigitalPin)
+    }
+
+    override fun caseTAnalogpinliteral(node: TAnalogpinliteral) {
+        pushType(node, Type.AnalogPin)
+    }
+
     override fun outAIndexExpr(node: AIndexExpr) {
         val index = typeStack.pop()
         val value = typeStack.pop()
@@ -233,5 +249,34 @@ class TypeChecker(symbolTable: SymbolTable) : ScopedTraverser(symbolTable) {
             pushType(node, Type.createArrayOf(type))
         } else
             throw Exception("Array literal was of size 0 (should have been caught in parser)")
+    }
+
+    override fun outASetToStmt(node: ASetToStmt) {
+        val value = typeStack.pop()
+        val pin = typeStack.pop()
+
+        if ((pin == Type.DigitalOututPin || pin == Type.DigitalPin) && value != Type.Bool)
+            throw IllegalImplicitTypeConversionException("Pin was digital so Bool was expected, but instead $value was found")
+        else if ((pin == Type.AnalogOutputPin || pin == Type.AnalogPin) && value != Type.Int)
+            throw IllegalImplicitTypeConversionException("Pin was analog so an Int between 0 and 1023 (inclusive) was expected, but $value was found")
+        else if (pin == Type.AnalogInputPin || pin == Type.DigitalInputPin)
+            throw IllegalImplicitTypeConversionException("Cannot set value of input pin.")
+        else if (!(pin == Type.DigitalOututPin || pin == Type.AnalogOutputPin || pin == Type.DigitalPin || pin == Type.AnalogPin))
+            throw IllegalImplicitTypeConversionException("Expected type DigitalOutputPin, AnalogOutputPin, DigitalPin or AnalogPin, but got $pin")
+
+        typeTable[node] = pin
+    }
+
+    override fun outAReadExpr(node: AReadExpr) {
+        val pin = typeStack.pop()
+
+        if (pin == Type.DigitalInputPin || pin == Type.DigitalPin)
+            pushType(node, Type.Bool)
+        else if (pin == Type.AnalogInputPin || pin == Type.AnalogPin)
+            pushType(node, Type.Int)
+        else if (pin == Type.DigitalOututPin || pin  == Type.AnalogOutputPin)
+            throw IllegalImplicitTypeConversionException("Cannot read output pin of type $pin, read can only take DigitalInputPin or AnalogInputPin.")
+        else
+            throw IllegalImplicitTypeConversionException("Read can only take DigitalInputPin or AnalogInputPin, but got $pin.")
     }
 }

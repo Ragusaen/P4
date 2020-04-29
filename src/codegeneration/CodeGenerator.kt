@@ -23,10 +23,13 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
             loopCode += code
         }
 
-        fun finalize(): String ="$globalCode \nvoid setup() { $setupCode } \nvoid loop() { $loopCode }"
+        fun finalize(): String ="$globalCode \n void loop() {}\n"
     }
 
     private var indentLevel = 0
+
+    private fun increaseIndent(n: Int = 1) { indentLevel += n }
+    private fun decreaseIndent(n: Int = 1) { indentLevel -= n }
 
     private val singleIndent = "    "
 
@@ -48,11 +51,11 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
         var res = "void setup() {\n"
         instanceModuleAuxes.forEach { res += "xTaskCreate(" +
                 taskPrefix + it.name +
-                ", \"${it.name}\", 128, NULL, 0, ${taskPrefix + it.name}_Handler );\n" +
-                "xTaskSuspend(${taskPrefix + it.name});\n" }
+                ", \"${it.name}\", 128, NULL, 0, &${taskPrefix + it.name}_Handle );\n" +
+                "vTaskSuspend(${taskPrefix + it.name}_Handle);\n" }
 
 
-        res += "xTaskCreate(ControllerTask, \"Controller\", 128, NULL, 0, NULL)\n"
+        res += "xTaskCreate(ControllerTask, \"Controller\", 128, NULL, 0, NULL);\n"
 
         res += "}\n"
         return res
@@ -61,19 +64,27 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
     private fun generateControllerTask(): String {
         var res = "void ControllerTask(void *pvParameters) {\n"
 
-        instanceModuleAuxes.forEach { res += "int ${it.name}LastValue;\n" }
+        instanceModuleAuxes.forEach { res += "${if (it.isEveryStruct) "unsigned long" else "Bool"} ${it.name}LastValue = 0;\n" }
 
         res += "\nwhile (1) {\n"
 
         for (ima in instanceModuleAuxes) {
             if (ima.isEveryStruct) {
-                res += "if (millis() - ${ima.name}LastValue >= ${ima.expr}) {\n${ima.name}LastValue = millis();\nxTaskResume(Task${ima.name}_Handler);\n}\n"
+                res += "if (millis() - ${ima.name}LastValue >= ${ima.expr}) {\n${ima.name}LastValue = millis();\nvTaskResume(Task${ima.name}_Handle);\n}\n"
             } else {
-                res += "if (${ima.expr} && !${ima.name}lastValue) {\nxTaskResume(Task${ima.name}_Handler);\n}\n${ima.name}lastValue) = ${ima.expr};\n"
+                res += "if (${ima.expr} && !${ima.name}LastValue) {\nvTaskResume(Task${ima.name}_Handle);\n}\n${ima.name}LastValue = ${ima.expr};\n"
             }
         }
 
-        res += "}\n"
+        res += "}\n}\n"
+        return res
+    }
+
+    private fun generateTopCode(): String {
+        var res = "#include <Arduino_FreeRTOS.h>\n\ntypedef char Bool;\ntypedef unsigned int Time;\n"
+
+        instanceModuleAuxes.forEach { res += "TaskHandle_t Task${it.name}_Handle;\n" }
+
         return res
     }
 
@@ -81,6 +92,7 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
         caseStart(startNode)
         codeStack.push(generateControllerTask())
         codeStack.push(generateSetup())
+        Emitter.emitGlobal(generateTopCode())
         for (i in codeStack)
             Emitter.emitGlobal(i)
         return Emitter.finalize()
@@ -177,9 +189,9 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
         if (node.ifBody is ABlockStmt)
             res += getCode(node.ifBody)
         else {
-            indentLevel++
+            increaseIndent()
             res += getCode(node.ifBody)
-            indentLevel--
+            decreaseIndent()
         }
 
         if (node.elseBody != null) {
@@ -187,9 +199,9 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
             if (node.elseBody is ABlockStmt)
                 res += getCode(node.elseBody)
             else {
-                indentLevel++
+                increaseIndent()
                 res += getCode(node.elseBody)
-                indentLevel--
+                decreaseIndent()
             }
         }
 
@@ -203,9 +215,9 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
         if (node.body is ABlockStmt)
             res += getCode(node.body)
         else {
-            indentLevel++
+            increaseIndent()
             res += getCode(node.body)
-            indentLevel--
+            decreaseIndent()
         }
 
         codeStack.push(res)
@@ -221,9 +233,9 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
         if (node.body is ABlockStmt)
             res += getCode(node.body)
         else {
-            indentLevel++
+            increaseIndent()
             res += getCode(node.body)
-            indentLevel--
+            decreaseIndent()
         }
 
         codeStack.push(res)
@@ -244,7 +256,7 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
     }
 
     override fun caseAAssignStmt(node: AAssignStmt) {
-        val id = getCode(node.identifier)
+        val id = symbolTable.findVar(getCode(node.identifier))!!.outName
         val expr = getCode(node.expr)
 
         if (node.binop != null) {
@@ -289,11 +301,11 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
         inABlockStmt(node)
         var block = getIndent() + "{\n"
 
-        indentLevel++
+        increaseIndent()
         for (s in node.stmt) {
             block += getCode(s)
         }
-        indentLevel--
+        decreaseIndent()
         block += getIndent() + "}\n"
 
         codeStack.push(block)
@@ -486,7 +498,7 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
 
     override fun caseAInstanceModuledcl(node: AInstanceModuledcl) {
         inAInstanceModuledcl(node)
-        val name = getCode(node.identifier)
+        val name = symbolTable.findModule(node)
         val inner = getCode(node.innerModule)
 
         codeStack.push("void Task$name(void *pvParameters) {\n$inner\n}\n")
@@ -501,9 +513,9 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
 
         node.moduleStructure.apply(this) // Pushes twice
 
-        indentLevel++
+        increaseIndent()
         val mstruct = codeStack.pop()
-        indentLevel--
+        decreaseIndent()
 
         val expr = codeStack.pop()
 
@@ -512,15 +524,15 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
         codeStack.push(dcls)
         codeStack.push("${singleIndent}while (1) {\n" +
                 "$mstruct" +
-                "${singleIndent.repeat(2)}vTaskSuspend(${taskPrefix}${moduleName}_Handler);\n" +
+                "${singleIndent.repeat(2)}vTaskSuspend(${taskPrefix}${moduleName}_Handle);\n" +
                 "$singleIndent}")
     }
 
     override fun caseAEveryModuleStructure(node: AEveryModuleStructure) {
         val expr = getCode(node.expr)
-        indentLevel++
+        increaseIndent(2)
         val body = getCode(node.body)
-        indentLevel--
+        decreaseIndent(2)
 
         codeStack.push(expr)
         codeStack.push(body)
@@ -528,9 +540,9 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
 
     override fun caseAOnModuleStructure(node: AOnModuleStructure) {
         val expr = getCode(node.expr)
-        indentLevel++
+        increaseIndent(2)
         val body = getCode(node.body)
-        indentLevel--
+        decreaseIndent(2)
 
         codeStack.push(expr)
         codeStack.push(body)
@@ -553,7 +565,50 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
     }
 
     override fun caseADclRootElement(node: ADclRootElement) {
-        Emitter.emitGlobal(getCode(node.stmt))
+        codeStack.push(getCode(node.stmt))
+    }
+
+    override fun caseASetToStmt(node: ASetToStmt) {
+        val pin = getCode(node.pin)
+        val value = getCode(node.value)
+
+        if (typeTable[node] == Type.AnalogOutputPin) {
+            codeStack.pushLineIndented("analogWrite($pin, $value);")
+        } else {
+            codeStack.pushLineIndented("digitalWrite($pin, $value);")
+        }
+    }
+
+    override fun caseAReadExpr(node: AReadExpr) {
+        val pin = getCode(node.pin)
+
+        if (typeTable[node] == Type.Bool)
+            codeStack.push("digitalRead($pin)")
+        else
+            codeStack.push("analogRead($pin)")
+    }
+
+    override fun caseTDigitalpinliteral(node: TDigitalpinliteral) {
+        codeStack.push(node.text.substring(1))
+    }
+
+    override fun caseTAnalogpinliteral(node: TAnalogpinliteral) {
+        codeStack.push(node.text)
+    }
+
+    override fun caseTAnaloginputpintype(node: TAnaloginputpintype) {
+        codeStack.push("int")
+    }
+    override fun caseTAnalogoutputpintype(node: TAnalogoutputpintype) {
+        codeStack.push("int")
+    }
+
+    override fun caseTDigitalinputpintype(node: TDigitalinputpintype?) {
+        codeStack.push("int")
+    }
+
+    override fun caseTDigitaloutputpintype(node: TDigitaloutputpintype?) {
+        codeStack.push("int")
     }
 
 }

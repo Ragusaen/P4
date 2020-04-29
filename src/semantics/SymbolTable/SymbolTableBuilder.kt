@@ -22,7 +22,7 @@ class SymbolTableBuilder : DepthFirstAdapter() {
 
     private var anonModuleCount = 0
     private fun nextAnonName(): String {
-        return "AnonymousModule$anonModuleCount"
+        return "AnonymousModule${anonModuleCount++}"
     }
 
     private fun addVar(name:String, type: Type, isInit: Boolean = false) {
@@ -163,7 +163,7 @@ class SymbolTableBuilder : DepthFirstAdapter() {
 
     override fun caseAInstanceModuledcl(node: AInstanceModuledcl) {
         if (rootElementMode) {
-            val name = node.identifier.text ?: nextAnonName()
+            val name = node.identifier?.text ?: nextAnonName()
             addModule(node, name)
         }
         else
@@ -228,13 +228,13 @@ class SymbolTableBuilder : DepthFirstAdapter() {
 
     override fun inAInstanceModuledcl(node: AInstanceModuledcl) {
         openScope()
-        val name = node.identifier.text
+        val name = nodeModuleTable[node]!!
         currentVarPrefix = name + "_"
     }
 
     override fun outAInstanceModuledcl(node: AInstanceModuledcl) {
         closeScope()
-        val name = node.identifier.text
+        val name = nodeModuleTable[node]!!
         addVar(name, Type.Module)
     }
 

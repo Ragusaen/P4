@@ -1,7 +1,3 @@
 
-
-
-typedef struct array_t {
-    void* dst;
-    int size;
-} Array;
+typedef char Bool;
+typedef unsigned int Time;
