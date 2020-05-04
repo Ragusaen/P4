@@ -392,7 +392,7 @@ Abstract Syntax Tree
     module_structure = {every} expr [body]:stmt | {on} expr [body]:stmt;
 
 /* Statement */
-    stmt = {no_stmt} | {dcl} type vardcl* | {moduledcl} [template]:identifier [instance]:identifier expr* | {start} identifier | {stop} | {set_to} [pin]:expr [value]:expr | {delay} expr | {delayuntil} expr | {assign} identifier expr binop? | {block} stmt* | {if} [condition]:expr [if_body]:stmt [else_body]:stmt? | {while} [condition]:expr [body]:stmt | {for} [init]:stmt [condition]:expr [update]:stmt [body]:stmt | {expr} expr | {return} expr? | {break} | {continue};
+    stmt = {no_stmt} | {dcl} type vardcl* | {moduledcl} [template]:identifier [instance]:identifier expr* | {start} identifier | {stop} identifier | {set_to} [pin]:expr [value]:expr | {delay} expr | {delayuntil} expr | {assign} identifier expr binop? | {block} stmt* | {if} [condition]:expr [if_body]:stmt [else_body]:stmt? | {while} [condition]:expr [body]:stmt | {for} [init]:stmt [condition]:expr [update]:stmt [body]:stmt | {expr} expr | {return} expr? | {break} | {continue};
 
 /* Declaration subnodes */
     vardcl = identifier expr?;
