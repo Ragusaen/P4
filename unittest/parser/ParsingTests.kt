@@ -194,7 +194,7 @@ internal class ParsingTests {
         val input = """
            Time[] t = [];
         """
-        parseString(input)
+        assertThrows<ParserException> { parseString(input) }
     }
 
     @Test
