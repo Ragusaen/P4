@@ -3,8 +3,10 @@ package parser
 import StringLexer
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import sablecc.lexer.LexerException
 import sablecc.node.Start
 import sablecc.parser.Parser
+import sablecc.parser.ParserException
 import semantics.ContextualConstraints.ContextualConstraintAnalyzer
 import semantics.ContextualConstraints.Exceptions.ReturnOutOfFunctionDeclarationException
 import java.lang.Exception
@@ -72,7 +74,7 @@ internal class ParsingTests {
         val input = """
             Float f = .;
         """
-        assertThrows<Exception> { parseString(input) }
+        assertThrows<LexerException> { parseString(input) }
     }
 
     @Test
@@ -128,7 +130,7 @@ internal class ParsingTests {
         val input = """
             Time t = 7t;
         """
-        assertThrows<Exception> { parseString(input) }
+        assertThrows<ParserException> { parseString(input) }
     }
 
     @Test
@@ -168,7 +170,7 @@ internal class ParsingTests {
         val input = """
            Time D5 = 5s; 
         """
-        assertThrows<Exception> { parseString(input) }
+        assertThrows<ParserException> { parseString(input) }
     }
 
     @Test
@@ -176,7 +178,7 @@ internal class ParsingTests {
         val input = """
            Time A5 = 5s; 
         """
-        assertThrows<Exception> { parseString(input) }
+        assertThrows<ParserException> { parseString(input) }
     }
 
     @Test
@@ -217,7 +219,7 @@ internal class ParsingTests {
             template module id {
             }
         """
-        assertThrows<Exception> { parseString(input) }
+        assertThrows<ParserException> { parseString(input) }
     }
 
     @Test
@@ -227,7 +229,7 @@ internal class ParsingTests {
                 Int i = 5;
             }
         """
-        assertThrows<Exception> { parseString(input) }
+        assertThrows<ParserException> { parseString(input) }
     }
 
     @Test
@@ -259,7 +261,7 @@ internal class ParsingTests {
                 Int i = 5;
             }
         """
-        assertThrows<Exception> { parseString(input) }
+        assertThrows<ParserException> { parseString(input) }
     }
 
     @Test
@@ -371,7 +373,7 @@ internal class ParsingTests {
                 if() ;
             }
         """
-        assertThrows<Exception> { parseString(input) }
+        assertThrows<ParserException> { parseString(input) }
     }
 
     @Test
@@ -403,7 +405,7 @@ internal class ParsingTests {
                 while() ;
             }
         """
-        assertThrows<Exception> { parseString(input) }
+        assertThrows<ParserException> { parseString(input) }
     }
 
     @Test
@@ -435,7 +437,7 @@ internal class ParsingTests {
                 for() ;
             }
         """
-        assertThrows<Exception> { parseString(input) }
+        assertThrows<ParserException> { parseString(input) }
     }
 
     @Test
@@ -550,7 +552,7 @@ internal class ParsingTests {
         var input = """
             ;
         """
-        assertThrows<Exception> { parseString(input) }
+        assertThrows<ParserException> { parseString(input) }
     }
 
     @Test
@@ -571,7 +573,7 @@ internal class ParsingTests {
                 start();
             }
         """
-        assertThrows<Exception> { parseString(input) }
+        assertThrows<ParserException> { parseString(input) }
     }
 
     @Test
@@ -601,7 +603,7 @@ internal class ParsingTests {
                 delay();
             }
         """
-        assertThrows<Exception> { parseString(input) }
+        assertThrows<ParserException> { parseString(input) }
     }
 
     @Test
@@ -621,7 +623,7 @@ internal class ParsingTests {
                 delay until();
             }
         """
-        assertThrows<Exception> { parseString(input) }
+        assertThrows<ParserException> { parseString(input) }
     }
 
     @Test
