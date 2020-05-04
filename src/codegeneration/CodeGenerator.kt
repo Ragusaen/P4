@@ -377,10 +377,6 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
         codeStack.push(node.boolliteral.text)
     }
 
-    override fun caseACharValue(node: ACharValue) {
-        codeStack.push(node.charliteral.text)
-    }
-
     override fun caseATimeValue(node: ATimeValue) {
         node.timeliteral.apply(this)
     }
@@ -400,10 +396,6 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
 
     override fun caseABoolType(node: ABoolType) {
         codeStack.push("Bool")
-    }
-
-    override fun caseACharType(node: ACharType) {
-        codeStack.push("char")
     }
 
     override fun caseAStringType(node: AStringType) {

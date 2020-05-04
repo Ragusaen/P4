@@ -13,11 +13,9 @@ Helpers
     floatliteral = '-'?(digit+('.'digit*)?|'.'digit+);
     timeliteral = (intliteral | floatliteral)('ms'|'s'|'m'|'h');
     stringliteral = '"'('\'all | [[all - '"'] - '\'])*'"';
-    charliteral = '''('\'all | [[all - '''] - '\'])''';
 
 Tokens
     stringtype = 'String';
-    chartype = 'Char';
     inttype = 'Int';
     floattype = 'Float';
     booltype = 'Bool';
@@ -82,7 +80,6 @@ Tokens
     floatliteral = '-'?(digit+('.'digit*)?|'.'digit+);
     timeliteral = (intliteral | floatliteral)('ms'|'s'|'m'|'h');
     stringliteral = '"'('\'all | [[all - '"'] - '\'])*'"';
-    charliteral = '''('\'all | [[all - '''] - '\'])''';
     whitespace = (' ' | tab | lf | eol)+;
     comment = '/*' all* '*/' | '//'all*eol;
     digitalpinliteral = 'D'digit+;
@@ -105,7 +102,7 @@ Productions
 
 /* Function */
     functiondcl {-> functiondcl} =
-        fun identifier lparen paramlist? rparen return_type? [body]:simple_stmt
+        fun identifier lparen paramlist? rparen return_type? [body]:stmt
             {-> New functiondcl(identifier, [paramlist.param], return_type.type, body.stmt)};
 
     return_type {-> type} =
@@ -250,7 +247,6 @@ Productions
 
     type {-> type} =
         {string} stringtype {-> New type.string()}
-        | {char} chartype {-> New type.char()}
         | {int} inttype {-> New type.int()}
         | {float} floattype {-> New type.float()}
         | {bool} booltype {-> New type.bool()}
@@ -263,13 +259,7 @@ Productions
 
 /* Expression */
     expr {-> expr} =
-        {pinexpr} pinexpr
-            {-> pinexpr.expr};
-
-    pinexpr {-> expr} =
-        {pin} pin intliteral
-            {-> New expr.pin(intliteral)}
-        | {orexpr} orexpr
+        {orexpr} orexpr
             {-> orexpr.expr};
 
     orexpr {-> expr} =
@@ -365,8 +355,6 @@ Productions
             {-> New expr.value(New value.float(floatliteral))}
         | {string} stringliteral
             {-> New expr.value(New value.string(stringliteral))}
-        | {char} charliteral
-            {-> New expr.value(New value.char(charliteral))}
         | {bool} boolliteral
             {-> New expr.value(New value.bool(boolliteral))}
         | {time} timeliteral
@@ -396,10 +384,10 @@ Abstract Syntax Tree
 
 /* Declaration subnodes */
     vardcl = identifier expr?;
-    type = {string} | {char} | {int} | {float} | {bool} | {time} | {digitaloutputpin} | {digitalinputpin} | {analogoutputpin} | {analoginputpin} | {array} type [size]:expr?;
+    type = {string} | {int} | {float} | {bool} | {time} | {digitaloutputpin} | {digitalinputpin} | {analogoutputpin} | {analoginputpin} | {array} type [size]:expr?;
 
 /* Expression */
-    expr = {binop} [l]:expr binop [r]:expr | {unop} unop expr | {function_call} identifier expr* | {value} value | {pin} intliteral | {index} [value]:expr [index]:expr | {read} [pin]:expr;
+    expr = {binop} [l]:expr binop [r]:expr | {unop} unop expr | {function_call} identifier expr* | {value} value | {index} [value]:expr [index]:expr | {read} [pin]:expr;
     binop = {addition} | {subtraction} | {multiplication} | {division} | {modulo} | {or} | {and} | {equal} | {greaterthan} | {lessthan};
     unop = {minus} | {plus} | {not};
-    value = {identifier} identifier | {int} intliteral | {float} floatliteral | {string} stringliteral | {char} charliteral | {bool} boolliteral | {time} timeliteral | {array} expr* | {digitalpin} digitalpinliteral | {analogpin} analogpinliteral;
+    value = {identifier} identifier | {int} intliteral | {float} floatliteral | {string} stringliteral | {bool} boolliteral | {time} timeliteral | {array} expr* | {digitalpin} digitalpinliteral | {analogpin} analogpinliteral;
