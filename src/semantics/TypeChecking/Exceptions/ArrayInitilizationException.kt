@@ -1,4 +1,5 @@
 package semantics.TypeChecking.Exceptions
 
-class ArrayInitilizationException(msg: String) : Exception(msg) {
-}
+import CompileError
+
+class ArrayInitilizationException(msg: String) : CompileError(msg)

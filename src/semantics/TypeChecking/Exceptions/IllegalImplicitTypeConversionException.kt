@@ -1,3 +1,5 @@
 package semantics.TypeChecking.Exceptions
 
-class IllegalImplicitTypeConversionException(message: String) : Exception(message)
+import CompileError
+
+class IllegalImplicitTypeConversionException(message: String) : CompileError(message)

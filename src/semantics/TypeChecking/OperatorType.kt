@@ -69,6 +69,21 @@ class  OperatorType {
         fun getReturnType(lside : Type, op : PBinop, rside: Type) : Type?{
             return typeRules.firstOrNull { it.lside == lside && it.operator == opMap[op::class.java] && it.rside == rside }?.returnType
         }
+
+        private val opToStringMap = mapOf(
+                AAdditionBinop::class.java to "+",
+                ASubtractionBinop::class.java to "-",
+                ADivisionBinop::class.java to "/",
+                AMultiplicationBinop::class.java to "*",
+                AModuloBinop::class.java to "%",
+                ALessthanBinop::class.java to "<",
+                AGreaterthanBinop::class.java to ">",
+                AEqualBinop::class.java to "==",
+                AAndBinop::class.java to "and",
+                AOrBinop::class.java to "or"
+        )
+
+        fun opNodeToString(node:PBinop) = opToStringMap[node::class.java]
     }
 
     /*companion object {

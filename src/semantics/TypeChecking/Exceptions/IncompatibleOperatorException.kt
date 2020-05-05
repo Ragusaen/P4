@@ -1,3 +1,5 @@
 package semantics.TypeChecking.Exceptions
 
-class IncompatibleOperatorException(message:String) : Exception(message)
+import CompileError
+
+class IncompatibleOperatorException(message:String) : CompileError(message)

@@ -1,3 +1,5 @@
 package semantics.TypeChecking.Exceptions
 
-class IdentifierUsedBeforeAssignmentException(message:String) : Exception(message)
+import CompileError
+
+class IdentifierUsedBeforeAssignmentException(message:String) : CompileError(message)

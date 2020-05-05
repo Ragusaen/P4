@@ -1,5 +1,5 @@
 package semantics.TypeChecking.Exceptions
 
-import java.lang.Exception
+import CompileError
 
-class IdentifierNotDeclaredException(message: String) : Exception(message)
+class IdentifierNotDeclaredException(message: String) : CompileError(message)

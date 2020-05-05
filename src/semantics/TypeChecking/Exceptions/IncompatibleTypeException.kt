@@ -1,3 +1,5 @@
 package semantics.TypeChecking.Exceptions
 
-class IncompatibleTypeException(message:String) : Exception(message)
+import CompileError
+
+class IncompatibleTypeException(message:String) : CompileError(message)

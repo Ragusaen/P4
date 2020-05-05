@@ -49,7 +49,7 @@ class Type private constructor(private val main: EType, private val subType: Typ
     fun isPin(): Boolean = (main in EType.DIGITALINPUTPIN..EType.ANALOGPIN)
 
     override fun toString(): String {
-        return "$main " + if (isArray()) "<${subType!!}>" else ""
+        return "$main" + if (isArray()) " <${subType!!}>" else ""
     }
 
     override fun hashCode(): Int {
