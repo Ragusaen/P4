@@ -1,7 +1,5 @@
 package semantics.TypeChecking
 
-import semantics.TypeChecking.Exceptions.ArrayInitilizationException
-
 class Type private constructor(private val main: EType, private val subType: Type? = null) {
     private enum class EType {
         INT, FLOAT, STRING, BOOL,
