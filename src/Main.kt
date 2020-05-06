@@ -6,20 +6,14 @@ import semantics.TypeChecking.TypeChecker
 
 fun main() {
     val input = """
-Time[] timings = [1s, 10s, 600ms, 1s, 0.1m];
-Int i = 0;
-            
-Bool blueState = LOW;
-every (timings[i]) {
-    blueState = !blueState;
-    i = (i + 1) % 5;
-                
-    set D3 to blueState;
+Bool state = LOW
+
+on(read D7){
+
+    state = !state 
+    set D5 to !(read D5)
 }
-            
-on (i == 3) {
-    set D2 to HIGH;
-}
+
     """
 
     val lexer = StringLexer(input)
