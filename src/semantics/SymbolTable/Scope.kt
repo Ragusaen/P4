@@ -1,8 +1,5 @@
 package semantics.SymbolTable
 
-import semantics.SymbolTable.Exceptions.FunctionIdentifierUsedAsVariable
-import semantics.SymbolTable.Exceptions.VariableIdentifierUsedAsFunction
-
 class Scope(val parent: Scope?) {
     val children = mutableListOf<Scope>()
 

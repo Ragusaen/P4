@@ -7,8 +7,8 @@ import org.junit.jupiter.api.Assertions.*
 import sablecc.parser.Parser
 import org.junit.jupiter.api.assertThrows
 import sablecc.node.Start
-import semantics.SymbolTable.Exceptions.IdentifierAlreadyDeclaredException
-import semantics.SymbolTable.Exceptions.IdentifierUsedBeforeDeclarationException
+import semantics.SymbolTable.errors.IdentifierAlreadyDeclaredError
+import semantics.SymbolTable.errors.IdentifierUsedBeforeDeclarationError
 import semantics.SymbolTable.SymbolTableBuilder
 import semantics.TypeChecking.Type
 
@@ -29,7 +29,7 @@ internal class SymbolTableBuilderTest {
 
         val s = parser.parse()
 
-        assertThrows<IdentifierAlreadyDeclaredException> { stb.buildSymbolTable(s) }
+        assertThrows<IdentifierAlreadyDeclaredError> { stb.buildSymbolTable(s) }
     }
 
     @Test
@@ -41,7 +41,7 @@ internal class SymbolTableBuilderTest {
 
         val s = parser.parse()
 
-        assertThrows<IdentifierUsedBeforeDeclarationException> { stb.buildSymbolTable(s) }
+        assertThrows<IdentifierUsedBeforeDeclarationError> { stb.buildSymbolTable(s) }
     }
 
     @Test
@@ -58,7 +58,7 @@ internal class SymbolTableBuilderTest {
 
         val s = parser.parse()
 
-        assertThrows<IdentifierUsedBeforeDeclarationException> { stb.buildSymbolTable(s) }
+        assertThrows<IdentifierUsedBeforeDeclarationError> { stb.buildSymbolTable(s) }
     }
 
     @Test
@@ -69,7 +69,7 @@ internal class SymbolTableBuilderTest {
            }
         """.trimIndent())
 
-        assertThrows<IdentifierUsedBeforeDeclarationException>{ SymbolTableBuilder().buildSymbolTable(start)}
+        assertThrows<IdentifierUsedBeforeDeclarationError>{ SymbolTableBuilder().buildSymbolTable(start)}
     }
 
     @Test
@@ -111,7 +111,7 @@ internal class SymbolTableBuilderTest {
 
         val s = parser.parse()
 
-        assertThrows<IdentifierUsedBeforeDeclarationException> { stb.buildSymbolTable(s) }
+        assertThrows<IdentifierUsedBeforeDeclarationError> { stb.buildSymbolTable(s) }
     }
 
 
@@ -132,7 +132,7 @@ internal class SymbolTableBuilderTest {
 
         val s = parser.parse()
 
-        assertThrows<IdentifierUsedBeforeDeclarationException> { stb.buildSymbolTable(s) }
+        assertThrows<IdentifierUsedBeforeDeclarationError> { stb.buildSymbolTable(s) }
     }
 
     @Test
@@ -194,7 +194,7 @@ internal class SymbolTableBuilderTest {
         val parser = Parser(lexer)
 
         val s = parser.parse()
-        assertThrows<IdentifierUsedBeforeDeclarationException> { stb.buildSymbolTable(s) }
+        assertThrows<IdentifierUsedBeforeDeclarationError> { stb.buildSymbolTable(s) }
     }
 
     @Test

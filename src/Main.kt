@@ -2,6 +2,7 @@ import codegeneration.CodeGenerator
 import sablecc.parser.Parser
 import semantics.SymbolTable.SymbolTableBuilder
 import semantics.TypeChecking.TypeChecker
+import java.lang.Exception
 
 
 fun main() {
@@ -9,23 +10,25 @@ fun main() {
 Bool state = LOW
 
 on(read D7){
-
     state = !state 
     set D5 to !(read D5)
 }
-
     """
+    try {
+        val lexer = StringLexer(input)
+        val parser = Parser(lexer)
 
-    val lexer = StringLexer(input)
-    val parser = Parser(lexer)
+        val a = parser.parse()
 
-    val a = parser.parse()
+        val st = SymbolTableBuilder().buildSymbolTable(a)
+        val tt = TypeChecker(st).run(a)
 
-    val st = SymbolTableBuilder().buildSymbolTable(a)
-    val tt = TypeChecker(st).run(a)
-
-    val cg = CodeGenerator(tt, st)
-    println(cg.generate(a))
+        val cg = CodeGenerator(tt, st)
+        println(cg.generate(a))
+    }
+    catch (ce:CompileError) {
+        println("Compilation stopped due to compile error.")
+    }
 }
 
 

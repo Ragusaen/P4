@@ -331,7 +331,7 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
 
     override fun caseAReturnStmt(node: AReturnStmt) {
         if (node.expr != null) {
-            val expr = getCode(node)
+            val expr = getCode(node.expr)
             codeStack.pushLineIndented("return $expr;")
         } else {
             codeStack.pushLineIndented("return;")
@@ -416,7 +416,7 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
         val type = if (node.type == null) "void" else getCode(node.type)
 
         var param = ""
-        if (node.param != null) {
+        if (node.param.size > 0) {
             param += getCode(node.param.first())
             for (p in node.param.drop(1)) {
                 param += ", " + getCode(p)

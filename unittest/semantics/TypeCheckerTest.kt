@@ -7,9 +7,9 @@ import org.junit.jupiter.api.assertThrows
 import sablecc.node.Start
 import semantics.SymbolTable.SymbolTable
 import semantics.SymbolTable.SymbolTableBuilder
-import semantics.TypeChecking.Exceptions.IdentifierNotDeclaredException
-import semantics.TypeChecking.Exceptions.IllegalImplicitTypeConversionException
-import semantics.TypeChecking.Exceptions.IncompatibleOperatorException
+import semantics.TypeChecking.errors.IdentifierNotDeclaredError
+import semantics.TypeChecking.errors.IllegalImplicitTypeConversionError
+import semantics.TypeChecking.errors.IncompatibleOperatorError
 import semantics.TypeChecking.TypeChecker
 
 internal class TypeCheckerTest {
@@ -17,14 +17,14 @@ internal class TypeCheckerTest {
     fun assigningFloatToIntThrowsException() {
         val (scope, start) = getScopeFromString("Int a = 5.5;")
 
-        assertThrows<IllegalImplicitTypeConversionException> { TypeChecker(scope).start(start) }
+        assertThrows<IllegalImplicitTypeConversionError> { TypeChecker(scope).start(start) }
     }
 
     @Test
     fun assigningIntToFloatThrowsException() {
         val (scope, start) = getScopeFromString("Float a = 5;")
 
-        assertThrows<IllegalImplicitTypeConversionException> { TypeChecker(scope).start(start) }
+        assertThrows<IllegalImplicitTypeConversionError> { TypeChecker(scope).start(start) }
     }
 
     @Test
@@ -52,21 +52,21 @@ internal class TypeCheckerTest {
     fun boolAdditionBoolThrowsException() {
         val (scope, start) = getScopeFromString("Bool a = true + true;")
 
-        assertThrows<IncompatibleOperatorException> { TypeChecker(scope).start(start) }
+        assertThrows<IncompatibleOperatorError> { TypeChecker(scope).start(start) }
     }
 
     @Test
     fun intAdditionBoolThrowsException() {
         val (scope, start) = getScopeFromString("Int a = 6 + true;")
 
-        assertThrows<IncompatibleOperatorException> { TypeChecker(scope).start(start) }
+        assertThrows<IncompatibleOperatorError> { TypeChecker(scope).start(start) }
     }
 
     @Test
     fun chainedGreaterThanOperationsThrowsException() {
         val (scope, start) = getScopeFromString("Bool a = 1 < 2 < 3;")
 
-        assertThrows<IncompatibleOperatorException> { TypeChecker(scope).start(start)}
+        assertThrows<IncompatibleOperatorError> { TypeChecker(scope).start(start)}
     }
 
     @Test
@@ -80,28 +80,28 @@ internal class TypeCheckerTest {
     fun intEqualsFloatThrowsException() {
         val (st, start) = getScopeFromString("Bool a = 6 == 6.6;")
 
-        assertThrows<IncompatibleOperatorException> { TypeChecker(st).start(start) }
+        assertThrows<IncompatibleOperatorError> { TypeChecker(st).start(start) }
     }
 
     @Test
     fun functionWithParameterTypesBoolIntCalledWithArgumentTypesIntBoolThrowsException() {
         val (st, start) = getScopeFromString("fun foo(Bool a, Int b) {;} every (20ms) { foo(3, false); }")
 
-        assertThrows<IdentifierNotDeclaredException> {TypeChecker(st).start(start)}
+        assertThrows<IdentifierNotDeclaredError> {TypeChecker(st).start(start)}
     }
 
     @Test
     fun everyStructuresExpressionTypeIntThrowsException() {
         val (st, start) = getScopeFromString("every (45 + 8) { ; }")
 
-        assertThrows<IllegalImplicitTypeConversionException> {TypeChecker(st).start(start)}
+        assertThrows<IllegalImplicitTypeConversionError> {TypeChecker(st).start(start)}
     }
 
     @Test
     fun ifStatementGivenIntExpressionThrowsException() {
         val (st, start) = getScopeFromString("every(20ms) { if (45 + 8) ; }")
 
-        assertThrows<IllegalImplicitTypeConversionException> {TypeChecker(st).start(start)}
+        assertThrows<IllegalImplicitTypeConversionError> {TypeChecker(st).start(start)}
     }
 
     @Test
@@ -122,7 +122,7 @@ internal class TypeCheckerTest {
     fun intArrayInitialisedWith2DIntArrayLiteralThrowsException() {
         val (st, start) = getScopeFromString("Int[] a = [[13]];")
 
-        assertThrows<IllegalImplicitTypeConversionException> {TypeChecker(st).start(start)}
+        assertThrows<IllegalImplicitTypeConversionError> {TypeChecker(st).start(start)}
     }
 
     @Test
@@ -136,7 +136,7 @@ internal class TypeCheckerTest {
     fun intArrayAssignedToStringArrayThrowsException() {
         val (st, start) = getScopeFromString("String[] a = [23, 14];")
 
-        assertThrows<IllegalImplicitTypeConversionException> {TypeChecker(st).start(start)}
+        assertThrows<IllegalImplicitTypeConversionError> {TypeChecker(st).start(start)}
     }
 
     fun getScopeFromString(input:String):Pair<SymbolTable, Start> {
