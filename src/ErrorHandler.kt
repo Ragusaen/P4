@@ -5,17 +5,23 @@ abstract class CompileError(msg: String) : Exception(msg)
 class ErrorHandler {
     private var lastLine:Int? = null
     private var lastPos:Int? = null
+    private var lastToken:Token? = null
 
     fun setLineAndPos(t:Token) {
         lastLine = t.line
         lastPos = t.pos
+        lastToken = t // debugging
     }
 
     fun compileError(ce:CompileError):Nothing {
         if (lastLine == null && lastPos == null)
             println("Line and position unavailable.")
 
-        println("ERROR" + if(lastLine != null) ": Line $lastLine, Pos $lastPos" else "")
+        print("ERROR" + if(lastLine != null) ": Line $lastLine, Pos $lastPos" else "")
+        if (lastToken != null)
+            println(" " + lastToken!!.javaClass.canonicalName)
+        else
+            println()
         printExceptionAndThrow(ce)
     }
 

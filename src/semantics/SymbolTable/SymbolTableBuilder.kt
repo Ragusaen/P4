@@ -33,7 +33,7 @@ class SymbolTableBuilder : DepthFirstAdapter() {
     private fun addVar(name:String, type: Type, isInit: Boolean = false) {
         // If the name is already used within this scope throw exception
         if (name in currentScope.variables)
-            error(IdentifierAlreadyDeclaredError("The variable $name is already declared."))
+            error(IdentifierAlreadyDeclaredError("The variable $name has already been declared."))
         else
             currentScope.variables[name] = Identifier(type, currentVarPrefix + name, isInit)
     }
@@ -41,7 +41,7 @@ class SymbolTableBuilder : DepthFirstAdapter() {
     private fun addFun(node: Node, name:String, params: List<Type>, identifier: Identifier) {
         // If the name is already used within this scope throw exception
         if (Pair(name, params) in namedFunctionTable)
-            error(IdentifierAlreadyDeclaredError("Function $name with parameters: $params has already been declared."))
+            error(IdentifierAlreadyDeclaredError("Function with the name $name with parameters: $params has already been declared."))
         else {
             namedFunctionTable[Pair(name, params)] = identifier
             nodeFunctionTable[node] = identifier
@@ -53,7 +53,7 @@ class SymbolTableBuilder : DepthFirstAdapter() {
             templateModuleTable[name] = identifier
             nodeModuleTable[node] = name
         } else
-            throw IdentifierAlreadyDeclaredError("Template module with name $name has already been declared.")
+            throw IdentifierAlreadyDeclaredError("Template module with the name $name has already been declared.")
     }
 
     private fun addModule(node: Node, name: String) {
@@ -61,7 +61,7 @@ class SymbolTableBuilder : DepthFirstAdapter() {
             moduleTable.add(name)
             nodeModuleTable[node] = name
         } else
-            throw IdentifierAlreadyDeclaredError("Module with name $name has already been declared")
+            throw IdentifierAlreadyDeclaredError("Module with the name $name has already been declared")
     }
 
     private fun checkHasBeenDeclared(name: String) {
@@ -73,7 +73,7 @@ class SymbolTableBuilder : DepthFirstAdapter() {
             tempScope = tempScope.parent
         }
 
-        error(IdentifierUsedBeforeDeclarationError("Variable $name was used before it was declared."))
+        error(IdentifierUsedBeforeDeclarationError("The variable $name was used before it was declared."))
     }
 
     private fun openScope() {
@@ -94,7 +94,7 @@ class SymbolTableBuilder : DepthFirstAdapter() {
     fun buildSymbolTable(s: Start): SymbolTable {
         caseStart(s)
         if (currentScope.parent != null)
-            throw Exception("An unknown error occurred while building symbol table. A scope was not closed as expected.")
+            throw Exception("An unknown error occurred while building the symbol table. A scope was not closed as expected.")
 
         return SymbolTable(namedFunctionTable, nodeFunctionTable, currentScope, templateModuleTable, nodeModuleTable).reset()
     }

@@ -210,13 +210,13 @@ Productions
         | {delay_until} delay until lparen expr rparen
             {-> New stmt.delayuntil(expr)}
         | {return} return expr?
-            {-> New stmt.return(expr)}
+            {-> New stmt.return(return, expr)}
         | {function_call} identifier lparen arglist? rparen
             {-> New stmt.expr(New expr.function_call(identifier, [arglist.expr]))}
         | {break} break
-            {-> New stmt.break()}
+            {-> New stmt.break(break)}
         | {continue} continue
-            {-> New stmt.continue()}
+            {-> New stmt.continue(continue)}
         | {no_stmt}
             {-> New stmt.no_stmt()};
 
@@ -380,7 +380,7 @@ Abstract Syntax Tree
     module_structure = {every} expr [body]:stmt | {on} expr [body]:stmt;
 
 /* Statement */
-    stmt = {no_stmt} | {dcl} type vardcl* | {moduledcl} [template]:identifier [instance]:identifier expr* | {start} identifier | {stop} | {set_to} [pin]:expr [value]:expr | {delay} expr | {delayuntil} expr | {assign} identifier expr binop? | {block} stmt* | {if} [condition]:expr [if_body]:stmt [else_body]:stmt? | {while} [condition]:expr [body]:stmt | {for} [init]:stmt [condition]:expr [update]:stmt [body]:stmt | {expr} expr | {return} expr? | {break} | {continue};
+    stmt = {no_stmt} | {dcl} type vardcl* | {moduledcl} [template]:identifier [instance]:identifier expr* | {start} identifier | {stop} | {set_to} [pin]:expr [value]:expr | {delay} expr | {delayuntil} expr | {assign} identifier expr binop? | {block} stmt* | {if} [condition]:expr [if_body]:stmt [else_body]:stmt? | {while} [condition]:expr [body]:stmt | {for} [init]:stmt [condition]:expr [update]:stmt [body]:stmt | {expr} expr | {return} return expr? | {break} break | {continue} continue;
 
 /* Declaration subnodes */
     vardcl = identifier expr?;

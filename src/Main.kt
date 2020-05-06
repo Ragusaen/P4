@@ -1,5 +1,6 @@
 import codegeneration.CodeGenerator
 import sablecc.parser.Parser
+import semantics.ContextualConstraints.ContextualConstraintAnalyzer
 import semantics.SymbolTable.SymbolTableBuilder
 import semantics.TypeChecking.TypeChecker
 import java.lang.Exception
@@ -8,8 +9,8 @@ import java.lang.Exception
 fun main() {
     val input =
 """
-fun foo():Int {
-    return 2 + "hey";
+fun foo(Int a):Int {
+    return;
 }
 """
     try {
@@ -17,11 +18,11 @@ fun foo():Int {
         val parser = Parser(lexer)
 
         val a = parser.parse()
-
         val st = SymbolTableBuilder().buildSymbolTable(a)
         val tt = TypeChecker(st).run(a)
-
+        val b = ContextualConstraintAnalyzer().run(a)
         val cg = CodeGenerator(tt, st)
+
         println(cg.generate(a))
     }
     catch (ce:CompileError) {

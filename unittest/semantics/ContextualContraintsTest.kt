@@ -6,11 +6,11 @@ import org.junit.jupiter.api.assertThrows
 import sablecc.node.Start
 import sablecc.parser.Parser
 import semantics.ContextualConstraints.ContextualConstraintAnalyzer
-import semantics.ContextualConstraints.Exceptions.LoopJumpOutOfLoopException
-import semantics.ContextualConstraints.Exceptions.ReturnOutOfFunctionDeclarationException
+import semantics.ContextualConstraints.Exceptions.LoopJumpOutOfLoopError
+import semantics.ContextualConstraints.Exceptions.ReturnOutOfFunctionDeclarationError
 
-internal class ContextualContraintsTest {
-    fun parse(input: String): Start {
+internal class ContextualConstraintsTest {
+    private fun parse(input: String): Start {
         return Parser(StringLexer(input)).parse()
     }
 
@@ -22,7 +22,7 @@ internal class ContextualContraintsTest {
             }
         """)
 
-        assertThrows<ReturnOutOfFunctionDeclarationException>{ ContextualConstraintAnalyzer().caseStart(s) }
+        assertThrows<ReturnOutOfFunctionDeclarationError>{ ContextualConstraintAnalyzer().caseStart(s) }
     }
 
     @Test
@@ -74,6 +74,6 @@ internal class ContextualContraintsTest {
             }
         """)
 
-        assertThrows<LoopJumpOutOfLoopException> { ContextualConstraintAnalyzer().caseStart(s) }
+        assertThrows<LoopJumpOutOfLoopError> { ContextualConstraintAnalyzer().caseStart(s) }
     }
 }

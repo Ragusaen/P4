@@ -90,6 +90,7 @@ class TypeChecker(symbolTable: SymbolTable) : ScopedTraverser(symbolTable) {
     }
 
     override fun outAFunctionCallExpr(node: AFunctionCallExpr) {
+        errorHandler.setLineAndPos(node.identifier)
         val name = node.identifier.text
         // Pop the expressions from the typeStack
         val types = mutableListOf<Type>()
@@ -103,8 +104,12 @@ class TypeChecker(symbolTable: SymbolTable) : ScopedTraverser(symbolTable) {
         if (id != null) {
             pushType(node, id.type)
         }
-        else
-            error(IdentifierNotDeclaredError("Function with name $name and parameter types ${types.joinToString (", ")} does not exist"))
+        else {
+            if (types.size > 0)
+                error(IdentifierNotDeclaredError("Function with the name $name and parameter types ${types.joinToString(", ")} does not exist"))
+            else
+                error(IdentifierNotDeclaredError("Function with the name $name and no parameters does not exist"))
+        }
     }
 
     override fun outABinopExpr(node: ABinopExpr) {
@@ -127,7 +132,7 @@ class TypeChecker(symbolTable: SymbolTable) : ScopedTraverser(symbolTable) {
         if (identifier.type.isArray()) {
             val typeNode = ((node.parent() as ADclStmt).type as AArrayType)
             if (typeNode.size == null && node.expr == null) {
-                error(ArrayInitilizationException("Cannot declare array ${node.identifier.text} with no size parameters"))
+                error(ArrayInitializationError("Cannot declare array ${node.identifier.text} with no size parameters"))
             }
         }
 
@@ -143,7 +148,7 @@ class TypeChecker(symbolTable: SymbolTable) : ScopedTraverser(symbolTable) {
                 }
             }
             else if (typeE != identifier.type)
-                error(IllegalImplicitTypeConversionError("Cannot initialise variable ${node.identifier.text} of type ${identifier.type} with value of type $typeE."))
+                error(IllegalImplicitTypeConversionError("Cannot initialize the variable ${node.identifier.text} of type ${identifier.type} with value of type $typeE."))
         }
     }
 
