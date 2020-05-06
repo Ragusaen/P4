@@ -7,7 +7,7 @@ Helpers
     tab = 9;
     cr = 13;
     lf = 10;
-    eol = cr lf | lf;
+    eol = cr lf | cr | lf | '\n';
     boolliteral = ('false'|'true'|'HIGH'|'LOW');
     intliteral = '-'?digit+;
     floatliteral = '-'?(digit+('.'digit*)?|'.'digit+);
@@ -80,9 +80,8 @@ Tokens
     floatliteral = '-'?(digit+('.'digit*)?|'.'digit+);
     timeliteral = (intliteral | floatliteral)('ms'|'s'|'m'|'h');
     stringliteral = '"'('\'all | [[all - '"'] - '\'])*'"';
-    whitespace = (' ' | tab)+;
+    whitespace = (' ' | tab | lf | eol)+;
     comment = '/*' all* '*/' | '//'all*eol;
-    eol = eol;
     digitalpinliteral = 'D'digit+;
     analogpinliteral = 'A'digit+;
     identifier = anychar (anychar|digit)*;
@@ -99,9 +98,7 @@ Productions
         | {module} moduledcl
             {-> New root_element.moduledcl(moduledcl)}
         | {function} functiondcl
-            {-> New root_element.functiondcl(functiondcl)}
-        | eol
-            {-> New root_element.eol()};
+            {-> New root_element.functiondcl(functiondcl)};
 
 /* Function */
     functiondcl {-> functiondcl} =
@@ -145,7 +142,7 @@ Productions
         lbrace dcl_stmt* module_structure rbrace
             {-> New inner_module([dcl_stmt.stmt], module_structure)};
 
-    dcl_stmt {-> stmt} = dcl eol
+    dcl_stmt {-> stmt} = dcl semicolon
         {-> dcl.stmt};
 
     module_structure {-> module_structure} =
@@ -182,7 +179,7 @@ Productions
             {-> New stmt.for(init.stmt, condition, update.stmt, body.stmt)};
 
     simple_stmt {-> stmt} =
-         {single_stmt} single_stmt eol
+         {single_stmt} single_stmt semicolon
              {-> single_stmt.stmt}
          | {block} lbrace stmt* rbrace
               {-> New stmt.block([stmt])};
@@ -371,7 +368,7 @@ Productions
 
 Abstract Syntax Tree
     program = root_element*;
-    root_element = {dcl} stmt | {moduledcl} moduledcl | {functiondcl} functiondcl | {eol};
+    root_element = {dcl} stmt | {moduledcl} moduledcl | {functiondcl} functiondcl;
 
 /* Function */
     functiondcl = identifier param* type? [body]:stmt;

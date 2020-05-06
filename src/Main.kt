@@ -7,12 +7,7 @@ import java.lang.Exception
 
 fun main() {
     val input = """
-Bool state = LOW
-
-on(read D7){
-    state = !state 
-    set D5 to !(read D5)
-}
+Bool state = LOW;
     """
     try {
         val lexer = StringLexer(input)
