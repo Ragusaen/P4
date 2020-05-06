@@ -6,11 +6,12 @@ import java.lang.Exception
 
 
 fun main() {
-    val input = """
-fun a():Int {
-    return 1 + "Hey";
+    val input =
+"""
+fun foo():Int {
+    return 2 + "hey";
 }
-    """
+"""
     try {
         val lexer = StringLexer(input)
         val parser = Parser(lexer)

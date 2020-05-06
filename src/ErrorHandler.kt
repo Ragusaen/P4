@@ -3,7 +3,6 @@ import sablecc.node.Token
 abstract class CompileError(msg: String) : Exception(msg)
 
 class ErrorHandler {
-    private var lastToken:Token? = null
     private var lastLine:Int? = null
     private var lastPos:Int? = null
 
@@ -12,16 +11,11 @@ class ErrorHandler {
         lastPos = t.pos
     }
 
-    fun setLineAndPos(line:Int, pos:Int) {
-        lastLine = line
-        lastPos = pos
-    }
+    fun compileError(ce:CompileError):Nothing {
+        if (lastLine == null && lastPos == null)
+            println("Line and position unavailable.")
 
-    fun compileError(ce:CompileError, t:Token? = null):Nothing {
-        if (t != null)
-            setLineAndPos(t)
-
-        print("ERROR" + if(lastLine != null) ": Line $lastLine, Pos $lastPos" else { "" } + "\n")
+        println("ERROR" + if(lastLine != null) ": Line $lastLine, Pos $lastPos" else "")
         printExceptionAndThrow(ce)
     }
 
