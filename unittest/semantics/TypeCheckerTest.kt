@@ -11,6 +11,7 @@ import semantics.TypeChecking.errors.IdentifierNotDeclaredError
 import semantics.TypeChecking.errors.IllegalImplicitTypeConversionError
 import semantics.TypeChecking.errors.IncompatibleOperatorError
 import semantics.TypeChecking.TypeChecker
+import semantics.TypeChecking.errors.ArrayInitializationError
 
 internal class TypeCheckerTest {
     @Test
@@ -139,11 +140,305 @@ internal class TypeCheckerTest {
         assertThrows<IllegalImplicitTypeConversionError> {TypeChecker(st).run(start)}
     }
 
-    fun getScopeFromString(input:String):Pair<SymbolTable, Start> {
+    @Test
+    fun returnTypeNotMatchingFunctionTypeThrowsException() {
+        val code =
+        """
+            fun a():Int {
+                return "abc";
+            }
+        """
+
+        val (st, start) = getScopeFromString(code)
+
+        assertThrows<IllegalImplicitTypeConversionError> {TypeChecker(st).run(start)}
+    }
+
+    @Test
+    fun returnTypeMatchingFunctionTypeIsOk() {
+        val code =
+        """
+            fun a():String {
+                return "abc";
+            }
+        """
+
+        val (st, start) = getScopeFromString(code)
+        TypeChecker(st).run(start)
+    }
+
+    @Test
+    fun usingTemplateModuleNameThatIsNotDeclaredThrowsException() {
+        val code =
+        """
+            module mod this;
+            
+            template module that {
+                every(100ms);
+            }
+        """
+
+        val (st, start) = getScopeFromString(code)
+
+        assertThrows<IdentifierNotDeclaredError> {TypeChecker(st).run(start)}
+    }
+
+    @Test
+    fun usingTemplateModuleNameThatIsDeclaredIsOk() {
+        val code =
+        """
+            module mod a;
+            
+            template module a {
+                every(100ms);
+            }
+        """
+
+        val (st, start) = getScopeFromString(code)
+        TypeChecker(st).run(start)
+    }
+
+    @Test
+    fun moduleInstancesWithMismatchingParametersThrowsException() {
+        val code =
+        """
+            module mod a(50);
+            
+            template module a(Time t) {
+                every(t);
+            }
+        """
+
+        val (st, start) = getScopeFromString(code)
+
+        assertThrows<IllegalImplicitTypeConversionError> {TypeChecker(st).run(start)}
+    }
+
+    @Test
+    fun moduleInstancesWithMatchingParametersIsOk() {
+        val code =
+        """
+            module mod a("abc");
+            
+            template module a(String s) {
+                every(50ms)
+                    s += "a";
+            }
+        """
+
+        val (st, start) = getScopeFromString(code)
+        TypeChecker(st).run(start)
+    }
+
+    @Test
+    fun everyLoopWithExpressionOfNotTypeTimeThrowsException() {
+        val code =
+        """
+            template module a {
+                every(100.0);
+            }
+        """
+
+        val (st, start) = getScopeFromString(code)
+
+        assertThrows<IllegalImplicitTypeConversionError> {TypeChecker(st).run(start)}
+    }
+
+    @Test
+    fun everyLoopWithExpressionOfTypeTimeIsOk() {
+        val code =
+        """
+            template module a {
+                every(100ms);
+            }
+        """
+
+        val (st, start) = getScopeFromString(code)
+        TypeChecker(st).run(start)
+    }
+
+    @Test
+    fun ifStatementWithConditionOfNotTypeBoolThrowsException() {
+        val code =
+        """
+            template module a {
+                every(100ms)
+                    if("abc");
+            }
+        """
+
+        val (st, start) = getScopeFromString(code)
+
+        assertThrows<IllegalImplicitTypeConversionError> {TypeChecker(st).run(start)}
+    }
+
+    @Test
+    fun ifStatementWithConditionOfTypeBoolIsOk() {
+        val code =
+        """
+            template module a {
+                every(100ms)
+                    if(true);
+            }
+        """
+
+        val (st, start) = getScopeFromString(code)
+        TypeChecker(st).run(start)
+    }
+
+    @Test
+    fun forStatementWithMiddleStatementNotOfTypeBoolThrowsException() {
+        val code =
+        """
+            template module a {
+                every(100ms)
+                    for(;8;);
+            }
+        """
+
+        val (st, start) = getScopeFromString(code)
+
+        assertThrows<IllegalImplicitTypeConversionError> {TypeChecker(st).run(start)}
+    }
+
+    @Test
+    fun forStatementWithMiddleStatementOfTypeBoolIsOk() {
+        val code =
+        """
+            template module a {
+                every(100ms)
+                    for(;true;);
+            }
+        """
+
+        val (st, start) = getScopeFromString(code)
+        TypeChecker(st).run(start)
+    }
+
+    @Test
+    fun whileStatementWithConditionNotOfTypeBoolThrowsException() {
+        val code =
+        """
+            template module a {
+                every(100ms)
+                    while("yes");
+            }
+        """
+
+        val (st, start) = getScopeFromString(code)
+
+        assertThrows<IllegalImplicitTypeConversionError> {TypeChecker(st).run(start)}
+    }
+
+    @Test
+    fun whileStatementWithConditionOfTypeBoolIsOk() {
+        val code =
+        """
+            template module a {
+                every(100ms)
+                    while(true);
+            }
+        """
+
+        val (st, start) = getScopeFromString(code)
+        TypeChecker(st).run(start)
+    }
+
+    @Test
+    fun callingFunctionWithMismatchingParametersThrowsException() {
+        val code =
+        """
+            template module a {
+                every(100ms)
+                    a("abc");
+            }
+            
+            fun a(Int a, Float f) {}
+        """
+
+        val (st, start) = getScopeFromString(code)
+
+        assertThrows<IdentifierNotDeclaredError> {TypeChecker(st).run(start)}
+    }
+
+    @Test
+    fun callingFunctionWithMatchingParametersIsOk() {
+        val code =
+        """
+            template module a {
+                every(100ms)
+                    a("abc");
+            }
+            
+            fun a(String s) {}
+        """
+
+        val (st, start) = getScopeFromString(code)
+        TypeChecker(st).run(start)
+    }
+
+    @Test
+    fun declaringArrayWithoutSizeThrowsException() {
+        val code =
+        """
+            Int[] a;
+        """
+
+        val (st, start) = getScopeFromString(code)
+
+        assertThrows<ArrayInitializationError> {TypeChecker(st).run(start)}
+    }
+
+    @Test
+    fun declaringArrayWithExplicitSizeIsOk() {
+        val code =
+        """
+            Int[10] a;
+        """
+
+        val (st, start) = getScopeFromString(code)
+        TypeChecker(st).run(start)
+    }
+
+    @Test
+    fun declaringArrayWithSizeFromInitializationIsOk() {
+        val code =
+        """
+            Int[] a = [1, 2, 3];
+        """
+
+        val (st, start) = getScopeFromString(code)
+        TypeChecker(st).run(start)
+    }
+
+    @Test
+    fun initializingVariableWithMismatchingValueTypeThrowsException() {
+        val code =
+        """
+            Int a = "abc";
+        """
+
+        val (st, start) = getScopeFromString(code)
+
+        assertThrows<IllegalImplicitTypeConversionError> { TypeChecker(st).run(start) }
+    }
+
+    @Test
+    fun initializingVariableWitMatchingValueTypeIsOk() {
+        val code =
+        """
+            Int a = 88;
+        """
+
+        val (st, start) = getScopeFromString(code)
+        TypeChecker(st).run(start)
+    }
+
+
+    private fun getScopeFromString(input:String):Pair<SymbolTable, Start> {
         val lexer = StringLexer(input)
         val parser = Parser(lexer)
         val s = parser.parse()
         return Pair(SymbolTableBuilder().buildSymbolTable(s), s)
     }
-
 }

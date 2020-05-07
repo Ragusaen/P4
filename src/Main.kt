@@ -9,9 +9,8 @@ import java.lang.Exception
 fun main() {
     val input =
 """
-fun foo(Int a):Int {
-    return;
-}
+fun a():Int {return 8.5 + 1.5;}
+
 """
     try {
         val lexer = StringLexer(input)
@@ -27,6 +26,7 @@ fun foo(Int a):Int {
     }
     catch (ce:CompileError) {
         println("Compilation stopped due to compile error.")
+        println(ce.errorMsg)
     }
 }
 

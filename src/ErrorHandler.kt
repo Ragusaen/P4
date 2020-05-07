@@ -1,32 +1,30 @@
 import sablecc.node.Token
 
-abstract class CompileError(msg: String) : Exception(msg)
+abstract class CompileError(msg: String) : Exception(msg) {
+    var errorMsg:String = ""
+        private set
+
+    fun setError(error:String) {errorMsg = error}
+}
 
 class ErrorHandler {
+    private var errorMsg:String = ""
     private var lastLine:Int? = null
     private var lastPos:Int? = null
-    private var lastToken:Token? = null
 
     fun setLineAndPos(t:Token) {
         lastLine = t.line
         lastPos = t.pos
-        lastToken = t // debugging
     }
 
     fun compileError(ce:CompileError):Nothing {
         if (lastLine == null && lastPos == null)
-            println("Line and position unavailable.")
-
-        print("ERROR" + if(lastLine != null) ": Line $lastLine, Pos $lastPos" else "")
-        if (lastToken != null)
-            println(" " + lastToken!!.javaClass.canonicalName)
+            errorMsg = "Line and position unavailable.\n"
         else
-            println()
-        printExceptionAndThrow(ce)
-    }
+            errorMsg = "ERROR $lastLine, Pos $lastPos\n"
+        errorMsg += ce.message
 
-    private fun printExceptionAndThrow(ce: CompileError):Nothing {
-        println(ce.message)
+        ce.setError(errorMsg)
         throw ce
     }
 }

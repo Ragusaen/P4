@@ -144,7 +144,7 @@ class TypeChecker(symbolTable: SymbolTable) : ScopedTraverser(symbolTable) {
                     if ((identifier.type == Type.AnalogOutputPin || identifier.type == Type.AnalogInputPin) && typeE != Type.AnalogPin)
                         error(IllegalImplicitTypeConversionError("Cannot assign type $typeE to an analog pin."))
                     else if ((identifier.type == Type.DigitalOututPin || identifier.type == Type.DigitalInputPin) && typeE != Type.DigitalPin)
-                        error(IllegalImplicitTypeConversionError("Cannot assign type $typeE to an analog pin."))
+                        error(IllegalImplicitTypeConversionError("Cannot assign type $typeE to a digital pin."))
                 }
             }
             else if (typeE != identifier.type)
