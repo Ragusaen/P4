@@ -6,9 +6,12 @@ import sablecc.analysis.DepthFirstAdapter
 import sablecc.node.*
 import semantics.ContextualConstraints.Exceptions.LoopJumpOutOfLoopError
 import semantics.ContextualConstraints.Exceptions.ReturnOutOfFunctionDeclarationError
+import semantics.SymbolTable.ScopedTraverser
+import semantics.SymbolTable.SymbolTable
 import semantics.TypeChecking.Type
+import semantics.TypeChecking.errors.IdentifierUsedBeforeAssignmentError
 
-class ContextualConstraintAnalyzer : DepthFirstAdapter() {
+class ContextualConstraintAnalyzer(st:SymbolTable) : ScopedTraverser(st) {
     private var openLoops: Int = 0
     private var inFunction = false
 
@@ -39,6 +42,12 @@ class ContextualConstraintAnalyzer : DepthFirstAdapter() {
 
         if (!inFunction)
             error(ReturnOutOfFunctionDeclarationError("Attempt to return from function, but was not inside of a function declaration"))
+    }
+
+    override fun outAIdentifierValue(node: AIdentifierValue) {
+        val identifier = symbolTable.findVar(node.identifier.text)
+        if (!identifier!!.isInitialised)
+            error(IdentifierUsedBeforeAssignmentError("The variable ${node.identifier.text} was used before being initialized."))
     }
 
     override fun inAFunctiondcl(node: AFunctiondcl) {

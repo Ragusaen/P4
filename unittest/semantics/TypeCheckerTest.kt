@@ -424,10 +424,134 @@ internal class TypeCheckerTest {
     }
 
     @Test
-    fun initializingVariableWitMatchingValueTypeIsOk() {
+    fun initializingVariableWithMatchingValueTypeIsOk() {
         val code =
         """
             Int a = 88;
+        """
+
+        val (st, start) = getScopeFromString(code)
+        TypeChecker(st).run(start)
+    }
+
+    @Test
+    fun initializingAnalogInputPinWithValueNotOfTypeAnalogPinThrowsException() {
+        val code =
+        """
+            AnalogInputPin aip = 40.5;
+        """
+
+        val (st, start) = getScopeFromString(code)
+        assertThrows<IllegalImplicitTypeConversionError> { TypeChecker(st).run(start) }
+    }
+
+    @Test
+    fun initializingAnalogInputPinWithValueOfTypeAnalogPinIsOk() {
+        val code =
+        """
+            AnalogInputPin aip = A15;
+        """
+
+        val (st, start) = getScopeFromString(code)
+        TypeChecker(st).run(start)
+}
+
+    @Test
+    fun initializingDigitalInputPinWithValueNotOfTypeDigitalPinThrowsException() {
+        val code =
+        """
+            DigitalInputPin aip = A8;
+        """
+
+        val (st, start) = getScopeFromString(code)
+        assertThrows<IllegalImplicitTypeConversionError> { TypeChecker(st).run(start) }
+    }
+
+    @Test
+    fun initializingDigitalInputPinWithValueOfTypeDigitalPinIsOk() {
+        val code =
+        """
+            DigitalInputPin aip = D10;
+        """
+
+        val (st, start) = getScopeFromString(code)
+        TypeChecker(st).run(start)
+    }
+
+    @Test
+    fun applyingUnaryNotOperatorOnExpressionOfNotTypeBoolThrowsException() {
+        val code =
+                """
+            Bool b = !(10 + 10);
+        """
+
+        val (st, start) = getScopeFromString(code)
+        assertThrows<IncompatibleOperatorError> { TypeChecker(st).run(start) }
+    }
+
+    @Test
+    fun applyingUnaryNotOperatorOnExpressionOfTypeBoolIsOk() {
+        val code =
+                """
+            Bool b = !true;
+        """
+        val (st, start) = getScopeFromString(code)
+        TypeChecker(st).run(start)
+    }
+
+    @Test
+    fun applyingUnaryPlusOperatorOnExpressionOfNotTypeIntOrFloatThrowsException() {
+        val code =
+        """
+            Int b = +true;
+        """
+
+        val (st, start) = getScopeFromString(code)
+        assertThrows<IncompatibleOperatorError> { TypeChecker(st).run(start) }
+    }
+
+    @Test
+    fun applyingUnaryPlusOperatorOnExpressionOfTypeIntIsOk() {
+        val code =
+        """
+            Int a = +22;
+        """
+        val (st, start) = getScopeFromString(code)
+        TypeChecker(st).run(start)
+    }
+
+    @Test
+    fun applyingUnaryPlusOperatorOnExpressionOfTypeFloatIsOk() {
+        val code =
+        """
+            Float a = +.9;
+        """
+        val (st, start) = getScopeFromString(code)
+        TypeChecker(st).run(start)
+    }
+
+    @Test
+    fun assignStatementExpressionNotMatchingVariableDeclaredTypeThrowsException() {
+        val code =
+        """
+            fun a() {
+                Int a;
+                a = "this";
+            }
+        """
+
+        val (st, start) = getScopeFromString(code)
+        assertThrows<IllegalImplicitTypeConversionError> { TypeChecker(st).run(start) }
+    }
+
+    @Test
+    fun assignStatementExpressionMatchingVariableDeclaredTypeIsOk() {
+        val code =
+        """
+            fun a() {
+                Int a;
+                a = 1024;
+            }
         """
 
         val (st, start) = getScopeFromString(code)

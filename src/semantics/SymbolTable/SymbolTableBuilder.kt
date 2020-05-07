@@ -106,7 +106,7 @@ class SymbolTableBuilder : DepthFirstAdapter() {
             is AStringType -> Type.String
             is ABoolType -> Type.Bool
             is ADigitalinputpinType -> Type.DigitalInputPin
-            is ADigitaloutputpinType -> Type.DigitalOututPin
+            is ADigitaloutputpinType -> Type.DigitalOutputPin
             is AAnaloginputpinType -> Type.AnalogInputPin
             is AAnalogoutputpinType -> Type.AnalogOutputPin
             is ATimeType -> Type.Time

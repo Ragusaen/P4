@@ -9,7 +9,7 @@ import java.lang.Exception
 fun main() {
     val input =
 """
-fun a():Int {return 8.5 + 1.5;}
+AnalogInputPin aip = 5;
 
 """
     try {
@@ -19,7 +19,7 @@ fun a():Int {return 8.5 + 1.5;}
         val a = parser.parse()
         val st = SymbolTableBuilder().buildSymbolTable(a)
         val tt = TypeChecker(st).run(a)
-        val b = ContextualConstraintAnalyzer().run(a)
+        ContextualConstraintAnalyzer(st).run(a)
         val cg = CodeGenerator(tt, st)
 
         println(cg.generate(a))
@@ -29,8 +29,6 @@ fun a():Int {return 8.5 + 1.5;}
         println(ce.errorMsg)
     }
 }
-
-
 
 fun formatToSabbleCC(lines: List<String>) {
     val match = "\"([^)]*)\"".toRegex()

@@ -20,7 +20,7 @@ class Type private constructor(private val main: EType, private val subType: Typ
         val DigitalPin = Type(EType.DIGITALPIN)
         val AnalogPin = Type(EType.ANALOGPIN)
         val DigitalInputPin = Type(EType.DIGITALINPUTPIN)
-        val DigitalOututPin = Type(EType.DIGITALOUTPUTPIN)
+        val DigitalOutputPin = Type(EType.DIGITALOUTPUTPIN)
         val AnalogInputPin = Type(EType.ANALOGINPUTPIN)
         val AnalogOutputPin = Type(EType.ANALOGOUTPUTPIN)
 

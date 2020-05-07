@@ -143,7 +143,7 @@ class TypeChecker(symbolTable: SymbolTable) : ScopedTraverser(symbolTable) {
                 if (typeE != identifier.type) {
                     if ((identifier.type == Type.AnalogOutputPin || identifier.type == Type.AnalogInputPin) && typeE != Type.AnalogPin)
                         error(IllegalImplicitTypeConversionError("Cannot assign type $typeE to an analog pin."))
-                    else if ((identifier.type == Type.DigitalOututPin || identifier.type == Type.DigitalInputPin) && typeE != Type.DigitalPin)
+                    else if ((identifier.type == Type.DigitalOutputPin || identifier.type == Type.DigitalInputPin) && typeE != Type.DigitalPin)
                         error(IllegalImplicitTypeConversionError("Cannot assign type $typeE to a digital pin."))
                 }
             }
@@ -177,7 +177,7 @@ class TypeChecker(symbolTable: SymbolTable) : ScopedTraverser(symbolTable) {
         val typeId = symbolTable.findVar(node.identifier.text)!!.type
 
         if (typeExpr != typeId){
-            error(IllegalImplicitTypeConversionError("Cannot assign variable ${node.identifier.text} of type $typeId with value of type $typeExpr."))
+            error(IllegalImplicitTypeConversionError("Cannot assign variable ${node.identifier.text} of type $typeId with value of type $typeExpr"))
         }
         symbolTable.findVar(node.identifier.text)!!.isInitialised = true
     }
@@ -187,8 +187,6 @@ class TypeChecker(symbolTable: SymbolTable) : ScopedTraverser(symbolTable) {
         errorHandler.setLineAndPos(node.identifier)
         val identifier = symbolTable.findVar(node.identifier.text)
         pushType(node, identifier!!.type)
-        if (!identifier.isInitialised)
-            error(IdentifierUsedBeforeAssignmentError("The variable ${node.identifier.text} was used before being initialised."))
     }
 
     override fun outAValueExpr(node: AValueExpr) {
@@ -260,13 +258,13 @@ class TypeChecker(symbolTable: SymbolTable) : ScopedTraverser(symbolTable) {
         val value = typeStack.pop()
         val pin = typeStack.pop()
 
-        if ((pin == Type.DigitalOututPin || pin == Type.DigitalPin) && value != Type.Bool)
+        if ((pin == Type.DigitalOutputPin || pin == Type.DigitalPin) && value != Type.Bool)
             error(IllegalImplicitTypeConversionError("Pin was digital so Bool was expected, but instead $value was found"))
         else if ((pin == Type.AnalogOutputPin || pin == Type.AnalogPin) && value != Type.Int)
             error(IllegalImplicitTypeConversionError("Pin was analog so an Int between 0 and 1023 (inclusive) was expected, but $value was found"))
         else if (pin == Type.AnalogInputPin || pin == Type.DigitalInputPin)
             error(IllegalImplicitTypeConversionError("Cannot set value of input pin."))
-        else if (!(pin == Type.DigitalOututPin || pin == Type.AnalogOutputPin || pin == Type.DigitalPin || pin == Type.AnalogPin))
+        else if (!(pin == Type.DigitalOutputPin || pin == Type.AnalogOutputPin || pin == Type.DigitalPin || pin == Type.AnalogPin))
             error(IllegalImplicitTypeConversionError("Expected type DigitalOutputPin, AnalogOutputPin, DigitalPin or AnalogPin, but got $pin"))
 
         typeTable[node] = pin
@@ -279,7 +277,7 @@ class TypeChecker(symbolTable: SymbolTable) : ScopedTraverser(symbolTable) {
             pushType(node, Type.Bool)
         else if (pin == Type.AnalogInputPin || pin == Type.AnalogPin)
             pushType(node, Type.Int)
-        else if (pin == Type.DigitalOututPin || pin  == Type.AnalogOutputPin)
+        else if (pin == Type.DigitalOutputPin || pin  == Type.AnalogOutputPin)
             error(IllegalImplicitTypeConversionError("Cannot read output pin of type $pin, read can only take DigitalInputPin or AnalogInputPin."))
         else
             error(IllegalImplicitTypeConversionError("Read can only take DigitalInputPin or AnalogInputPin, but got $pin."))
