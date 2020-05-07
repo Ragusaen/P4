@@ -9,7 +9,27 @@ import java.lang.Exception
 fun main() {
     val input =
 """
-AnalogInputPin aip = 5;
+    template module a(Int a) {
+            String s = "hey";
+            every(100ms) {
+                while(true) {
+                    while(false) {
+                        continue;
+                        for (Int i = 0; i < 2; i += 1) {
+                            break;
+                        }
+                    }
+                    continue;
+                    continue;
+                }
+                while(false) {
+                    continue;
+                    for (Int i = 0; i < 2; i += 1) {
+                        break;
+                    }
+                }
+            }
+        }
 
 """
     try {
@@ -18,8 +38,8 @@ AnalogInputPin aip = 5;
 
         val a = parser.parse()
         val st = SymbolTableBuilder().buildSymbolTable(a)
-        val tt = TypeChecker(st).run(a)
         ContextualConstraintAnalyzer(st).run(a)
+        val tt = TypeChecker(st).run(a)
         val cg = CodeGenerator(tt, st)
 
         println(cg.generate(a))

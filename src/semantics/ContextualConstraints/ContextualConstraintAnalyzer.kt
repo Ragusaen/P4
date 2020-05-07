@@ -11,7 +11,7 @@ import semantics.SymbolTable.SymbolTable
 import semantics.TypeChecking.Type
 import semantics.TypeChecking.errors.IdentifierUsedBeforeAssignmentError
 
-class ContextualConstraintAnalyzer(st:SymbolTable) : ScopedTraverser(st) {
+class ContextualConstraintAnalyzer(symbolTable: SymbolTable) : ScopedTraverser(symbolTable) {
     private var openLoops: Int = 0
     private var inFunction = false
 
@@ -44,17 +44,33 @@ class ContextualConstraintAnalyzer(st:SymbolTable) : ScopedTraverser(st) {
             error(ReturnOutOfFunctionDeclarationError("Attempt to return from function, but was not inside of a function declaration"))
     }
 
+    override fun outAVardcl(node: AVardcl) {
+        val identifier = symbolTable.findVar(node.identifier.text)!!
+        if (node.expr != null) {
+            identifier.isInitialised = true
+        }
+    }
+
+    override fun outAAssignStmt(node: AAssignStmt) {
+        symbolTable.findVar(node.identifier.text)!!.isInitialised = true
+    }
+
     override fun outAIdentifierValue(node: AIdentifierValue) {
+        errorHandler.setLineAndPos(node.identifier)
+
         val identifier = symbolTable.findVar(node.identifier.text)
         if (!identifier!!.isInitialised)
             error(IdentifierUsedBeforeAssignmentError("The variable ${node.identifier.text} was used before being initialized."))
     }
 
     override fun inAFunctiondcl(node: AFunctiondcl) {
+        errorHandler.setLineAndPos(node.identifier)
+        super.inAFunctiondcl(node)
         inFunction = true
     }
 
     override fun outAFunctiondcl(node: AFunctiondcl) {
+        super.outAFunctiondcl(node)
         inFunction = false
     }
 
@@ -64,14 +80,17 @@ class ContextualConstraintAnalyzer(st:SymbolTable) : ScopedTraverser(st) {
     }
 
     override fun outAForStmt(node: AForStmt) {
+        super.outAForStmt(node)
         openLoops--
     }
 
     override fun inAWhileStmt(node: AWhileStmt) {
+        super.inAWhileStmt(node)
         openLoops++
     }
 
     override fun outAWhileStmt(node: AWhileStmt?) {
+        super.outAWhileStmt(node)
         openLoops--
     }
 }

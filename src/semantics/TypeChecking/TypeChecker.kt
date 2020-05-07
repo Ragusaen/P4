@@ -138,7 +138,6 @@ class TypeChecker(symbolTable: SymbolTable) : ScopedTraverser(symbolTable) {
 
         if (node.expr != null) {
             val typeE = typeStack.pop()
-            identifier.isInitialised = true
             if (identifier.type.isPin()) {
                 if (typeE != identifier.type) {
                     if ((identifier.type == Type.AnalogOutputPin || identifier.type == Type.AnalogInputPin) && typeE != Type.AnalogPin)
@@ -179,7 +178,6 @@ class TypeChecker(symbolTable: SymbolTable) : ScopedTraverser(symbolTable) {
         if (typeExpr != typeId){
             error(IllegalImplicitTypeConversionError("Cannot assign variable ${node.identifier.text} of type $typeId with value of type $typeExpr"))
         }
-        symbolTable.findVar(node.identifier.text)!!.isInitialised = true
     }
 
     // This is only for variables used in expressions as values
