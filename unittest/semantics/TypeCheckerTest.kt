@@ -16,126 +16,126 @@ import semantics.TypeChecking.errors.ArrayInitializationError
 internal class TypeCheckerTest {
     @Test
     fun assigningFloatToIntThrowsException() {
-        val (scope, start) = getScopeFromString("Int a = 5.5;")
+        val (scope, start) = getScopeFromString("Int a = 5.5")
 
         assertThrows<IllegalImplicitTypeConversionError> { TypeChecker(scope).run(start) }
     }
 
     @Test
     fun assigningIntToFloatThrowsException() {
-        val (scope, start) = getScopeFromString("Float a = 5;")
+        val (scope, start) = getScopeFromString("Float a = 5")
 
         assertThrows<IllegalImplicitTypeConversionError> { TypeChecker(scope).run(start) }
     }
 
     @Test
     fun intAdditionIntReturnsIntIsTypeCorrect(){
-        val (scope, start) = getScopeFromString("Int a = 5 + 8;")
+        val (scope, start) = getScopeFromString("Int a = 5 + 8")
 
         TypeChecker(scope).run(start)
     }
 
     @Test
     fun boolEqualsBoolReturnsBoolIsTypeCorrect() {
-        val (scope, start) = getScopeFromString("Bool a = true == false;")
+        val (scope, start) = getScopeFromString("Bool a = true == false")
 
         TypeChecker(scope).run(start)
     }
 
     @Test
     fun intEqualsIntReturnsBoolIsTypeCorrect() {
-        val (scope, start) = getScopeFromString("Bool a = 6 == 8;")
+        val (scope, start) = getScopeFromString("Bool a = 6 == 8")
 
         TypeChecker(scope).run(start)
     }
 
     @Test
     fun boolAdditionBoolThrowsException() {
-        val (scope, start) = getScopeFromString("Bool a = true + true;")
+        val (scope, start) = getScopeFromString("Bool a = true + true")
 
         assertThrows<IncompatibleOperatorError> { TypeChecker(scope).run(start) }
     }
 
     @Test
     fun intAdditionBoolThrowsException() {
-        val (scope, start) = getScopeFromString("Int a = 6 + true;")
+        val (scope, start) = getScopeFromString("Int a = 6 + true")
 
         assertThrows<IncompatibleOperatorError> { TypeChecker(scope).run(start) }
     }
 
     @Test
     fun chainedGreaterThanOperationsThrowsException() {
-        val (scope, start) = getScopeFromString("Bool a = 1 < 2 < 3;")
+        val (scope, start) = getScopeFromString("Bool a = 1 < 2 < 3")
 
         assertThrows<IncompatibleOperatorError> { TypeChecker(scope).run(start)}
     }
 
     @Test
     fun chainedEqualsOperationsReturnsBoolIsTypeCorrect() {
-        val (scope, start) = getScopeFromString("Bool a = 1 == 2 == (2 == 2);")
+        val (scope, start) = getScopeFromString("Bool a = 1 == 2 == (2 == 2)")
 
         TypeChecker(scope).run(start)
     }
 
     @Test
     fun intEqualsFloatThrowsException() {
-        val (st, start) = getScopeFromString("Bool a = 6 == 6.6;")
+        val (st, start) = getScopeFromString("Bool a = 6 == 6.6")
 
         assertThrows<IncompatibleOperatorError> { TypeChecker(st).run(start) }
     }
 
     @Test
     fun functionWithParameterTypesBoolIntCalledWithArgumentTypesIntBoolThrowsException() {
-        val (st, start) = getScopeFromString("fun foo(Bool a, Int b) {;} every (20ms) { foo(3, false); }")
+        val (st, start) = getScopeFromString("fun foo(Bool a, Int b) {} every (20ms) { foo(3, false) }")
 
         assertThrows<IdentifierNotDeclaredError> {TypeChecker(st).run(start)}
     }
 
     @Test
     fun everyStructuresExpressionTypeIntThrowsException() {
-        val (st, start) = getScopeFromString("every (45 + 8) { ; }")
+        val (st, start) = getScopeFromString("every (45 + 8) {  }")
 
         assertThrows<IllegalImplicitTypeConversionError> {TypeChecker(st).run(start)}
     }
 
     @Test
     fun ifStatementGivenIntExpressionThrowsException() {
-        val (st, start) = getScopeFromString("every(20ms) { if (45 + 8) ; }")
+        val (st, start) = getScopeFromString("every(20ms) { if (45 + 8)  }")
 
         assertThrows<IllegalImplicitTypeConversionError> {TypeChecker(st).run(start)}
     }
 
     @Test
     fun ifStatementGivenBoolExpressionIsTypeCorrect() {
-        val (st, start) = getScopeFromString("every(20ms) { if (true); }")
+        val (st, start) = getScopeFromString("every(20ms) { if (true) }")
 
         TypeChecker(st).run(start)
     }
 
     @Test
     fun intArray1DVarCanBeInitialisedWith1DIntArrayLiteral() {
-        val (st, start) = getScopeFromString("Int[] a = [13, 14, 45, 6];")
+        val (st, start) = getScopeFromString("Int[] a = [13, 14, 45, 6]")
 
         TypeChecker(st).run(start)
     }
 
     @Test
     fun intArrayInitialisedWith2DIntArrayLiteralThrowsException() {
-        val (st, start) = getScopeFromString("Int[] a = [[13]];")
+        val (st, start) = getScopeFromString("Int[] a = [[13]]")
 
         assertThrows<IllegalImplicitTypeConversionError> {TypeChecker(st).run(start)}
     }
 
     @Test
     fun indexingIntArrayReturnsIntTypeIsTypeCorrect() {
-        val (st, start) = getScopeFromString("Int a = [23, 14][0];")
+        val (st, start) = getScopeFromString("Int a = [23, 14][0]")
 
         TypeChecker(st).run(start)
     }
 
     @Test
     fun intArrayAssignedToStringArrayThrowsException() {
-        val (st, start) = getScopeFromString("String[] a = [23, 14];")
+        val (st, start) = getScopeFromString("String[] a = [23, 14]")
 
         assertThrows<IllegalImplicitTypeConversionError> {TypeChecker(st).run(start)}
     }
@@ -145,7 +145,7 @@ internal class TypeCheckerTest {
         val code =
         """
             fun a():Int {
-                return "abc";
+                return "abc"
             }
         """
 
@@ -159,7 +159,7 @@ internal class TypeCheckerTest {
         val code =
         """
             fun a():String {
-                return "abc";
+                return "abc"
             }
         """
 
@@ -171,10 +171,10 @@ internal class TypeCheckerTest {
     fun usingTemplateModuleNameThatIsNotDeclaredThrowsException() {
         val code =
         """
-            module mod this;
+            module mod this
             
             template module that {
-                every(100ms);
+                every(100ms)
             }
         """
 
@@ -187,10 +187,10 @@ internal class TypeCheckerTest {
     fun usingTemplateModuleNameThatIsDeclaredIsOk() {
         val code =
         """
-            module mod a;
+            module mod a
             
             template module a {
-                every(100ms);
+                every(100ms)
             }
         """
 
@@ -202,10 +202,10 @@ internal class TypeCheckerTest {
     fun moduleInstancesWithMismatchingParametersThrowsException() {
         val code =
         """
-            module mod a(50);
+            module mod a(50)
             
             template module a(Time t) {
-                every(t);
+                every(t)
             }
         """
 
@@ -218,11 +218,11 @@ internal class TypeCheckerTest {
     fun moduleInstancesWithMatchingParametersIsOk() {
         val code =
         """
-            module mod a("abc");
+            module mod a("abc")
             
             template module a(String s) {
                 every(50ms)
-                    s += "a";
+                    s += "a"
             }
         """
 
@@ -235,7 +235,7 @@ internal class TypeCheckerTest {
         val code =
         """
             template module a {
-                every(100.0);
+                every(100.0)
             }
         """
 
@@ -249,7 +249,7 @@ internal class TypeCheckerTest {
         val code =
         """
             template module a {
-                every(100ms);
+                every(100ms)
             }
         """
 
@@ -263,7 +263,7 @@ internal class TypeCheckerTest {
         """
             template module a {
                 every(100ms)
-                    if("abc");
+                    if("abc")
             }
         """
 
@@ -278,7 +278,7 @@ internal class TypeCheckerTest {
         """
             template module a {
                 every(100ms)
-                    if(true);
+                    if(true)
             }
         """
 
@@ -292,7 +292,7 @@ internal class TypeCheckerTest {
         """
             template module a {
                 every(100ms)
-                    for(;8;);
+                    for(8)
             }
         """
 
@@ -307,7 +307,7 @@ internal class TypeCheckerTest {
         """
             template module a {
                 every(100ms)
-                    for(;true;);
+                    for(true)
             }
         """
 
@@ -321,7 +321,7 @@ internal class TypeCheckerTest {
         """
             template module a {
                 every(100ms)
-                    while("yes");
+                    while("yes")
             }
         """
 
@@ -336,7 +336,7 @@ internal class TypeCheckerTest {
         """
             template module a {
                 every(100ms)
-                    while(true);
+                    while(true)
             }
         """
 
@@ -350,7 +350,7 @@ internal class TypeCheckerTest {
         """
             template module a {
                 every(100ms)
-                    a("abc");
+                    a("abc")
             }
             
             fun a(Int a, Float f) {}
@@ -367,7 +367,7 @@ internal class TypeCheckerTest {
         """
             template module a {
                 every(100ms)
-                    a("abc");
+                    a("abc")
             }
             
             fun a(String s) {}
@@ -381,7 +381,7 @@ internal class TypeCheckerTest {
     fun declaringArrayWithoutSizeThrowsException() {
         val code =
         """
-            Int[] a;
+            Int[] a
         """
 
         val (st, start) = getScopeFromString(code)
@@ -393,7 +393,7 @@ internal class TypeCheckerTest {
     fun declaringArrayWithExplicitSizeIsOk() {
         val code =
         """
-            Int[10] a;
+            Int[10] a
         """
 
         val (st, start) = getScopeFromString(code)
@@ -404,7 +404,7 @@ internal class TypeCheckerTest {
     fun declaringArrayWithSizeFromInitializationIsOk() {
         val code =
         """
-            Int[] a = [1, 2, 3];
+            Int[] a = [1, 2, 3]
         """
 
         val (st, start) = getScopeFromString(code)
@@ -415,7 +415,7 @@ internal class TypeCheckerTest {
     fun initializingVariableWithMismatchingValueTypeThrowsException() {
         val code =
         """
-            Int a = "abc";
+            Int a = "abc"
         """
 
         val (st, start) = getScopeFromString(code)
@@ -427,7 +427,7 @@ internal class TypeCheckerTest {
     fun initializingVariableWithMatchingValueTypeIsOk() {
         val code =
         """
-            Int a = 88;
+            Int a = 88
         """
 
         val (st, start) = getScopeFromString(code)
@@ -438,7 +438,7 @@ internal class TypeCheckerTest {
     fun initializingAnalogInputPinWithValueNotOfTypeAnalogPinThrowsException() {
         val code =
         """
-            AnalogInputPin aip = 40.5;
+            AnalogInputPin aip = 40.5
         """
 
         val (st, start) = getScopeFromString(code)
@@ -449,7 +449,7 @@ internal class TypeCheckerTest {
     fun initializingAnalogInputPinWithValueOfTypeAnalogPinIsOk() {
         val code =
         """
-            AnalogInputPin aip = A15;
+            AnalogInputPin aip = A15
         """
 
         val (st, start) = getScopeFromString(code)
@@ -460,7 +460,7 @@ internal class TypeCheckerTest {
     fun initializingDigitalInputPinWithValueNotOfTypeDigitalPinThrowsException() {
         val code =
         """
-            DigitalInputPin aip = A8;
+            DigitalInputPin aip = A8
         """
 
         val (st, start) = getScopeFromString(code)
@@ -471,7 +471,7 @@ internal class TypeCheckerTest {
     fun initializingDigitalInputPinWithValueOfTypeDigitalPinIsOk() {
         val code =
         """
-            DigitalInputPin aip = D10;
+            DigitalInputPin aip = D10
         """
 
         val (st, start) = getScopeFromString(code)
@@ -482,7 +482,7 @@ internal class TypeCheckerTest {
     fun applyingUnaryNotOperatorOnExpressionOfNotTypeBoolThrowsException() {
         val code =
                 """
-            Bool b = !(10 + 10);
+            Bool b = !(10 + 10)
         """
 
         val (st, start) = getScopeFromString(code)
@@ -493,7 +493,7 @@ internal class TypeCheckerTest {
     fun applyingUnaryNotOperatorOnExpressionOfTypeBoolIsOk() {
         val code =
                 """
-            Bool b = !true;
+            Bool b = !true
         """
         val (st, start) = getScopeFromString(code)
         TypeChecker(st).run(start)
@@ -503,7 +503,7 @@ internal class TypeCheckerTest {
     fun applyingUnaryPlusOperatorOnExpressionOfNotTypeIntOrFloatThrowsException() {
         val code =
         """
-            Int b = +true;
+            Int b = +true
         """
 
         val (st, start) = getScopeFromString(code)
@@ -514,7 +514,7 @@ internal class TypeCheckerTest {
     fun applyingUnaryPlusOperatorOnExpressionOfTypeIntIsOk() {
         val code =
         """
-            Int a = +22;
+            Int a = +22
         """
         val (st, start) = getScopeFromString(code)
         TypeChecker(st).run(start)
@@ -524,7 +524,7 @@ internal class TypeCheckerTest {
     fun applyingUnaryPlusOperatorOnExpressionOfTypeFloatIsOk() {
         val code =
         """
-            Float a = +.9;
+            Float a = +.9
         """
         val (st, start) = getScopeFromString(code)
         TypeChecker(st).run(start)
@@ -535,8 +535,8 @@ internal class TypeCheckerTest {
         val code =
         """
             fun a() {
-                Int a;
-                a = "this";
+                Int a
+                a = "this"
             }
         """
 
@@ -549,8 +549,8 @@ internal class TypeCheckerTest {
         val code =
         """
             fun a() {
-                Int a;
-                a = 1024;
+                Int a
+                a = 1024
             }
         """
 
