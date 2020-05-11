@@ -408,6 +408,7 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
     }
 
     override fun caseAFunctiondcl(node: AFunctiondcl) {
+        inAFunctiondcl(node)
         val identifier = getCode(node.identifier)
         val type = if (node.type == null) "void" else getCode(node.type)
 
@@ -421,6 +422,7 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
 
         val body = getCode(node.body)
         codeStack.push("$type $identifier ($param)\n$body")
+        outAFunctiondcl(node)
     }
 
     override fun caseAParam(node: AParam) {

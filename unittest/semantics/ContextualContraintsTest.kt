@@ -6,40 +6,43 @@ import org.junit.jupiter.api.assertThrows
 import sablecc.node.Start
 import sablecc.parser.Parser
 import semantics.ContextualConstraints.ContextualConstraintAnalyzer
-import semantics.ContextualConstraints.Exceptions.LoopJumpOutOfLoopException
-import semantics.ContextualConstraints.Exceptions.ReturnOutOfFunctionDeclarationException
+import semantics.ContextualConstraints.Exceptions.LoopJumpOutOfLoopError
+import semantics.ContextualConstraints.Exceptions.ReturnOutOfFunctionDeclarationError
+import semantics.SymbolTable.SymbolTable
+import semantics.SymbolTable.SymbolTableBuilder
+import semantics.TypeChecking.TypeChecker
 
-internal class ContextualContraintsTest {
-    fun parse(input: String): Start {
-        return Parser(StringLexer(input)).parse()
-    }
-
+internal class ContextualConstraintsTest {
     @Test
     fun returnOutOfFunctionDeclarationThrowsException() {
-        val s = parse("""
-            every (100) {
+        val code =
+        """
+            every (100ms) {
                 return;
             }
-        """)
+        """
 
-        assertThrows<ReturnOutOfFunctionDeclarationException>{ ContextualConstraintAnalyzer().caseStart(s) }
+        val (st, start) = compileUpToContextualConstraintsAnalyzerFromString(code)
+        assertThrows<ReturnOutOfFunctionDeclarationError> { ContextualConstraintAnalyzer(st).caseStart(start) }
     }
 
     @Test
     fun returnInsideFunctionDeclarationIsOkay() {
-        val s = parse("""
-            fun foo() {
-                return;
+        val code =
+        """
+            fun foo():Int {
+                return 5;
             }
-        """)
+        """
 
-        ContextualConstraintAnalyzer().caseStart(s)
+        val (st, start) = compileUpToContextualConstraintsAnalyzerFromString(code)
+        ContextualConstraintAnalyzer(st).caseStart(start)
     }
 
     @Test
     fun breakAndContinueInsideNestedLoopsIsOkay() {
-        val s = parse("""
-            every(100) {
+        val code = """
+            every(100ms) {
                 while(true) {
                     while(false) {
                         continue;
@@ -57,23 +60,34 @@ internal class ContextualContraintsTest {
                     }
                 }
             }
-        """)
+        """
 
-        ContextualConstraintAnalyzer().caseStart(s)
+        val (st, start) = compileUpToContextualConstraintsAnalyzerFromString(code)
+        ContextualConstraintAnalyzer(st).caseStart(start)
     }
 
     @Test
     fun breakOutsideLoopThrowsException() {
-        val s = parse("""
-            every(100) {
+        val code =
+        """
+            every(100ms) {
                 while(true) {
                     while(false) {}
                     continue;
                 }
                 break;
             }
-        """)
+        """
+        val (st, start) = compileUpToContextualConstraintsAnalyzerFromString(code)
+        assertThrows<LoopJumpOutOfLoopError> { ContextualConstraintAnalyzer(st).caseStart(start) }
+    }
 
-        assertThrows<LoopJumpOutOfLoopException> { ContextualConstraintAnalyzer().caseStart(s) }
+
+    private fun compileUpToContextualConstraintsAnalyzerFromString(input:String):Pair<SymbolTable, Start> {
+        val lexer = StringLexer(input)
+        val parser = Parser(lexer)
+        val s = parser.parse()
+        val st = SymbolTableBuilder().buildSymbolTable(s)
+        return Pair(st, s)
     }
 }

@@ -1,5 +1,6 @@
 import codegeneration.CodeGenerator
 import sablecc.parser.Parser
+import semantics.ContextualConstraints.ContextualConstraintAnalyzer
 import semantics.SymbolTable.SymbolTableBuilder
 import semantics.TypeChecking.TypeChecker
 import java.lang.Exception
@@ -7,25 +8,39 @@ import java.lang.Exception
 
 fun main() {
     var input = """
-Bool state = LOW
-
-Bool b = HIGH
-    """
+    template module a(Int a) {
+            String s = "hey"
+            every(100ms) {
+                while(true) {
+                    while(false) {
+                        break
+                    }
+                    continue
+                    continue
+                }
+                while(false) {
+                    break
+                }
+            }
+        }
+"""
     input = input.replace("(?m)^[ \t]*\r?\n".toRegex(), "")
+
     try {
         val lexer = StringLexer(input)
         val parser = Parser(lexer)
 
         val a = parser.parse()
-
         val st = SymbolTableBuilder().buildSymbolTable(a)
+        ContextualConstraintAnalyzer(st).run(a)
         val tt = TypeChecker(st).run(a)
-
         val cg = CodeGenerator(tt, st)
+
         println(cg.generate(a))
     }
     catch (ce:CompileError) {
         println("Compilation stopped due to compile error.")
+        println(ce.errorMsg)
     }
 }
 

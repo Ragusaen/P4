@@ -7,9 +7,6 @@ import sablecc.lexer.LexerException
 import sablecc.node.Start
 import sablecc.parser.Parser
 import sablecc.parser.ParserException
-import semantics.ContextualConstraints.ContextualConstraintAnalyzer
-import semantics.ContextualConstraints.Exceptions.ReturnOutOfFunctionDeclarationException
-import java.lang.Exception
 
 internal class ParsingTests {
 
