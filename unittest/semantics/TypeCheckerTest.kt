@@ -314,7 +314,7 @@ internal class TypeCheckerTest {
         """
             template module a {
                 every(100ms)
-                    for(true)
+                    for(;true;)
                         continue
             }
         """

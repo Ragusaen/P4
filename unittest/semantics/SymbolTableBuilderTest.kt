@@ -24,7 +24,6 @@ internal class SymbolTableBuilderTest {
 
     @Test
     fun symbolTableBuilderThrowsErrorWhenVariableHasAlreadyBeenDeclared() {
-        val stb = SymbolTableBuilder()
         val input = "Int a = 8\n Int a = 5"
 
         assertThrows<IdentifierAlreadyDeclaredError> { getScopeFromString(input) }
@@ -32,7 +31,6 @@ internal class SymbolTableBuilderTest {
 
     @Test
     fun symbolTableBuilderThrowsErrorIfVariableIsUsedBeforeDeclaration() {
-        val stb = SymbolTableBuilder()
         val input = "Int b = a + 2"
 
         assertThrows<IdentifierUsedBeforeDeclarationError> { getScopeFromString(input) }
@@ -40,30 +38,29 @@ internal class SymbolTableBuilderTest {
 
     @Test
     fun variableDeclaredAfterUse() {
-        val stb = SymbolTableBuilder()
         val input = """
 |           every (1000) {
                 Int a = b - 3
                 Int b = 0
             }
-        """.trimMargin()
+        """
         assertThrows<IdentifierUsedBeforeDeclarationError> {  getScopeFromString(input) }
     }
 
     @Test
     fun useOfNonDeclaredFunctionThrowsDeclarationException() {
-        val start = parseString("""
+        val code = """
            every (2) {
                 foo()
            }
-        """.trimIndent())
+        """
 
-        assertThrows<IdentifierUsedBeforeDeclarationError>{ SymbolTableBuilder().buildSymbolTable(start)}
+        assertThrows<IdentifierUsedBeforeDeclarationError>{ getScopeFromString(code)}
     }
 
     @Test
     fun useOfDeclaredFunctionReturnsTableWithFunction() {
-        val start = parseString("""
+        val code = """
             fun foo(String s, Int i): String {
                 return s
             }
@@ -71,9 +68,9 @@ internal class SymbolTableBuilderTest {
             every (2) {
                 foo("ans", 42)
             }
-        """.trimIndent())
+        """
 
-        val st = SymbolTableBuilder().buildSymbolTable(start)
+        val st = getScopeFromString(code).first
 
         st.openScope()
         assertNotNull(st.findVar("s"))
@@ -85,7 +82,6 @@ internal class SymbolTableBuilderTest {
 
     @Test
     fun symbolTableBuilderThrowsErrorIfVariableIsUsedBeforeDeclarationAndDefinedInLowerScope(){
-        val stb = SymbolTableBuilder()
         val input = """
             template module thismodule {
                 Int a = 3
@@ -101,11 +97,10 @@ internal class SymbolTableBuilderTest {
 
     @Test
     fun symbolTableBuilderThrowsErrorIfForLoopVariablesAreUsedInForLoopParens(){
-        val stb = SymbolTableBuilder()
         val input = """
             template module thismodule {
                 every (1000) {
-                    for (Int i = b i < 2 i += 2) {
+                    for (Int i = b; i < 2; i += 2) {
                         Int b = 1
                     }
                 }
@@ -116,7 +111,6 @@ internal class SymbolTableBuilderTest {
 
     @Test
     fun symbolTableContainsVariablesWithSameNameInDiffirentScopes(){
-        val stb = SymbolTableBuilder()
         val input = """
             Int a = 2
             template module thismodule {
@@ -136,7 +130,6 @@ internal class SymbolTableBuilderTest {
 
     @Test
     fun rootScopeVariablesUsedBeforeDeclarationIsOkay(){
-        val stb = SymbolTableBuilder()
         val input = """
             template module thismodule {
                 Int b = a
@@ -156,7 +149,6 @@ internal class SymbolTableBuilderTest {
 
     @Test
     fun callingFunctionThatDoesntExistGivesException() {
-        val stb = SymbolTableBuilder()
         val input = """
             every (1000ms) {
                 foo()
@@ -167,7 +159,6 @@ internal class SymbolTableBuilderTest {
 
     @Test
     fun functionCanBeRecursive() {
-        val stb = SymbolTableBuilder()
         val input = """
             fun foo() {
                 foo()
@@ -180,12 +171,11 @@ internal class SymbolTableBuilderTest {
 
     @Test
     fun instanceOfTemplateModuleCanBeDeclared(){
-        val stb = SymbolTableBuilder()
         val input = """
             template module thismodule {
-                every (1000) {
-                     
-                }
+                Int a = 0
+                every (1000)
+                    a += 1
             }
             module thismodule thisinstance
         """
@@ -197,7 +187,6 @@ internal class SymbolTableBuilderTest {
 
     @Test
     fun namedModuleCanBeDeclared() {
-        val stb = SymbolTableBuilder()
         val input = """
             module thismodule {
                 every (1000) {
