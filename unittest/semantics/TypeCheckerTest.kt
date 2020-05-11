@@ -560,7 +560,9 @@ internal class TypeCheckerTest {
 
 
     private fun getScopeFromString(input:String):Pair<SymbolTable, Start> {
-        val lexer = StringLexer(input)
+        var newInput = input + "\n"
+        newInput = input.replace("(?m)^[ \t]*\r?\n".toRegex(), "")
+        val lexer = StringLexer(newInput)
         val parser = Parser(lexer)
         val s = parser.parse()
         return Pair(SymbolTableBuilder().buildSymbolTable(s), s)

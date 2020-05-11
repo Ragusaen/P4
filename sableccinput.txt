@@ -44,6 +44,7 @@ Tokens
     stop = 'stop';
     and = 'and';
     or = 'or';
+    init = 'init';
     assign = '=';
     equal = '==';
     notequal = '!=';
@@ -99,7 +100,9 @@ Productions
         | {module} moduledcl
             {-> New root_element.moduledcl(moduledcl)}
         | {function} functiondcl
-            {-> New root_element.functiondcl(functiondcl)};
+            {-> New root_element.functiondcl(functiondcl)}
+        | {init} init stmt
+            {-> };
 
 /* Function */
     functiondcl {-> functiondcl} =

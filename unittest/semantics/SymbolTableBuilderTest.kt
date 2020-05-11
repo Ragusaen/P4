@@ -14,9 +14,10 @@ import semantics.TypeChecking.Type
 
 internal class SymbolTableBuilderTest {
     fun parseString(input: String): Start {
-        val lexer = StringLexer(input)
+        var newInput = input + "\n"
+        newInput = input.replace("(?m)^[ \t]*\r?\n".toRegex(), "")
+        val lexer = StringLexer(newInput)
         val parser = Parser(lexer)
-
         return parser.parse()
     }
 
