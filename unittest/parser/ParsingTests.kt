@@ -16,7 +16,7 @@ internal class ParsingTests {
     @Test
     fun parseVariableDeclarationIsParseable(){
         val input = """
-            Int a;
+            Int a
         """
         parseString(input)
     }
@@ -24,7 +24,7 @@ internal class ParsingTests {
     @Test
     fun parseIntegerDeclarationIsParseable(){
         val input = """
-            Int a = 5;
+            Int a = 5
         """
         parseString(input)
     }
@@ -32,7 +32,7 @@ internal class ParsingTests {
     @Test
     fun parseIntegerDeclarationNegativeLiteralIsParseable(){
         val input = """
-            Int a = -5;
+            Int a = -5
         """
         parseString(input)
     }
@@ -40,7 +40,7 @@ internal class ParsingTests {
     @Test
     fun parseFloatDeclarationIsParseable(){
         val input = """
-            Float f = 5.5;
+            Float f = 5.5
         """
         parseString(input)
     }
@@ -48,7 +48,7 @@ internal class ParsingTests {
     @Test
     fun parseFloatDeclarationNegativeNumberIsParseable(){
         val input = """
-            Float f = -5.5;
+            Float f = -5.5
         """
         parseString(input)
     }
@@ -56,7 +56,7 @@ internal class ParsingTests {
     @Test
     fun parseFloatDeclarationNoNumbersBeforeDotIsParseable(){
         val input = """
-            Float f = .5;
+            Float f = .5
         """
         parseString(input)
     }
@@ -64,7 +64,7 @@ internal class ParsingTests {
     @Test
     fun parseFloatDeclarationNoNumbersAfterDotIsParseable(){
         val input = """
-            Float f = 5.;
+            Float f = 5.
         """
         parseString(input)
     }
@@ -72,7 +72,7 @@ internal class ParsingTests {
     @Test
     fun parseFloatDeclarationOnlyDotThrowsException(){
         val input = """
-            Float f = .;
+            Float f = .
         """
         assertThrows<LexerException> { parseString(input) }
     }
@@ -80,7 +80,7 @@ internal class ParsingTests {
     @Test
     fun parseTimeDeclarationMinutesIsParseable(){
         val input = """
-            Time t = 5m;
+            Time t = 5m
         """
         parseString(input)
     }
@@ -88,7 +88,7 @@ internal class ParsingTests {
     @Test
     fun parseTimeDeclarationSecondsIsParseable(){
         val input = """
-            Time t = 5s;
+            Time t = 5s
         """
         parseString(input)
     }
@@ -96,7 +96,7 @@ internal class ParsingTests {
     @Test
     fun parseTimeDeclarationHoursIsParseable(){
         val input = """
-            Time t = 5h;
+            Time t = 5h
         """
         parseString(input)
     }
@@ -104,7 +104,7 @@ internal class ParsingTests {
     @Test
     fun parseTimeDeclarationMillisecondsIsParseable(){
         val input = """
-            Time t = 5ms;
+            Time t = 5ms
         """
         parseString(input)
     }
@@ -112,7 +112,7 @@ internal class ParsingTests {
     @Test
     fun parseTimeDeclarationDecimalIsParseable(){
         val input = """
-            Time t = 5.6ms;
+            Time t = 5.6ms
         """
         parseString(input)
     }
@@ -120,7 +120,7 @@ internal class ParsingTests {
     @Test
     fun parseTimeDeclarationNegativeTimeIsParseable(){
         val input = """
-            Time t = -5.6ms;
+            Time t = -5.6ms
         """
         parseString(input)
     }
@@ -128,7 +128,7 @@ internal class ParsingTests {
     @Test
     fun parseTimeDeclarationInvalidTimeSuffixThrowsException(){
         val input = """
-            Time t = 7t;
+            Time t = 7t
         """
         assertThrows<ParserException> { parseString(input) }
     }
@@ -136,7 +136,7 @@ internal class ParsingTests {
     @Test
     fun parseDIPDeclarationIsParseable(){
         val input = """
-            DigitalInputPin p = D5;
+            DigitalInputPin p = D5
         """
         parseString(input)
     }
@@ -144,7 +144,7 @@ internal class ParsingTests {
     @Test
     fun parseDOPDeclarationIsParseable(){
         val input = """
-            DigitalOutputPin p = D5;
+            DigitalOutputPin p = D5
         """
         parseString(input)
     }
@@ -152,7 +152,7 @@ internal class ParsingTests {
     @Test
     fun parseAOPDeclarationIsParseable(){
         val input = """
-            AnalogOutputPin p = A5;
+            AnalogOutputPin p = A5
         """
         parseString(input)
     }
@@ -160,7 +160,7 @@ internal class ParsingTests {
     @Test
     fun parseAIPDeclarationIsParseable(){
         val input = """
-            AnalogInputPin p = A5;
+            AnalogInputPin p = A5
         """
         parseString(input)
     }
@@ -168,7 +168,7 @@ internal class ParsingTests {
     @Test
     fun parseIdentifierAsDNumberThrowsException(){
         val input = """
-           Time D5 = 5s; 
+           Time D5 = 5s
         """
         assertThrows<ParserException> { parseString(input) }
     }
@@ -176,7 +176,7 @@ internal class ParsingTests {
     @Test
     fun parseIdentifierAsANumberThrowsException(){
         val input = """
-           Time A5 = 5s; 
+           Time A5 = 5s
         """
         assertThrows<ParserException> { parseString(input) }
     }
@@ -184,7 +184,7 @@ internal class ParsingTests {
     @Test
     fun parseMultipleDeclarationsPerLineIsParseable(){
         val input = """
-           Int a, b = 5;
+           Int a, b = 5
         """
         parseString(input)
     }
@@ -192,7 +192,7 @@ internal class ParsingTests {
     @Test
     fun parseArrayDeclarationEmptyIsParseable(){
         val input = """
-           Time[] t = [];
+           Time[] t = []
         """
         assertThrows<ParserException> { parseString(input) }
     }
@@ -200,7 +200,7 @@ internal class ParsingTests {
     @Test
     fun parseArrayDeclarationWithValuesIsParseable(){
         val input = """
-           Time[] t = [500ms, 400ms];
+           Time[] t = [500ms, 400ms]
         """
         parseString(input)
     }
@@ -208,7 +208,7 @@ internal class ParsingTests {
     @Test
     fun parseMultipleDimentionArrayDeclarationIsParseable(){
         val input = """
-           Time[] t = [[200ms, 100ms], [400ms, 1s]];
+           Time[] t = [[200ms, 100ms], [400ms, 1s]]
         """
         parseString(input)
     }
@@ -226,7 +226,7 @@ internal class ParsingTests {
     fun parseTemplateModuleDeclarationNoModuleStructureWithDclsThrowsException(){
         val input = """
             template module id {
-                Int i = 5;
+                Int i = 5
             }
         """
         assertThrows<ParserException> { parseString(input) }
@@ -236,7 +236,8 @@ internal class ParsingTests {
     fun parseTemplateModuleDeclarationWithModuleStructureNoDclsIsParseable(){
         val input = """
             template module id {
-                every(5s);
+                every(5s)
+                   set D5 to HIGH
             }
         """
         parseString(input)
@@ -246,8 +247,8 @@ internal class ParsingTests {
     fun parseTemplateModuleDeclarationWithModuleStructureWithDclsIsParseable(){
         val input = """
             template module id {
-                Int i = 5;
-                every(5s);
+                Int i = 5
+                every(5s) set D5 to HIGH
             }
         """
         parseString(input)
@@ -257,8 +258,8 @@ internal class ParsingTests {
     fun parseTemplateModuleDeclarationModuleStructureWithDclsAfterThrowsException(){
         val input = """
             template module id {
-                every(5s);
-                Int i = 5;
+                every(5s) set D5 to HIGH
+                Int i = 5
             }
         """
         assertThrows<ParserException> { parseString(input) }
@@ -268,7 +269,7 @@ internal class ParsingTests {
     fun parseTemplateModuleDeclarationOneParamIsParseable(){
         val input = """
             template module id(Int a) {
-                every(5s);
+                every(5s) set D5 to HIGH
             }
         """
         parseString(input)
@@ -278,7 +279,7 @@ internal class ParsingTests {
     fun parseTemplateModuleDeclarationMultipleParamsIsParseable(){
         val input = """
             template module id(Int a, Int b) {
-                every(5s);
+                every(5s) set D5 to HIGH
             }
         """
         parseString(input)
@@ -288,7 +289,7 @@ internal class ParsingTests {
     fun parseNamedModuleDeclarationIsParseable(){
         val input = """
             module id {
-                every(5s);
+                every(5s) set D5 to HIGH
             }
         """
         parseString(input)
@@ -297,7 +298,7 @@ internal class ParsingTests {
     @Test
     fun parseAnonymousModuleDeclarationNoDclsIsParseable(){
         val input = """
-            every(5s);
+            every(5s) set D5 to HIGH
         """
         parseString(input)
     }
@@ -305,7 +306,7 @@ internal class ParsingTests {
     @Test
     fun parseFunctionDeclarationNoParamsNoReturnTypeIsParseable(){
         var input = """
-           fun f() ;
+           fun f() set D5 to HIGH
         """
         parseString(input)
     }
@@ -313,7 +314,7 @@ internal class ParsingTests {
     @Test
     fun parseFunctionDeclarationNoParamsWithReturnTypeIsParseable(){
         var input = """
-           fun f(): Int ;
+           fun f(): Int set D5 to HIGH
         """
         parseString(input)
     }
@@ -321,7 +322,7 @@ internal class ParsingTests {
     @Test
     fun parseFunctionDeclarationOneParamIsParseable(){
         var input = """
-           fun f(Int i) ;
+           fun f(Int i) set D5 to HIGH
         """
         parseString(input)
     }
@@ -329,7 +330,7 @@ internal class ParsingTests {
     @Test
     fun parseFunctionDeclarationMultipleParamsIsParseable(){
         var input = """
-           fun f(Int i, Float f) ;
+           fun f(Int i, Float f) set D5 to HIGH
         """
         parseString(input)
     }
@@ -338,7 +339,7 @@ internal class ParsingTests {
     fun parseIfStmtNoElseIsParseable(){
         var input = """
            fun f(){
-                if(true) ;
+                if(true) set D5 to HIGH
             }
         """
         parseString(input)
@@ -348,7 +349,9 @@ internal class ParsingTests {
     fun parseIfStmtWithElseIsParseable(){
         var input = """
            fun f(){
-                if(true) ; else ;
+                if(true) 
+                    set D5 to HIGH 
+                else set D6 to HIGH
             }
         """
         parseString(input)
@@ -359,7 +362,7 @@ internal class ParsingTests {
         var input = """
            fun f(){
                 if(true){
-                    ;
+                    set D5 to HIGH
                 }
             }
         """
@@ -370,7 +373,7 @@ internal class ParsingTests {
     fun parseIfStmtWithNoConditionThrowsException(){
         var input = """
            fun f(){
-                if() ;
+                if() set D5 to HIGH
             }
         """
         assertThrows<ParserException> { parseString(input) }
@@ -380,7 +383,7 @@ internal class ParsingTests {
     fun parseWhileStmtIsParseable(){
         var input = """
            fun f(){
-                while(true) ;
+                while(true) set D5 to HIGH
             }
         """
         parseString(input)
@@ -391,7 +394,7 @@ internal class ParsingTests {
         var input = """
            fun f(){
                 while(true){
-                    ;
+                    set D5 to HIGH
                 }
             }
         """
@@ -402,7 +405,7 @@ internal class ParsingTests {
     fun parseWhileStmtWithNoConditionThrowsException(){
         var input = """
            fun f(){
-                while() ;
+                while() set D5 to HIGH
             }
         """
         assertThrows<ParserException> { parseString(input) }
@@ -412,7 +415,7 @@ internal class ParsingTests {
     fun parseForStmtIsParseable(){
         var input = """
            fun f(){
-                for(;true;) ;
+                for(;true;) set D5 to HIGH
             }
         """
         parseString(input)
@@ -423,7 +426,7 @@ internal class ParsingTests {
         var input = """
            fun f(){
                 for(;true;){
-                    ;
+                    set D5 to HIGH
                 }
             }
         """
@@ -434,7 +437,7 @@ internal class ParsingTests {
     fun parseForStmtWithNoConditionThrowsException(){
         var input = """
            fun f(){
-                for() ;
+                for() set D5 to HIGH
             }
         """
         assertThrows<ParserException> { parseString(input) }
@@ -444,7 +447,11 @@ internal class ParsingTests {
     fun parseDanglingElseIsParseable(){
         var input = """
            fun f(){
-                if(true) if(true); else;
+                if(true)
+                    if(true) 
+                        set D5 to HIGH
+                    else 
+                        set D6 to HIGH
             }
         """
         parseString(input)
@@ -454,7 +461,12 @@ internal class ParsingTests {
     fun parseDanglingElseWithWhileIsParseable(){
         var input = """
            fun f(){
-                if(true) while(true) if(true) ; else ;
+                if(true) 
+                    while(true) 
+                        if(true) 
+                            set D5 to HIGH
+                        else 
+                            set D6 to HIGH
             }
         """
         parseString(input)
@@ -464,7 +476,12 @@ internal class ParsingTests {
     fun parseDanglingElseWithForIsParseable(){
         var input = """
            fun f(){
-                if(true) for(;true;) if(true) ; else ;
+                if(true) 
+                    for(;true;)
+                        if(true) 
+                            set D5 to HIGH
+                        else 
+                            set D6 to HIGH
             }
         """
         parseString(input)
@@ -474,8 +491,8 @@ internal class ParsingTests {
     fun parseAssignStmtIsParseable(){
         var input = """
            fun f(){
-                Int i = 5;
-                i = 7;
+                Int i = 5
+                i = 7
             }
         """
         parseString(input)
@@ -485,8 +502,8 @@ internal class ParsingTests {
     fun parseAssignToIdentifierIsParseable(){
         var input = """
            fun f(){
-                Int i = 5;
-                i = i;
+                Int i = 5
+                i = i
             }
         """
         parseString(input)
@@ -496,8 +513,8 @@ internal class ParsingTests {
     fun parseAdditionAssignStmtIsParseable(){
         var input = """
            fun f(){
-                Int i = 5;
-                i += 7;
+                Int i = 5
+                i += 7
             }
         """
         parseString(input)
@@ -507,8 +524,8 @@ internal class ParsingTests {
     fun parseSubtractionAssignStmtIsParseable(){
         var input = """
            fun f(){
-                Int i = 5;
-                i -= 7;
+                Int i = 5
+                i -= 7
             }
         """
         parseString(input)
@@ -518,8 +535,8 @@ internal class ParsingTests {
     fun parseDivisionAssignStmtIsParseable(){
         var input = """
            fun f(){
-                Int i = 5;
-                i /= 7;
+                Int i = 5
+                i /= 7
             }
         """
         parseString(input)
@@ -529,8 +546,8 @@ internal class ParsingTests {
     fun parseMultiplicationAssignStmtIsParseable(){
         var input = """
            fun f(){
-                Int i = 5;
-                i *= 7;
+                Int i = 5
+                i *= 7
             }
         """
         parseString(input)
@@ -540,8 +557,8 @@ internal class ParsingTests {
     fun parseModuloAssignStmtIsParseable(){
         var input = """
            fun f(){
-                Int i = 5;
-                i %= 7;
+                Int i = 5
+                i %= 7
             }
         """
         parseString(input)
@@ -550,7 +567,7 @@ internal class ParsingTests {
     @Test
     fun parseStmtInGlobalScopeThrowsException(){
         var input = """
-            ;
+            set D5 to HIGH
         """
         assertThrows<ParserException> { parseString(input) }
     }
@@ -559,8 +576,8 @@ internal class ParsingTests {
     fun parseStartStmtIsParseable(){
         var input = """
            fun f(){
-                DigitalOutputPin p = D5;
-                start(p);
+                DigitalOutputPin p = D5
+                start(p)
             }
         """
         parseString(input)
@@ -570,7 +587,7 @@ internal class ParsingTests {
     fun parseStartStmtWithoutIdentifierThrowsException(){
         var input = """
            fun f(){
-                start();
+                start()
             }
         """
         assertThrows<ParserException> { parseString(input) }
@@ -580,7 +597,7 @@ internal class ParsingTests {
     fun parseStopStmtIsParseable(){
         var input = """
            fun f(){
-                stop;
+                stop
             }
         """
         parseString(input)
@@ -590,7 +607,7 @@ internal class ParsingTests {
     fun parseDelayStmtIsParseable(){
         var input = """
            fun f(){
-                delay(500ms);
+                delay(500ms)
             }
         """
         parseString(input)
@@ -600,7 +617,7 @@ internal class ParsingTests {
     fun parseDelayStmtNoParamsThrowsExceptioni(){
         var input = """
            fun f(){
-                delay();
+                delay()
             }
         """
         assertThrows<ParserException> { parseString(input) }
@@ -610,7 +627,7 @@ internal class ParsingTests {
     fun parseDelayUntilStmtIsParseable(){
         var input = """
            fun f(){
-                delay until(500ms);
+                delay until(500ms)
             }
         """
         parseString(input)
@@ -620,7 +637,7 @@ internal class ParsingTests {
     fun parseDelayUntilStmtNoParamsThrowsExceptioni(){
         var input = """
            fun f(){
-                delay until();
+                delay until()
             }
         """
         assertThrows<ParserException> { parseString(input) }
@@ -630,7 +647,7 @@ internal class ParsingTests {
     fun parseReturnStmtNoExprIsParseable(){
         var input = """
            fun f(){
-                return;
+                return
             }
         """
         parseString(input)
@@ -640,7 +657,7 @@ internal class ParsingTests {
     fun parseReturnStmtWithExprIsParseable(){
         var input = """
            fun f(){
-                return 5;
+                return 5
             }
         """
         parseString(input)
@@ -650,7 +667,7 @@ internal class ParsingTests {
     fun parseFunctionCallStmtNoParamsIsParseable(){
         var input = """
            fun f(){
-                g();
+                g()
             }
         """
         parseString(input)
@@ -660,7 +677,7 @@ internal class ParsingTests {
     fun parseFunctionCallStmtOneParamIsParseable(){
         var input = """
            fun f(){
-                g(id);
+                g(id)
             }
         """
         parseString(input)
@@ -670,7 +687,7 @@ internal class ParsingTests {
     fun parseFunctionCallStmtMultipleParamsIsParseable(){
         var input = """
            fun f(){
-                g(id, id2);
+                g(id, id2)
             }
         """
         parseString(input)
@@ -680,7 +697,7 @@ internal class ParsingTests {
     fun parseBreakStmtIsParseable(){
         var input = """
            fun f(){
-                break;
+                break
             }
         """
         parseString(input)
@@ -690,7 +707,7 @@ internal class ParsingTests {
     fun parseContinueStmtIsParseable(){
         var input = """
            fun f(){
-                continue;
+                continue
             }
         """
         parseString(input)
@@ -700,7 +717,7 @@ internal class ParsingTests {
     fun parseNoStmtIsParseable(){
         var input = """
            fun f(){
-                ;
+                
             }
         """
         parseString(input)
@@ -710,7 +727,7 @@ internal class ParsingTests {
     fun parseSetAnalogPinStmtIsParseable(){
         var input = """
            fun f(){
-                set A2 to 1023;
+                set A2 to 1023
             }
         """
         parseString(input)
@@ -720,7 +737,7 @@ internal class ParsingTests {
     fun parseSetDigitalPinStmtIsParseable(){
         var input = """
            fun f(){
-                set D5 to HIGH;
+                set D5 to HIGH
             }
         """
         parseString(input)
@@ -729,7 +746,7 @@ internal class ParsingTests {
     @Test
     fun parseOrExprIsParseable(){
         var input = """
-           Bool b = true or false;
+           Bool b = true or false
         """
         parseString(input)
     }
@@ -737,7 +754,7 @@ internal class ParsingTests {
     @Test
     fun parseAndExprIsParseable(){
         var input = """
-           Bool b = true and false;
+           Bool b = true and false
         """
         parseString(input)
     }
@@ -745,7 +762,7 @@ internal class ParsingTests {
     @Test
     fun parseEqualsExprIsParseable(){
         var input = """
-           Bool b = true == false;
+           Bool b = true == false
         """
         parseString(input)
     }
@@ -753,7 +770,7 @@ internal class ParsingTests {
     @Test
     fun parseNotEqualsExprIsParseable(){
         var input = """
-           Bool b = true != false;
+           Bool b = true != false
         """
         parseString(input)
     }
@@ -761,7 +778,7 @@ internal class ParsingTests {
     @Test
     fun parseLessThanExprIsParseable(){
         var input = """
-           Bool b = 5 < 8;
+           Bool b = 5 < 8
         """
         parseString(input)
     }
@@ -769,7 +786,7 @@ internal class ParsingTests {
     @Test
     fun parseGreaterThanExprIsParseable(){
         var input = """
-           Bool b = 5 > 8;
+           Bool b = 5 > 8
         """
         parseString(input)
     }
@@ -777,7 +794,7 @@ internal class ParsingTests {
     @Test
     fun parseLessThanEqualsExprIsParseable(){
         var input = """
-           Bool b = 5 <= 8;
+           Bool b = 5 <= 8
         """
         parseString(input)
     }
@@ -785,7 +802,7 @@ internal class ParsingTests {
     @Test
     fun parseGreaterThanEqualsExprIsParseable(){
         var input = """
-           Bool b = 5 >= 8;
+           Bool b = 5 >= 8
         """
         parseString(input)
     }
@@ -793,7 +810,7 @@ internal class ParsingTests {
     @Test
     fun parseReadExprIsParseable(){
         var input = """
-           Int i = read A2;
+           Int i = read A2
         """
         parseString(input)
     }
@@ -801,7 +818,7 @@ internal class ParsingTests {
     @Test
     fun parseAdditionExprIsParseable(){
         var input = """
-           Int i = 5 + 2;
+           Int i = 5 + 2
         """
         parseString(input)
     }
@@ -809,7 +826,7 @@ internal class ParsingTests {
     @Test
     fun parseSubtractionExprIsParseable(){
         var input = """
-           Int i = 5 - 2;
+           Int i = 5 - 2
         """
         parseString(input)
     }
@@ -817,7 +834,7 @@ internal class ParsingTests {
     @Test
     fun parseMultiplicationExprIsParseable(){
         var input = """
-           Int i = 5 * 2;
+           Int i = 5 * 2
         """
         parseString(input)
     }
@@ -825,7 +842,7 @@ internal class ParsingTests {
     @Test
     fun parseDivisionExprIsParseable(){
         var input = """
-           Int i = 5 / 2;
+           Int i = 5 / 2
         """
         parseString(input)
     }
@@ -833,7 +850,7 @@ internal class ParsingTests {
     @Test
     fun parseModuloExprIsParseable(){
         var input = """
-           Int i = 5 % 2;
+           Int i = 5 % 2
         """
         parseString(input)
     }
@@ -841,7 +858,7 @@ internal class ParsingTests {
     @Test
     fun parsePlusUnaryExprIsParseable(){
         var input = """
-           Int i = 2 + +5;
+           Int i = 2 + +5
         """
         parseString(input)
     }
@@ -849,7 +866,7 @@ internal class ParsingTests {
     @Test
     fun parseMinusUnaryExprIsParseable(){
         var input = """
-           Int i = 2 + -5;
+           Int i = 2 + -5
         """
         parseString(input)
     }
@@ -857,7 +874,7 @@ internal class ParsingTests {
     @Test
     fun parseNegationExprIsParseable(){
         var input = """
-           Bool b = !true;
+           Bool b = !true
         """
         parseString(input)
     }
@@ -865,7 +882,7 @@ internal class ParsingTests {
     @Test
     fun parseParenthesisExprIsParseable(){
         var input = """
-           Int i = (5 + 2);
+           Int i = (5 + 2)
         """
         parseString(input)
     }
@@ -873,13 +890,14 @@ internal class ParsingTests {
     @Test
     fun parseArrayIndexingExprIsParseable(){
         var input = """
-           Int i = a[2];
+           Int i = a[2]
         """
         parseString(input)
     }
 
     fun parseString(input:String): Start {
-        val lexer = StringLexer(input)
+        val newInput = input.replace("(?m)^[ \t]*\r?\n".toRegex(), "")
+        val lexer = StringLexer(newInput)
         val parser = Parser(lexer)
         return parser.parse()
     }

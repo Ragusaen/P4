@@ -7,7 +7,7 @@ Helpers
     tab = 9;
     cr = 13;
     lf = 10;
-    eol = cr lf | cr | lf | '\n';
+    eol = cr lf | cr | lf;
     boolliteral = ('false'|'true'|'HIGH'|'LOW');
     intliteral = '-'?digit+;
     floatliteral = '-'?(digit+('.'digit*)?|'.'digit+);
@@ -80,7 +80,8 @@ Tokens
     floatliteral = '-'?(digit+('.'digit*)?|'.'digit+);
     timeliteral = (intliteral | floatliteral)('ms'|'s'|'m'|'h');
     stringliteral = '"'('\'all | [[all - '"'] - '\'])*'"';
-    whitespace = (' ' | tab | lf | eol)+;
+    whitespace = (' ' | tab)+;
+    eol = eol;
     comment = '/*' all* '*/' | '//'all*eol;
     digitalpinliteral = 'D'digit+;
     analogpinliteral = 'A'digit+;
@@ -139,16 +140,16 @@ Productions
             {-> [paramlist.param]};
 
     inner_module {-> inner_module} =
-        lbrace dcl_stmt* module_structure rbrace
+        lbrace [start]:eol? dcl_stmt* module_structure rbrace [end]:eol?
             {-> New inner_module([dcl_stmt.stmt], module_structure)};
 
-    dcl_stmt {-> stmt} = dcl semicolon
+    dcl_stmt {-> stmt} = dcl eol
         {-> dcl.stmt};
 
     module_structure {-> module_structure} =
-        {every} every lparen expr rparen stmt
+        {every} every lparen expr rparen eol? stmt
             {-> New module_structure.every(expr, stmt)}
-        | {on} on lparen expr rparen stmt
+        | {on} on lparen expr rparen eol? stmt
             {-> New module_structure.on(expr, stmt)};
 
 /* Statement */
@@ -159,29 +160,29 @@ Productions
             {-> unmatched.stmt};
 
     matched {-> stmt} =
-        {matched_if_else} if lparen [condition]:expr rparen [if_body]:matched else [else_body]:matched
+        {matched_if_else} if lparen [condition]:expr rparen [start]:eol? [if_body]:matched else [end]:eol? [else_body]:matched
             {-> New stmt.if(condition, if_body.stmt, else_body.stmt)}
-        | {while} while lparen [condition]:expr rparen [body]:matched
+        | {while} while lparen [condition]:expr rparen eol? [body]:matched
             {-> New stmt.while(condition, body.stmt)}
-        | {for} for lparen [init]:single_stmt [a]:semicolon [condition]:expr [b]:semicolon [update]:single_stmt rparen [body]:matched
+        | {for} for lparen [init]:single_stmt [a]:semicolon [condition]:expr [b]:semicolon [update]:single_stmt rparen eol? [body]:matched
             {-> New stmt.for(init.stmt, condition, update.stmt, body.stmt)}
         | {simple_stmt} simple_stmt
             {-> simple_stmt.stmt};
 
     unmatched {-> stmt} =
-        {unmatched_if_simple} if lparen [condition]:expr rparen stmt
+        {unmatched_if_simple} if lparen [condition]:expr rparen eol? stmt
             {-> New stmt.if(condition, stmt, Null)}
-        | {unmatched_if_else} if lparen [condition]:expr rparen matched else unmatched
+        | {unmatched_if_else} if lparen [condition]:expr rparen [start]:eol? matched else [end]:eol? unmatched
             {-> New stmt.if(condition, matched.stmt, unmatched.stmt)}
-        | {while} while lparen [condition]:expr rparen [body]:unmatched
+        | {while} while lparen [condition]:expr rparen eol? [body]:unmatched
             {-> New stmt.while(condition, body.stmt)}
-        | {for} for lparen [init]:single_stmt [a]:semicolon [condition]:expr [b]:semicolon [update]:single_stmt rparen [body]:unmatched
+        | {for} for lparen [init]:single_stmt [a]:semicolon [condition]:expr [b]:semicolon [update]:single_stmt rparen eol? [body]:unmatched
             {-> New stmt.for(init.stmt, condition, update.stmt, body.stmt)};
 
     simple_stmt {-> stmt} =
-         {single_stmt} single_stmt semicolon
+         {single_stmt} single_stmt eol
              {-> single_stmt.stmt}
-         | {block} lbrace stmt* rbrace
+         | {block} lbrace [start]:eol? stmt* rbrace [end]:eol?
               {-> New stmt.block([stmt])};
 
     single_stmt {-> stmt} =
@@ -216,9 +217,7 @@ Productions
         | {break} break
             {-> New stmt.break()}
         | {continue} continue
-            {-> New stmt.continue()}
-        | {no_stmt}
-            {-> New stmt.no_stmt()};
+            {-> New stmt.continue()};
 
 /* Declaration */
     dcl {-> stmt} =
@@ -380,7 +379,7 @@ Abstract Syntax Tree
     module_structure = {every} expr [body]:stmt | {on} expr [body]:stmt;
 
 /* Statement */
-    stmt = {no_stmt} | {dcl} type vardcl* | {moduledcl} [template]:identifier [instance]:identifier expr* | {start} identifier | {stop} | {set_to} [pin]:expr [value]:expr | {delay} expr | {delayuntil} expr | {assign} identifier expr binop? | {block} stmt* | {if} [condition]:expr [if_body]:stmt [else_body]:stmt? | {while} [condition]:expr [body]:stmt | {for} [init]:stmt [condition]:expr [update]:stmt [body]:stmt | {expr} expr | {return} expr? | {break} | {continue};
+    stmt = {dcl} type vardcl* | {moduledcl} [template]:identifier [instance]:identifier expr* | {start} identifier | {stop} | {set_to} [pin]:expr [value]:expr | {delay} expr | {delayuntil} expr | {assign} identifier expr binop? | {block} stmt* | {if} [condition]:expr [if_body]:stmt [else_body]:stmt? | {while} [condition]:expr [body]:stmt | {for} [init]:stmt [condition]:expr [update]:stmt [body]:stmt | {expr} expr | {return} expr? | {break} | {continue};
 
 /* Declaration subnodes */
     vardcl = identifier expr?;

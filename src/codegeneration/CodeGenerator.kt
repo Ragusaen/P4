@@ -312,10 +312,6 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
         outABlockStmt(node)
     }
 
-    override fun caseANoStmtStmt(node: ANoStmtStmt?) {
-        codeStack.pushLineIndented(";")
-    }
-
     override fun caseABreakStmt(node: ABreakStmt?) {
         codeStack.pushLineIndented("break;")
     }

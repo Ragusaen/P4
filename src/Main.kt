@@ -6,9 +6,12 @@ import java.lang.Exception
 
 
 fun main() {
-    val input = """
-Bool state = LOW;
+    var input = """
+Bool state = LOW
+
+Bool b = HIGH
     """
+    input = input.replace("(?m)^[ \t]*\r?\n".toRegex(), "")
     try {
         val lexer = StringLexer(input)
         val parser = Parser(lexer)
@@ -25,8 +28,6 @@ Bool state = LOW;
         println("Compilation stopped due to compile error.")
     }
 }
-
-
 
 fun formatToSabbleCC(lines: List<String>) {
     val match = "\"([^)]*)\"".toRegex()
