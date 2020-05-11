@@ -34,10 +34,13 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
     private val singleIndent = "    "
 
     private val taskPrefix = "Task"
+    private val tickratems = 15
 
     private fun Stack<String>.pushLineIndented(s:String, indentation:Int = indentLevel) = codeStack.push(singleIndent.repeat(indentation) + s +"\n")
 
     private fun getIndent():String = singleIndent.repeat(indentLevel)
+
+    private var currentModuleName = ""
 
     private fun toSimpleCode(s:String):String {
         return s.trim().trim { it == ';' }
@@ -498,6 +501,7 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
 
     override fun caseAInnerModule(node: AInnerModule) {
         val moduleName = symbolTable.findModule(node.parent())!!
+        currentModuleName = moduleName
 
         val dcls = node.dcls.map {getCode(it)}.joinToString("\n")
 
@@ -599,6 +603,18 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
 
     override fun caseTDigitaloutputpintype(node: TDigitaloutputpintype?) {
         codeStack.push("int")
+    }
+
+    override fun caseADelayStmt(node: ADelayStmt) {
+        val expr = getCode(node.expr)
+
+        codeStack.pushLineIndented("vTaskDelay( ($expr) / 15);")
+    }
+
+    override fun caseADelayuntilStmt(node: ADelayuntilStmt) {
+        val expr = getCode(node.expr)
+
+        codeStack.pushLineIndented("while ( !($expr) ) vTaskDelay(2);")
     }
 
 }

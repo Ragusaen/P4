@@ -206,13 +206,13 @@ Productions
         | {moduloassign} identifier moduloassign expr
             {-> New stmt.assign(identifier, expr, New binop.modulo())}
         | {start} start lparen identifier rparen
-            {-> New stmt.start(identifier)}
+            {-> New stmt.start(start, identifier)}
         | {stop} stop expr?
             {-> New stmt.stop(stop, expr)}
         | {delay} delay lparen expr rparen
-            {-> New stmt.delay(expr)}
+            {-> New stmt.delay(delay, expr)}
         | {delay_until} delay until lparen expr rparen
-            {-> New stmt.delayuntil(expr)}
+            {-> New stmt.delayuntil(delay, expr)}
         | {return} return expr?
             {-> New stmt.return(return, expr)}
         | {function_call} identifier lparen arglist? rparen
@@ -382,7 +382,7 @@ Abstract Syntax Tree
     module_structure = {every} expr [body]:stmt | {on} expr [body]:stmt;
 
 /* Statement */
-    stmt = {dcl} type vardcl* | {moduledcl} [template]:identifier [instance]:identifier expr* | {start} identifier | {stop} stop expr? | {set_to} [pin]:expr [value]:expr | {delay} expr | {delayuntil} expr | {assign} identifier expr binop? | {block} stmt* | {if} [condition]:expr [if_body]:stmt [else_body]:stmt? | {while} [condition]:expr [body]:stmt | {for} [init]:stmt [condition]:expr [update]:stmt [body]:stmt | {expr} expr | {return} return expr? | {break} break | {continue} continue;
+    stmt = {dcl} type vardcl* | {moduledcl} [template]:identifier [instance]:identifier expr* | {start} [token]:start identifier | {stop} [token]:stop expr? | {set_to} [pin]:expr [value]:expr | {delay} [token]:delay expr | {delayuntil} [token]:delay expr | {assign} identifier expr binop? | {block} stmt* | {if} [condition]:expr [if_body]:stmt [else_body]:stmt? | {while} [condition]:expr [body]:stmt | {for} [init]:stmt [condition]:expr [update]:stmt [body]:stmt | {expr} expr | {return} [token]:return expr? | {break} [token]:break | {continue} [token]:continue;
 
 /* Declaration subnodes */
     vardcl = identifier expr?;
