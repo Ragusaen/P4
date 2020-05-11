@@ -1,10 +1,12 @@
 package semantics.SymbolTable
 
+import CompileError
+import ErrorHandler
 import sablecc.analysis.DepthFirstAdapter
 import sablecc.node.*
-import semantics.SymbolTable.Exceptions.CloseScopeZeroException
-import semantics.SymbolTable.Exceptions.IdentifierAlreadyDeclaredException
-import semantics.SymbolTable.Exceptions.IdentifierUsedBeforeDeclarationException
+import semantics.SymbolTable.errors.CloseScopeZeroError
+import semantics.SymbolTable.errors.IdentifierAlreadyDeclaredError
+import semantics.SymbolTable.errors.IdentifierUsedBeforeDeclarationError
 import semantics.TypeChecking.Type
 
 class SymbolTableBuilder : DepthFirstAdapter() {
@@ -25,10 +27,13 @@ class SymbolTableBuilder : DepthFirstAdapter() {
         return "AnonymousModule${anonModuleCount++}"
     }
 
+    private val errorHandler = ErrorHandler()
+    private fun error(ce:CompileError):Nothing = errorHandler.compileError(ce)
+
     private fun addVar(name:String, type: Type, isInit: Boolean = false) {
         // If the name is already used within this scope throw exception
         if (name in currentScope.variables)
-            throw IdentifierAlreadyDeclaredException("The $name is already declared.")
+            error(IdentifierAlreadyDeclaredError("The variable $name has already been declared."))
         else
             currentScope.variables[name] = Identifier(type, currentVarPrefix + name, isInit)
     }
@@ -36,7 +41,7 @@ class SymbolTableBuilder : DepthFirstAdapter() {
     private fun addFun(node: Node, name:String, params: List<Type>, identifier: Identifier) {
         // If the name is already used within this scope throw exception
         if (Pair(name, params) in namedFunctionTable)
-            throw IdentifierAlreadyDeclaredException(" function with $name and $params has already been declared.")
+            error(IdentifierAlreadyDeclaredError("Function with the name $name with parameters: $params has already been declared."))
         else {
             namedFunctionTable[Pair(name, params)] = identifier
             nodeFunctionTable[node] = identifier
@@ -48,7 +53,7 @@ class SymbolTableBuilder : DepthFirstAdapter() {
             templateModuleTable[name] = identifier
             nodeModuleTable[node] = name
         } else
-            throw IdentifierAlreadyDeclaredException("Template module with name $name has already been declared.")
+            throw IdentifierAlreadyDeclaredError("Template module with the name $name has already been declared.")
     }
 
     private fun addModule(node: Node, name: String) {
@@ -56,7 +61,7 @@ class SymbolTableBuilder : DepthFirstAdapter() {
             moduleTable.add(name)
             nodeModuleTable[node] = name
         } else
-            throw IdentifierAlreadyDeclaredException("Module with name $name has already been declared")
+            throw IdentifierAlreadyDeclaredError("Module with the name $name has already been declared")
     }
 
     private fun checkHasBeenDeclared(name: String) {
@@ -68,7 +73,7 @@ class SymbolTableBuilder : DepthFirstAdapter() {
             tempScope = tempScope.parent
         }
 
-        throw IdentifierUsedBeforeDeclarationException("Variable $name was used before it was declared.")
+        error(IdentifierUsedBeforeDeclarationError("The variable $name was used before it was declared."))
     }
 
     private fun openScope() {
@@ -83,13 +88,13 @@ class SymbolTableBuilder : DepthFirstAdapter() {
         if (parent != null)
             currentScope = parent
         else
-            throw CloseScopeZeroException("Attempted to close the bottom scope.")
+            throw CloseScopeZeroError("Attempted to close the bottom scope.")
     }
 
     fun buildSymbolTable(s: Start): SymbolTable {
         caseStart(s)
         if (currentScope.parent != null)
-            throw Exception("An unknown error occurred while building symbol table. A scope was not closed as expected.")
+            throw Exception("An unknown error occurred while building the symbol table. A scope was not closed as expected.")
 
         return SymbolTable(namedFunctionTable, nodeFunctionTable, currentScope, templateModuleTable, nodeModuleTable).reset()
     }
@@ -101,7 +106,7 @@ class SymbolTableBuilder : DepthFirstAdapter() {
             is AStringType -> Type.String
             is ABoolType -> Type.Bool
             is ADigitalinputpinType -> Type.DigitalInputPin
-            is ADigitaloutputpinType -> Type.DigitalOututPin
+            is ADigitaloutputpinType -> Type.DigitalOutputPin
             is AAnaloginputpinType -> Type.AnalogInputPin
             is AAnalogoutputpinType -> Type.AnalogOutputPin
             is ATimeType -> Type.Time
@@ -130,7 +135,7 @@ class SymbolTableBuilder : DepthFirstAdapter() {
     }
 
     // Only do root element declarations if in root element mode
-    override fun caseADclRootElement(node: ADclRootElement?) {
+    override fun caseADclRootElement(node: ADclRootElement) {
         if (rootElementMode) {
             currentVarPrefix = "global_"
             super.caseADclRootElement(node)
@@ -138,6 +143,7 @@ class SymbolTableBuilder : DepthFirstAdapter() {
     }
 
     override fun caseAFunctiondcl(node: AFunctiondcl) {
+        errorHandler.setLineAndPos(node.identifier)
         if (rootElementMode) {
             val name = node.identifier.text!!
             val params = node.param.map { getTypeFromPType((it as AParam).type) }
@@ -179,6 +185,7 @@ class SymbolTableBuilder : DepthFirstAdapter() {
     override fun outAForStmt(node: AForStmt) = closeScope()
 
     override fun outAVardcl(node: AVardcl) {
+        errorHandler.setLineAndPos(node.identifier)
         val name = node.identifier.text
         val ptype = (node.parent() as ADclStmt).type
 
@@ -186,22 +193,24 @@ class SymbolTableBuilder : DepthFirstAdapter() {
     }
 
     override fun outAIdentifierValue(node: AIdentifierValue) {
+        errorHandler.setLineAndPos(node.identifier)
         val name = node.identifier.text
 
         checkHasBeenDeclared(name)
     }
 
     override fun outAFunctionCallExpr(node: AFunctionCallExpr) {
+        errorHandler.setLineAndPos(node.identifier)
         val name = node.identifier.text
         if (!namedFunctionTable.any {it.key.first == name})
-            throw IdentifierUsedBeforeDeclarationException("A function with name $name has not been declared.")
+            error(IdentifierUsedBeforeDeclarationError("A function with name $name has not been declared."))
     }
 
     override fun inAFunctiondcl(node: AFunctiondcl) {
         openScope()
 
         // Add each parameter variable to the scope
-        node.param.forEach {addVar((it as AParam).identifier.text, getTypeFromPType(it.type), true)}
+        node.param.forEach {errorHandler.setLineAndPos((it as AParam).identifier); addVar((it as AParam).identifier.text, getTypeFromPType(it.type), true)}
     }
     override fun outAFunctiondcl(node: AFunctiondcl) {
         closeScope()
@@ -211,7 +220,7 @@ class SymbolTableBuilder : DepthFirstAdapter() {
         openScope()
 
         // Add each parameter variable to the scope
-        node.param.forEach {addVar((it as AParam).identifier.text, getTypeFromPType(it.type), true)}
+        node.param.forEach {errorHandler.setLineAndPos((it as AParam).identifier); addVar((it as AParam).identifier.text, getTypeFromPType(it.type), true)}
     }
 
     override fun outATemplateModuledcl(node: ATemplateModuledcl) {

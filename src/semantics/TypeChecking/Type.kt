@@ -1,7 +1,5 @@
 package semantics.TypeChecking
 
-import semantics.TypeChecking.Exceptions.ArrayInitilizationException
-
 class Type private constructor(private val main: EType, private val subType: Type? = null) {
     private enum class EType {
         INT, FLOAT, STRING, BOOL,
@@ -22,7 +20,7 @@ class Type private constructor(private val main: EType, private val subType: Typ
         val DigitalPin = Type(EType.DIGITALPIN)
         val AnalogPin = Type(EType.ANALOGPIN)
         val DigitalInputPin = Type(EType.DIGITALINPUTPIN)
-        val DigitalOututPin = Type(EType.DIGITALOUTPUTPIN)
+        val DigitalOutputPin = Type(EType.DIGITALOUTPUTPIN)
         val AnalogInputPin = Type(EType.ANALOGINPUTPIN)
         val AnalogOutputPin = Type(EType.ANALOGOUTPUTPIN)
 
@@ -49,7 +47,7 @@ class Type private constructor(private val main: EType, private val subType: Typ
     fun isPin(): Boolean = (main in EType.DIGITALINPUTPIN..EType.ANALOGPIN)
 
     override fun toString(): String {
-        return "$main " + if (isArray()) "<${subType!!}>" else ""
+        return "$main" + if (isArray()) " <${subType!!}>" else ""
     }
 
     override fun hashCode(): Int {

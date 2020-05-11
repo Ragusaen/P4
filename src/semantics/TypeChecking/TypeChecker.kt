@@ -1,16 +1,22 @@
 package semantics.TypeChecking
 
+import CompileError
+import ErrorHandler
 import sablecc.node.*
 import semantics.SymbolTable.ScopedTraverser
 import semantics.SymbolTable.SymbolTable
-import semantics.TypeChecking.Exceptions.*
+import semantics.TypeChecking.errors.*
 import java.util.*
 
 class TypeChecker(symbolTable: SymbolTable) : ScopedTraverser(symbolTable) {
-    fun start(s: Start) {
-        symbolTable.reset()
-        caseStart(s)
+    fun run(node: Start): MutableMap<Node, Type> {
+        caseStart(node)
+        return typeTable
     }
+
+    // Error handling
+    private val errorHandler = ErrorHandler()
+    private fun error(ce:CompileError):Nothing = errorHandler.compileError(ce)
 
     private val typeStack = Stack<Type>()
 
@@ -21,29 +27,15 @@ class TypeChecker(symbolTable: SymbolTable) : ScopedTraverser(symbolTable) {
         typeTable[node] = type
     }
 
-    fun run(node: Start): MutableMap<Node, Type> {
-        caseStart(node)
-        return typeTable
-    }
-
     private var currentFunctionReturnType: Type? = null
-
-    /*
-    private fun convertExpr(from: Type, to: Type, exprNode: PExpr): Boolean {
-        if (from == to)
-        else if (from == Type.INT && to == Type.FLOAT) {
-            val newNode = IntToFloatConversionNode(exprNode)
-            exprNode.replaceBy(newNode)
-        }
-        else
-            return false
-        return true
-    }*/
+    private var currentFunctionName:String? = null
 
     override fun outAReturnStmt(node: AReturnStmt) {
         val type = typeStack.pop()
-        if (currentFunctionReturnType!! == type) {
-            throw IllegalImplicitTypeConversionException("Expected function to return $currentFunctionReturnType but got $type")
+        if (currentFunctionReturnType != type) {
+            error(IllegalImplicitTypeConversionError(
+                    "In function $currentFunctionName:\n" +
+                    "Expected return statement of type $currentFunctionReturnType, but got $type."))
         }
     }
 
@@ -57,11 +49,10 @@ class TypeChecker(symbolTable: SymbolTable) : ScopedTraverser(symbolTable) {
         // The expressions are popped in reverse order
         types.reverse()
 
-        val id = symbolTable.findTemplateModule(name)
-                ?: throw IdentifierNotDeclaredException("Module with name $name does not exist")
+        val id = symbolTable.findTemplateModule(name) ?: error(IdentifierNotDeclaredError("Module with name $name does not exist"))
 
         if (id.paramTypes != types)
-            throw IllegalImplicitTypeConversionException("Module $name expects types ${id.paramTypes}, but got $types")
+            error(IllegalImplicitTypeConversionError("Module $name expects types ${id.paramTypes}, but got $types"))
     }
 
     override fun outAEveryModuleStructure(node: AEveryModuleStructure) {
@@ -69,14 +60,14 @@ class TypeChecker(symbolTable: SymbolTable) : ScopedTraverser(symbolTable) {
         val conditionType = typeStack.pop()
 
         if (conditionType != Type.Time)
-            throw IllegalImplicitTypeConversionException("'Every' expects expression of type Time, but got $conditionType")
+            error(IllegalImplicitTypeConversionError("'Every' expects expression of type Time, but got $conditionType"))
     }
 
     override fun outAIfStmt(node: AIfStmt) {
         val conditionType = typeStack.pop()
 
         if (conditionType != Type.Bool)
-            throw IllegalImplicitTypeConversionException("'If' expects expression of type Bool, but got $conditionType")
+            error(IllegalImplicitTypeConversionError("'If' expects expression of type Bool, but got $conditionType"))
     }
 
     override fun outAForStmt(node: AForStmt) {
@@ -84,14 +75,14 @@ class TypeChecker(symbolTable: SymbolTable) : ScopedTraverser(symbolTable) {
         val conditionType = typeStack.pop()
 
         if (conditionType != Type.Bool)
-            throw IllegalImplicitTypeConversionException("'For' expects middle expression of type Bool, but got $conditionType")
+            error(IllegalImplicitTypeConversionError("'For' expects middle expression of type Bool, but got $conditionType"))
     }
 
     override fun outAWhileStmt(node: AWhileStmt) {
         val conditionType = typeStack.pop()
 
         if (conditionType != Type.Bool)
-            throw IllegalImplicitTypeConversionException("'While' expects expression of type Bool, but got $conditionType")
+            error(IllegalImplicitTypeConversionError("'While' expects expression of type Bool, but got $conditionType"))
     }
 
     override fun outAExprStmt(node: AExprStmt) {
@@ -99,6 +90,7 @@ class TypeChecker(symbolTable: SymbolTable) : ScopedTraverser(symbolTable) {
     }
 
     override fun outAFunctionCallExpr(node: AFunctionCallExpr) {
+        errorHandler.setLineAndPos(node.identifier)
         val name = node.identifier.text
         // Pop the expressions from the typeStack
         val types = mutableListOf<Type>()
@@ -112,10 +104,13 @@ class TypeChecker(symbolTable: SymbolTable) : ScopedTraverser(symbolTable) {
         if (id != null) {
             pushType(node, id.type)
         }
-        else
-            throw IdentifierNotDeclaredException("Function with name $name and parameter types ${types.joinToString (", ")} does not exist")
+        else {
+            if (types.size > 0)
+                error(IdentifierNotDeclaredError("Function with the name $name and parameter types ${types.joinToString(", ")} does not exist"))
+            else
+                error(IdentifierNotDeclaredError("Function with the name $name and no parameters does not exist"))
+        }
     }
-
 
     override fun outABinopExpr(node: ABinopExpr) {
         val rType = typeStack.pop()
@@ -123,7 +118,7 @@ class TypeChecker(symbolTable: SymbolTable) : ScopedTraverser(symbolTable) {
         val op = node.binop
 
         val returnType = OperatorType.getReturnType(lType, op, rType)
-                ?: throw IncompatibleOperatorException("Cannot apply binary operator $op between types $lType and $rType")
+                ?: error(IncompatibleOperatorError("Cannot apply binary operator ${OperatorType.opNodeToString(op)} between types $lType and $rType"))
 
         pushType(node, returnType)
     }
@@ -131,35 +126,36 @@ class TypeChecker(symbolTable: SymbolTable) : ScopedTraverser(symbolTable) {
     override fun outAVardcl(node: AVardcl) {
         val identifier = symbolTable.findVar(node.identifier.text)!!
 
-        // Add to typetable
+        // Add to type table
         typeTable[node] = identifier.type
 
         if (identifier.type.isArray()) {
             val typeNode = ((node.parent() as ADclStmt).type as AArrayType)
             if (typeNode.size == null && node.expr == null) {
-                throw ArrayInitilizationException("Cannot declare array ${node.identifier.text} with no size parameters")
+                error(ArrayInitializationError("Cannot declare array ${node.identifier.text} with no size parameters"))
             }
         }
 
         if (node.expr != null) {
             val typeE = typeStack.pop()
-            identifier.isInitialised = true
             if (identifier.type.isPin()) {
                 if (typeE != identifier.type) {
                     if ((identifier.type == Type.AnalogOutputPin || identifier.type == Type.AnalogInputPin) && typeE != Type.AnalogPin)
-                        throw IllegalImplicitTypeConversionException("Cannot assign type $typeE to an analog pin.")
-                    else if ((identifier.type == Type.DigitalOututPin || identifier.type == Type.DigitalInputPin) && typeE != Type.DigitalPin)
-                        throw IllegalImplicitTypeConversionException("Cannot assign type $typeE to an analog pin.")
+                        error(IllegalImplicitTypeConversionError("Cannot assign type $typeE to an analog pin."))
+                    else if ((identifier.type == Type.DigitalOutputPin || identifier.type == Type.DigitalInputPin) && typeE != Type.DigitalPin)
+                        error(IllegalImplicitTypeConversionError("Cannot assign type $typeE to a digital pin."))
                 }
             }
             else if (typeE != identifier.type)
-                throw IllegalImplicitTypeConversionException("Cannot initialise variable ${node.identifier.text} of type ${identifier.type} with value of type $typeE.")
+                error(IllegalImplicitTypeConversionError("Cannot initialize the variable ${node.identifier.text} of type ${identifier.type} with value of type $typeE."))
         }
     }
 
     override fun inAFunctiondcl(node: AFunctiondcl) {
         super.inAFunctiondcl(node)
+
         currentFunctionReturnType = symbolTable.findFun(node).type
+        currentFunctionName = node.identifier.text
     }
 
     override fun outAUnopExpr(node: AUnopExpr) {
@@ -167,11 +163,11 @@ class TypeChecker(symbolTable: SymbolTable) : ScopedTraverser(symbolTable) {
 
         when(node.unop) {
             is ANotUnop -> if (exprType != Type.Bool)
-                throw IncompatibleOperatorException("Cannot apply conditional unary '!' operator to expression of $exprType")
+                error(IncompatibleOperatorError("Cannot apply conditional unary '!' operator to expression of $exprType"))
             is APlusUnop -> if (exprType != Type.Int && exprType != Type.Float)
-                throw IncompatibleOperatorException("Cannot apply conditional unary '+' operator to expression of $exprType")
+                error(IncompatibleOperatorError("Cannot apply conditional unary '+' operator to expression of $exprType"))
             is AMinusUnop -> if (exprType != Type.Int && exprType != Type.Float)
-                throw IncompatibleOperatorException("Cannot apply conditional unary '-' operator to expression of $exprType")
+                error(IncompatibleOperatorError("Cannot apply conditional unary '-' operator to expression of $exprType"))
         }
     }
 
@@ -180,17 +176,15 @@ class TypeChecker(symbolTable: SymbolTable) : ScopedTraverser(symbolTable) {
         val typeId = symbolTable.findVar(node.identifier.text)!!.type
 
         if (typeExpr != typeId){
-            throw IllegalImplicitTypeConversionException("Cannot assign variable ${node.identifier.text} of type $typeId with value of type $typeExpr.")
+            error(IllegalImplicitTypeConversionError("Cannot assign variable ${node.identifier.text} of type $typeId with value of type $typeExpr"))
         }
-        symbolTable.findVar(node.identifier.text)!!.isInitialised = true
     }
 
     // This is only for variables used in expressions as values
     override fun outAIdentifierValue(node: AIdentifierValue) {
+        errorHandler.setLineAndPos(node.identifier)
         val identifier = symbolTable.findVar(node.identifier.text)
         pushType(node, identifier!!.type)
-        if (!identifier.isInitialised)
-            throw IdentifierUsedBeforeAssignmentException("The variable ${node.identifier.text} was used before being initialised.")
     }
 
     override fun outAValueExpr(node: AValueExpr) {
@@ -198,30 +192,37 @@ class TypeChecker(symbolTable: SymbolTable) : ScopedTraverser(symbolTable) {
     }
 
     override fun caseTIntliteral(node: TIntliteral) {
+        errorHandler.setLineAndPos(node)
         pushType(node, Type.Int)
     }
 
     override fun caseTFloatliteral(node: TFloatliteral) {
+        errorHandler.setLineAndPos(node)
         pushType(node, Type.Float)
     }
 
     override fun caseTBoolliteral(node: TBoolliteral) {
+        errorHandler.setLineAndPos(node)
         pushType(node, Type.Bool)
     }
 
     override fun caseTStringliteral(node: TStringliteral) {
+        errorHandler.setLineAndPos(node)
         pushType(node, Type.String)
     }
 
     override fun caseTTimeliteral(node: TTimeliteral) {
+        errorHandler.setLineAndPos(node)
         pushType(node, Type.Time)
     }
 
     override fun caseTDigitalpinliteral(node: TDigitalpinliteral) {
+        errorHandler.setLineAndPos(node)
         pushType(node, Type.DigitalPin)
     }
 
     override fun caseTAnalogpinliteral(node: TAnalogpinliteral) {
+        errorHandler.setLineAndPos(node)
         pushType(node, Type.AnalogPin)
     }
 
@@ -232,9 +233,9 @@ class TypeChecker(symbolTable: SymbolTable) : ScopedTraverser(symbolTable) {
         if (value.isArray())
             if (index == Type.Int)
                 pushType(node, value.getArraySubType())
-            else throw IllegalImplicitTypeConversionException("Indexing must be of type Int, but got $index")
+            else error(IllegalImplicitTypeConversionError("Indexing must be of type Int, but got $index"))
         else
-            throw IllegalImplicitTypeConversionException("Indexing can only be done on type Array, but got $value")
+            error(IllegalImplicitTypeConversionError("Indexing can only be done on type Array, but got $value"))
     }
 
     override fun outAArrayValue(node: AArrayValue) {
@@ -243,26 +244,26 @@ class TypeChecker(symbolTable: SymbolTable) : ScopedTraverser(symbolTable) {
             for (i in node.expr.drop(1).indices) {
                 val ntype = typeStack.pop()
                 if (ntype != type) {
-                    throw IllegalImplicitTypeConversionException("Last argument indicates array literal of type $type, but argument ${node.expr.size - (i + 1)} was of type $ntype")
+                    error(IllegalImplicitTypeConversionError("Last argument indicates array literal of type $type, but argument ${node.expr.size - (i + 1)} was of type $ntype"))
                 }
             }
             pushType(node, Type.createArrayOf(type))
         } else
-            throw Exception("Array literal was of size 0 (should have been caught in parser)")
+            error(Exception("Array literal was of size 0 (should have been caught in parser)"))
     }
 
     override fun outASetToStmt(node: ASetToStmt) {
         val value = typeStack.pop()
         val pin = typeStack.pop()
 
-        if ((pin == Type.DigitalOututPin || pin == Type.DigitalPin) && value != Type.Bool)
-            throw IllegalImplicitTypeConversionException("Pin was digital so Bool was expected, but instead $value was found")
+        if ((pin == Type.DigitalOutputPin || pin == Type.DigitalPin) && value != Type.Bool)
+            error(IllegalImplicitTypeConversionError("Pin was digital so Bool was expected, but instead $value was found"))
         else if ((pin == Type.AnalogOutputPin || pin == Type.AnalogPin) && value != Type.Int)
-            throw IllegalImplicitTypeConversionException("Pin was analog so an Int between 0 and 1023 (inclusive) was expected, but $value was found")
+            error(IllegalImplicitTypeConversionError("Pin was analog so an Int between 0 and 1023 (inclusive) was expected, but $value was found"))
         else if (pin == Type.AnalogInputPin || pin == Type.DigitalInputPin)
-            throw IllegalImplicitTypeConversionException("Cannot set value of input pin.")
-        else if (!(pin == Type.DigitalOututPin || pin == Type.AnalogOutputPin || pin == Type.DigitalPin || pin == Type.AnalogPin))
-            throw IllegalImplicitTypeConversionException("Expected type DigitalOutputPin, AnalogOutputPin, DigitalPin or AnalogPin, but got $pin")
+            error(IllegalImplicitTypeConversionError("Cannot set value of input pin."))
+        else if (!(pin == Type.DigitalOutputPin || pin == Type.AnalogOutputPin || pin == Type.DigitalPin || pin == Type.AnalogPin))
+            error(IllegalImplicitTypeConversionError("Expected type DigitalOutputPin, AnalogOutputPin, DigitalPin or AnalogPin, but got $pin"))
 
         typeTable[node] = pin
     }
@@ -274,9 +275,9 @@ class TypeChecker(symbolTable: SymbolTable) : ScopedTraverser(symbolTable) {
             pushType(node, Type.Bool)
         else if (pin == Type.AnalogInputPin || pin == Type.AnalogPin)
             pushType(node, Type.Int)
-        else if (pin == Type.DigitalOututPin || pin  == Type.AnalogOutputPin)
-            throw IllegalImplicitTypeConversionException("Cannot read output pin of type $pin, read can only take DigitalInputPin or AnalogInputPin.")
+        else if (pin == Type.DigitalOutputPin || pin  == Type.AnalogOutputPin)
+            error(IllegalImplicitTypeConversionError("Cannot read output pin of type $pin, read can only take DigitalInputPin or AnalogInputPin."))
         else
-            throw IllegalImplicitTypeConversionException("Read can only take DigitalInputPin or AnalogInputPin, but got $pin.")
+            error(IllegalImplicitTypeConversionError("Read can only take DigitalInputPin or AnalogInputPin, but got $pin."))
     }
 }
