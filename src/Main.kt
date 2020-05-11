@@ -8,21 +8,12 @@ import java.lang.Exception
 
 fun main() {
     var input = """
-    template module a(Int a) {
-            String s = "hey"
-            every(100ms) {
-                while(true) {
-                    while(false) {
-                        break
-                    }
-                    continue
-                    continue
-                }
-                while(false) {
-                    break
-                }
-            }
-        }
+every (10s) {
+    set D3 to HIGH
+    delay until (read D2)
+    set D3 to LOW
+}
+
 """
     input += "\n"
     input = input.replace("(?m)^[ \t]*\r?\n".toRegex(), "")

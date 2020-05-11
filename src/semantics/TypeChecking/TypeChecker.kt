@@ -280,4 +280,18 @@ class TypeChecker(symbolTable: SymbolTable) : ScopedTraverser(symbolTable) {
         else
             error(IllegalImplicitTypeConversionError("Read can only take DigitalInputPin or AnalogInputPin, but got $pin."))
     }
+
+    override fun outADelayStmt(node: ADelayStmt) {
+        val t = typeStack.pop()
+
+        if (t != Type.Time)
+            throw IllegalImplicitTypeConversionError("Delay expects expression of type Time, but got $t.")
+    }
+
+    override fun outADelayuntilStmt(node: ADelayuntilStmt) {
+        val t = typeStack.pop()
+
+        if (t != Type.Bool)
+            throw IllegalImplicitTypeConversionError("Delay until expects expression of type Bool, but got $t.")
+    }
 }
