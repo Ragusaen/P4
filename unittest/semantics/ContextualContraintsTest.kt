@@ -18,7 +18,7 @@ internal class ContextualConstraintsTest {
         val code =
         """
             every (100ms) {
-                return;
+                return
             }
         """
 
@@ -31,7 +31,7 @@ internal class ContextualConstraintsTest {
         val code =
         """
             fun foo():Int {
-                return 5;
+                return 5
             }
         """
 
@@ -45,18 +45,18 @@ internal class ContextualConstraintsTest {
             every(100ms) {
                 while(true) {
                     while(false) {
-                        continue;
-                        for (Int i = 0; i < 2; i += 1) {
-                            break;
+                        continue
+                        for (Int i = 0 i < 2 i += 1) {
+                            break
                         }
                     }
-                    continue;
-                    continue;
+                    continue
+                    continue
                 }
                 while(false) {
-                    continue;
-                    for (Int i = 0; i < 2; i += 1) {
-                        break;
+                    continue
+                    for (Int i = 0 i < 2 i += 1) {
+                        break
                     }
                 }
             }
@@ -73,9 +73,9 @@ internal class ContextualConstraintsTest {
             every(100ms) {
                 while(true) {
                     while(false) {}
-                    continue;
+                    continue
                 }
-                break;
+                break
             }
         """
         val (st, start) = compileUpToContextualConstraintsAnalyzerFromString(code)
