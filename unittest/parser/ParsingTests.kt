@@ -893,8 +893,8 @@ internal class ParsingTests {
     }
 
     fun parseString(input:String): Start {
-        var newInput = input + "\n"
-        newInput = input.replace("(?m)^[ \t]*\r?\n".toRegex(), "")
+        val newInput = (input + "\n").replace("(?m)^[ \t]*\r?\n".toRegex(), "")
+        println(newInput)
         val lexer = StringLexer(newInput)
         val parser = Parser(lexer)
         return parser.parse()

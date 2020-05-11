@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Assertions.*
 import sablecc.parser.Parser
 import org.junit.jupiter.api.assertThrows
 import sablecc.node.Start
+import semantics.SymbolTable.SymbolTable
 import semantics.SymbolTable.errors.IdentifierAlreadyDeclaredError
 import semantics.SymbolTable.errors.IdentifierUsedBeforeDeclarationError
 import semantics.SymbolTable.SymbolTableBuilder
@@ -24,25 +25,17 @@ internal class SymbolTableBuilderTest {
     @Test
     fun symbolTableBuilderThrowsErrorWhenVariableHasAlreadyBeenDeclared() {
         val stb = SymbolTableBuilder()
-        val input = "Int a = 8 Int a = 5"
-        val lexer = StringLexer(input)
-        val parser = Parser(lexer)
+        val input = "Int a = 8\n Int a = 5"
 
-        val s = parser.parse()
-
-        assertThrows<IdentifierAlreadyDeclaredError> { stb.buildSymbolTable(s) }
+        assertThrows<IdentifierAlreadyDeclaredError> { getScopeFromString(input) }
     }
 
     @Test
     fun symbolTableBuilderThrowsErrorIfVariableIsUsedBeforeDeclaration() {
         val stb = SymbolTableBuilder()
         val input = "Int b = a + 2"
-        val lexer = StringLexer(input)
-        val parser = Parser(lexer)
 
-        val s = parser.parse()
-
-        assertThrows<IdentifierUsedBeforeDeclarationError> { stb.buildSymbolTable(s) }
+        assertThrows<IdentifierUsedBeforeDeclarationError> { getScopeFromString(input) }
     }
 
     @Test
@@ -54,12 +47,7 @@ internal class SymbolTableBuilderTest {
                 Int b = 0
             }
         """.trimMargin()
-        val lexer = StringLexer(input)
-        val parser = Parser(lexer)
-
-        val s = parser.parse()
-
-        assertThrows<IdentifierUsedBeforeDeclarationError> { stb.buildSymbolTable(s) }
+        assertThrows<IdentifierUsedBeforeDeclarationError> {  getScopeFromString(input) }
     }
 
     @Test
@@ -107,12 +95,7 @@ internal class SymbolTableBuilderTest {
             }
             Int b = a + 2
         """
-        val lexer = StringLexer(input)
-        val parser = Parser(lexer)
-
-        val s = parser.parse()
-
-        assertThrows<IdentifierUsedBeforeDeclarationError> { stb.buildSymbolTable(s) }
+        assertThrows<IdentifierUsedBeforeDeclarationError> {  getScopeFromString(input) }
     }
 
 
@@ -128,12 +111,7 @@ internal class SymbolTableBuilderTest {
                 }
             }
         """
-        val lexer = StringLexer(input)
-        val parser = Parser(lexer)
-
-        val s = parser.parse()
-
-        assertThrows<IdentifierUsedBeforeDeclarationError> { stb.buildSymbolTable(s) }
+        assertThrows<IdentifierUsedBeforeDeclarationError> {  getScopeFromString(input) }
     }
 
     @Test
@@ -148,11 +126,8 @@ internal class SymbolTableBuilderTest {
                 }
             }
         """
-        val lexer = StringLexer(input)
-        val parser = Parser(lexer)
-
-        val s = parser.parse()
-        val st = stb.buildSymbolTable(s)
+        
+        val st = getScopeFromString(input).first
 
         assertNotNull(st.findVar("a"))
         st.openScope()
@@ -171,11 +146,7 @@ internal class SymbolTableBuilderTest {
             }
             Int a = 2
         """
-        val lexer = StringLexer(input)
-        val parser = Parser(lexer)
-
-        val s = parser.parse()
-        val st = stb.buildSymbolTable(s)
+        val st = getScopeFromString(input).first
 
         assertNotNull(st.findVar("a"))
         st.openScope()
@@ -191,11 +162,7 @@ internal class SymbolTableBuilderTest {
                 foo()
             }
         """
-        val lexer = StringLexer(input)
-        val parser = Parser(lexer)
-
-        val s = parser.parse()
-        assertThrows<IdentifierUsedBeforeDeclarationError> { stb.buildSymbolTable(s) }
+        assertThrows<IdentifierUsedBeforeDeclarationError> {  getScopeFromString(input) }
     }
 
     @Test
@@ -206,11 +173,7 @@ internal class SymbolTableBuilderTest {
                 foo()
             }
         """
-        val lexer = StringLexer(input)
-        val parser = Parser(lexer)
-
-        val s = parser.parse()
-        val st = stb.buildSymbolTable(s)
+        val st = getScopeFromString(input).first
 
         assertNotNull(st.findFun("foo", listOf()))
     }
@@ -226,11 +189,7 @@ internal class SymbolTableBuilderTest {
             }
             module thismodule thisinstance
         """
-        val lexer = StringLexer(input)
-        val parser = Parser(lexer)
-
-        val s = parser.parse()
-        val st = stb.buildSymbolTable(s)
+        val st = getScopeFromString(input).first
 
         assertNotNull(st.findTemplateModule("thismodule"))
         assertNotNull(st.findVar("thisinstance"))
@@ -246,12 +205,16 @@ internal class SymbolTableBuilderTest {
                 }
             }
         """
-        val lexer = StringLexer(input)
-        val parser = Parser(lexer)
-
-        val s = parser.parse()
-        val st = stb.buildSymbolTable(s)
+        val st = getScopeFromString(input).first
 
         assertNotNull(st.findVar("thismodule"))
+    }
+
+    private fun getScopeFromString(input:String):Pair<SymbolTable, Start> {
+        val newInput = (input + "\n").replace("(?m)^[ \t]*\r?\n".toRegex(), "")
+        val lexer = StringLexer(newInput)
+        val parser = Parser(lexer)
+        val s = parser.parse()
+        return Pair(SymbolTableBuilder().buildSymbolTable(s), s)
     }
 }
