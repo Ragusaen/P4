@@ -24,6 +24,7 @@ fun main() {
             }
         }
 """
+    input += "\n"
     input = input.replace("(?m)^[ \t]*\r?\n".toRegex(), "")
 
     try {
