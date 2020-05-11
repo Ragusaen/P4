@@ -46,18 +46,12 @@ internal class ContextualConstraintsTest {
                 while(true) {
                     while(false) {
                         continue
-                        for (Int i = 0 i < 2 i += 1) {
-                            break
-                        }
                     }
                     continue
                     continue
                 }
                 while(false) {
                     continue
-                    for (Int i = 0 i < 2 i += 1) {
-                        break
-                    }
                 }
             }
         """
@@ -84,8 +78,7 @@ internal class ContextualConstraintsTest {
 
 
     private fun compileUpToContextualConstraintsAnalyzerFromString(input:String):Pair<SymbolTable, Start> {
-        var newInput = input + "\n"
-        newInput = input.replace("(?m)^[ \t]*\r?\n".toRegex(), "")
+        val newInput = (input + "\n").replace("(?m)^[ \t]*\r?\n".toRegex(), "")
         val lexer = StringLexer(newInput)
         val parser = Parser(lexer)
         val s = parser.parse()

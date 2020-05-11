@@ -86,28 +86,28 @@ internal class TypeCheckerTest {
 
     @Test
     fun functionWithParameterTypesBoolIntCalledWithArgumentTypesIntBoolThrowsException() {
-        val (st, start) = getScopeFromString("fun foo(Bool a, Int b) {} every (20ms) { foo(3, false) }")
+        val (st, start) = getScopeFromString("fun foo(Bool a, Int b) {} every (20ms) { foo(3, false)\n }")
 
         assertThrows<IdentifierNotDeclaredError> {TypeChecker(st).run(start)}
     }
 
     @Test
     fun everyStructuresExpressionTypeIntThrowsException() {
-        val (st, start) = getScopeFromString("every (45 + 8) {  }")
+        val (st, start) = getScopeFromString("every (45 + 8) { stop\n }")
 
         assertThrows<IllegalImplicitTypeConversionError> {TypeChecker(st).run(start)}
     }
 
     @Test
     fun ifStatementGivenIntExpressionThrowsException() {
-        val (st, start) = getScopeFromString("every(20ms) { if (45 + 8)  }")
+        val (st, start) = getScopeFromString("every(20ms) { if (45 + 8) stop \n}")
 
         assertThrows<IllegalImplicitTypeConversionError> {TypeChecker(st).run(start)}
     }
 
     @Test
     fun ifStatementGivenBoolExpressionIsTypeCorrect() {
-        val (st, start) = getScopeFromString("every(20ms) { if (true) }")
+        val (st, start) = getScopeFromString("every(20ms) { if (true) stop \n}")
 
         TypeChecker(st).run(start)
     }
@@ -175,6 +175,7 @@ internal class TypeCheckerTest {
             
             template module that {
                 every(100ms)
+                    stop
             }
         """
 
@@ -191,6 +192,7 @@ internal class TypeCheckerTest {
             
             template module a {
                 every(100ms)
+                    stop
             }
         """
 
@@ -206,6 +208,7 @@ internal class TypeCheckerTest {
             
             template module a(Time t) {
                 every(t)
+                    stop
             }
         """
 
@@ -236,6 +239,7 @@ internal class TypeCheckerTest {
         """
             template module a {
                 every(100.0)
+                    stop
             }
         """
 
@@ -250,6 +254,7 @@ internal class TypeCheckerTest {
         """
             template module a {
                 every(100ms)
+                    stop
             }
         """
 
@@ -264,6 +269,7 @@ internal class TypeCheckerTest {
             template module a {
                 every(100ms)
                     if("abc")
+                        stop
             }
         """
 
@@ -279,6 +285,7 @@ internal class TypeCheckerTest {
             template module a {
                 every(100ms)
                     if(true)
+                        stop
             }
         """
 
@@ -307,7 +314,8 @@ internal class TypeCheckerTest {
         """
             template module a {
                 every(100ms)
-                    for(true)
+                    for(;true;)
+                        continue
             }
         """
 
@@ -322,6 +330,7 @@ internal class TypeCheckerTest {
             template module a {
                 every(100ms)
                     while("yes")
+                        continue
             }
         """
 
@@ -337,6 +346,7 @@ internal class TypeCheckerTest {
             template module a {
                 every(100ms)
                     while(true)
+                        stop
             }
         """
 
@@ -560,8 +570,7 @@ internal class TypeCheckerTest {
 
 
     private fun getScopeFromString(input:String):Pair<SymbolTable, Start> {
-        var newInput = input + "\n"
-        newInput = input.replace("(?m)^[ \t]*\r?\n".toRegex(), "")
+        val newInput = (input + "\n").replace("(?m)^[ \t]*\r?\n".toRegex(), "")
         val lexer = StringLexer(newInput)
         val parser = Parser(lexer)
         val s = parser.parse()
