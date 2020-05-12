@@ -1,9 +1,9 @@
 package codegeneration
 
 import sablecc.node.*
-import semantics.SymbolTable.ScopedTraverser
-import semantics.SymbolTable.SymbolTable
-import semantics.TypeChecking.Type
+import semantics.symbolTable.ScopedTraverser
+import semantics.symbolTable.SymbolTable
+import semantics.typeChecking.Type
 import java.util.*
 
 class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: SymbolTable) : ScopedTraverser(symbolTable) {
@@ -49,6 +49,7 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
 
     private val moduleAuxes = mutableListOf<ModuleAux>()
     private val templateInstances = mutableMapOf<String, MutableList<String>>()
+    private var initCode = ""
 
     private fun generateSetup(): String {
         var res = "void setup() {\n"
@@ -57,8 +58,9 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
                 ", \"${it.name}\", 128, NULL, 0, &${taskPrefix + it.name}_Handle );\n" +
                 "vTaskSuspend(${taskPrefix + it.name}_Handle);\n" }
 
-
         res += "xTaskCreate(ControllerTask, \"Controller\", 128, NULL, 0, NULL);\n"
+
+        res += initCode
 
         res += "}\n"
         return res
@@ -640,6 +642,10 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
 
     override fun caseTDigitaloutputpintype(node: TDigitaloutputpintype?) {
         codeStack.push("int")
+    }
+
+    override fun caseAInitRootElement(node: AInitRootElement) {
+        initCode += getCode(node.stmt)
     }
 
     override fun caseADelayStmt(node: ADelayStmt) {

@@ -1,4 +1,4 @@
-package semantics.SymbolTable
+package semantics.symbolTable
 
 class Scope(val parent: Scope?) {
     val children = mutableListOf<Scope>()

@@ -1,9 +1,8 @@
 import codegeneration.CodeGenerator
 import sablecc.parser.Parser
-import semantics.ContextualConstraints.ContextualConstraintAnalyzer
-import semantics.SymbolTable.SymbolTableBuilder
-import semantics.TypeChecking.TypeChecker
-import java.lang.Exception
+import semantics.contextualConstraints.ContextualConstraintAnalyzer
+import semantics.symbolTable.SymbolTableBuilder
+import semantics.typeChecking.TypeChecker
 
 
 fun main() {
