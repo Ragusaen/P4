@@ -168,6 +168,7 @@ class SymbolTableBuilder(errorHandler: ErrorHandler) : ErrorTraverser(errorHandl
         if (rootElementMode) {
             val name = node.identifier?.text ?: nextAnonName()
             addModule(node, name)
+            addVar(name, Type.Module)
         }
         else
             super.caseAInstanceModuledcl(node)
@@ -182,7 +183,6 @@ class SymbolTableBuilder(errorHandler: ErrorHandler) : ErrorTraverser(errorHandl
     override fun outAForStmt(node: AForStmt) = closeScope()
 
     override fun outAVardcl(node: AVardcl) {
-        errorHandler.setLineAndPos(node.identifier)
         val name = node.identifier.text
         val ptype = (node.parent() as ADclStmt).type
 
@@ -190,21 +190,18 @@ class SymbolTableBuilder(errorHandler: ErrorHandler) : ErrorTraverser(errorHandl
     }
 
     override fun outAIdentifierValue(node: AIdentifierValue) {
-        errorHandler.setLineAndPos(node.identifier)
         val name = node.identifier.text
 
         checkHasBeenDeclared(name)
     }
 
     override fun outAAssignStmt(node: AAssignStmt) {
-        errorHandler.setLineAndPos(node.identifier)
         val name = node.identifier.text
 
         checkHasBeenDeclared(name)
     }
 
     override fun outAFunctionCallExpr(node: AFunctionCallExpr) {
-        errorHandler.setLineAndPos(node.identifier)
         val name = node.identifier.text
         if (!namedFunctionTable.any {it.key.first == name})
             error(IdentifierUsedBeforeDeclarationError("A function with name $name has not been declared."))
@@ -238,7 +235,6 @@ class SymbolTableBuilder(errorHandler: ErrorHandler) : ErrorTraverser(errorHandl
         val name = node.instance.text
         val template = node.template
 
-
         addModule(node, name)
     }
 
@@ -250,8 +246,6 @@ class SymbolTableBuilder(errorHandler: ErrorHandler) : ErrorTraverser(errorHandl
 
     override fun outAInstanceModuledcl(node: AInstanceModuledcl) {
         closeScope()
-        val name = nodeModuleTable[node]!!
-        addVar(name, Type.Module)
     }
 
     override fun caseAInnerModule(node: AInnerModule) {

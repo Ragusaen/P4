@@ -10,11 +10,13 @@ fun main() {
     var input = """
         
         
-Int a = 0
+Time a = 0s
 
-
-every (500ms) {
-    b = 0
+module ar {
+    Int delta = 3
+    every (500ms) {
+        a += delta * 1s
+    }
 }
 """
     input += "\n"
