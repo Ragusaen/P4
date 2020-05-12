@@ -65,15 +65,8 @@ class SymbolTableBuilder : DepthFirstAdapter() {
     }
 
     private fun checkHasBeenDeclared(name: String) {
-        var tempScope: Scope? = currentScope
-
-        while(tempScope != null) {
-            if (tempScope.variables.contains(name))
-                return
-            tempScope = tempScope.parent
-        }
-
-        error(IdentifierUsedBeforeDeclarationError("The variable $name was used before it was declared."))
+        currentScope.findVar(name) ?:
+            error(IdentifierUsedBeforeDeclarationError("The variable $name was used before it was declared."))
     }
 
     private fun openScope() {
