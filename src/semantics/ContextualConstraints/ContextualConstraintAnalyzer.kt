@@ -125,8 +125,10 @@ class ContextualConstraintAnalyzer(symbolTable: SymbolTable) : ScopedTraverser(s
         openLoops--
     }
 
-    override fun inAInitRootElement(node: AInitRootElement?) {
+    override fun inAInitRootElement(node: AInitRootElement) {
         super.inAInitRootElement(node)
+        errorHandler.setLineAndPos(node.token)
+
         initCount++
         if(initCount > 1)
             error(MultipleInitsError("Multiple init structures are declared."))

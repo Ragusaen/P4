@@ -102,7 +102,7 @@ Productions
         | {function} functiondcl
             {-> New root_element.functiondcl(functiondcl)}
         | {init} init stmt
-            {-> New root_element.init(stmt)};
+            {-> New root_element.init(init, stmt)};
 
 /* Function */
     functiondcl {-> functiondcl} =
@@ -370,7 +370,7 @@ Productions
 
 Abstract Syntax Tree
     program = root_element*;
-    root_element = {dcl} stmt | {moduledcl} moduledcl | {functiondcl} functiondcl | {init} stmt;
+    root_element = {dcl} stmt | {moduledcl} moduledcl | {functiondcl} functiondcl | {init} [token]:init stmt;
 
 /* Function */
     functiondcl = identifier param* type? [body]:stmt;
