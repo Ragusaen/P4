@@ -7,12 +7,18 @@ import semantics.typeChecking.TypeChecker
 
 fun main() {
     var input = """
-    Int i
-    init i = 5
-    init i = 2
+        
+        
+Int a = 0
+
+
+every (500ms) {
+    b = 0
+}
 """
     input += "\n"
-    input = input.replace("(?m)^[ \t]*\r?\n".toRegex(), "")
+
+    println(input)
 
     try {
         val lexer = StringLexer(input)
@@ -26,7 +32,7 @@ fun main() {
 
         println(cg.generate(a))
     }
-    catch (ce:CompileError) {
+    catch (ce: CompileError) {
         println("Compilation stopped due to compile error.")
         println(ce.errorMsg)
     }

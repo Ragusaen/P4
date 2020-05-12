@@ -15,6 +15,7 @@ Helpers
     stringliteral = '"'('\'all | [[all - '"'] - '\'])*'"';
 
 Tokens
+    redundantnewline = '¤';
     stringtype = 'String';
     inttype = 'Int';
     floattype = 'Float';

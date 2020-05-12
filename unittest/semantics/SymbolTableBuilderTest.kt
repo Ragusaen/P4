@@ -43,8 +43,8 @@ internal class SymbolTableBuilderTest {
                 Int a = b - 3
                 Int b = 0
             }
-        """
-        assertThrows<IdentifierUsedBeforeDeclarationError> {  getScopeFromString(input) }
+        """.trimMargin()
+        assertThrows<IdentifierUsedBeforeDeclarationError> { getScopeFromString(input) }
     }
 
     @Test
