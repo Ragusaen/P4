@@ -1,4 +1,5 @@
 import codegeneration.CodeGenerator
+import sablecc.node.Token
 import sablecc.parser.Parser
 import semantics.contextualConstraints.ContextualConstraintAnalyzer
 import semantics.symbolTable.SymbolTableBuilder
@@ -9,26 +10,28 @@ fun main() {
     var input = """
         
         
-Int a = 0
+Time a = 0s
 
-
-every (500ms) {
-    b = 0
+module ar {
+    Int delta = 3
+    every (500ms) {
+        a += delta * 1s
+    }
 }
 """
     input += "\n"
 
-    println(input)
-
     try {
+        val errorHandler = ErrorHandler(input)
+
         val lexer = StringLexer(input)
         val parser = Parser(lexer)
 
         val a = parser.parse()
-        val st = SymbolTableBuilder().buildSymbolTable(a)
-        ContextualConstraintAnalyzer(st).run(a)
-        val tt = TypeChecker(st).run(a)
-        val cg = CodeGenerator(tt, st)
+        val st = SymbolTableBuilder(errorHandler).buildSymbolTable(a)
+        ContextualConstraintAnalyzer(errorHandler, st).run(a)
+        val tt = TypeChecker(errorHandler, st).run(a)
+        val cg = CodeGenerator(tt, errorHandler, st)
 
         println(cg.generate(a))
     }

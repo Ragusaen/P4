@@ -1,5 +1,6 @@
 package semantics
 
+import ErrorHandler
 import StringLexer
 import org.junit.jupiter.api.Test
 import sablecc.parser.Parser
@@ -18,126 +19,126 @@ internal class TypeCheckerTest {
     fun assigningFloatToIntThrowsException() {
         val (scope, start) = getScopeFromString("Int a = 5.5")
 
-        assertThrows<IllegalImplicitTypeConversionError> { TypeChecker(scope).run(start) }
+        assertThrows<IllegalImplicitTypeConversionError> { TypeChecker(ErrorHandler(""), scope).run(start) }
     }
 
     @Test
     fun assigningIntToFloatThrowsException() {
         val (scope, start) = getScopeFromString("Float a = 5")
 
-        assertThrows<IllegalImplicitTypeConversionError> { TypeChecker(scope).run(start) }
+        assertThrows<IllegalImplicitTypeConversionError> { TypeChecker(ErrorHandler(""), scope).run(start) }
     }
 
     @Test
     fun intAdditionIntReturnsIntIsTypeCorrect(){
         val (scope, start) = getScopeFromString("Int a = 5 + 8")
 
-        TypeChecker(scope).run(start)
+        TypeChecker(ErrorHandler(""), scope).run(start)
     }
 
     @Test
     fun boolEqualsBoolReturnsBoolIsTypeCorrect() {
         val (scope, start) = getScopeFromString("Bool a = true == false")
 
-        TypeChecker(scope).run(start)
+        TypeChecker(ErrorHandler(""), scope).run(start)
     }
 
     @Test
     fun intEqualsIntReturnsBoolIsTypeCorrect() {
         val (scope, start) = getScopeFromString("Bool a = 6 == 8")
 
-        TypeChecker(scope).run(start)
+        TypeChecker(ErrorHandler(""), scope).run(start)
     }
 
     @Test
     fun boolAdditionBoolThrowsException() {
         val (scope, start) = getScopeFromString("Bool a = true + true")
 
-        assertThrows<IncompatibleOperatorError> { TypeChecker(scope).run(start) }
+        assertThrows<IncompatibleOperatorError> { TypeChecker(ErrorHandler(""), scope).run(start) }
     }
 
     @Test
     fun intAdditionBoolThrowsException() {
         val (scope, start) = getScopeFromString("Int a = 6 + true")
 
-        assertThrows<IncompatibleOperatorError> { TypeChecker(scope).run(start) }
+        assertThrows<IncompatibleOperatorError> { TypeChecker(ErrorHandler(""), scope).run(start) }
     }
 
     @Test
     fun chainedGreaterThanOperationsThrowsException() {
         val (scope, start) = getScopeFromString("Bool a = 1 < 2 < 3")
 
-        assertThrows<IncompatibleOperatorError> { TypeChecker(scope).run(start)}
+        assertThrows<IncompatibleOperatorError> { TypeChecker(ErrorHandler(""), scope).run(start)}
     }
 
     @Test
     fun chainedEqualsOperationsReturnsBoolIsTypeCorrect() {
         val (scope, start) = getScopeFromString("Bool a = 1 == 2 == (2 == 2)")
 
-        TypeChecker(scope).run(start)
+        TypeChecker(ErrorHandler(""), scope).run(start)
     }
 
     @Test
     fun intEqualsFloatThrowsException() {
         val (st, start) = getScopeFromString("Bool a = 6 == 6.6")
 
-        assertThrows<IncompatibleOperatorError> { TypeChecker(st).run(start) }
+        assertThrows<IncompatibleOperatorError> { TypeChecker(ErrorHandler(""), st).run(start) }
     }
 
     @Test
     fun functionWithParameterTypesBoolIntCalledWithArgumentTypesIntBoolThrowsException() {
         val (st, start) = getScopeFromString("fun foo(Bool a, Int b) {} every (20ms) { foo(3, false)\n }")
 
-        assertThrows<IdentifierNotDeclaredError> {TypeChecker(st).run(start)}
+        assertThrows<IdentifierNotDeclaredError> {TypeChecker(ErrorHandler(""), st).run(start)}
     }
 
     @Test
     fun everyStructuresExpressionTypeIntThrowsException() {
         val (st, start) = getScopeFromString("every (45 + 8) { stop\n }")
 
-        assertThrows<IllegalImplicitTypeConversionError> {TypeChecker(st).run(start)}
+        assertThrows<IllegalImplicitTypeConversionError> {TypeChecker(ErrorHandler(""), st).run(start)}
     }
 
     @Test
     fun ifStatementGivenIntExpressionThrowsException() {
         val (st, start) = getScopeFromString("every(20ms) { if (45 + 8) stop \n}")
 
-        assertThrows<IllegalImplicitTypeConversionError> {TypeChecker(st).run(start)}
+        assertThrows<IllegalImplicitTypeConversionError> {TypeChecker(ErrorHandler(""), st).run(start)}
     }
 
     @Test
     fun ifStatementGivenBoolExpressionIsTypeCorrect() {
         val (st, start) = getScopeFromString("every(20ms) { if (true) stop \n}")
 
-        TypeChecker(st).run(start)
+        TypeChecker(ErrorHandler(""), st).run(start)
     }
 
     @Test
     fun intArray1DVarCanBeInitialisedWith1DIntArrayLiteral() {
         val (st, start) = getScopeFromString("Int[] a = [13, 14, 45, 6]")
 
-        TypeChecker(st).run(start)
+        TypeChecker(ErrorHandler(""), st).run(start)
     }
 
     @Test
     fun intArrayInitialisedWith2DIntArrayLiteralThrowsException() {
         val (st, start) = getScopeFromString("Int[] a = [[13]]")
 
-        assertThrows<IllegalImplicitTypeConversionError> {TypeChecker(st).run(start)}
+        assertThrows<IllegalImplicitTypeConversionError> {TypeChecker(ErrorHandler(""), st).run(start)}
     }
 
     @Test
     fun indexingIntArrayReturnsIntTypeIsTypeCorrect() {
         val (st, start) = getScopeFromString("Int a = [23, 14][0]")
 
-        TypeChecker(st).run(start)
+        TypeChecker(ErrorHandler(""), st).run(start)
     }
 
     @Test
     fun intArrayAssignedToStringArrayThrowsException() {
         val (st, start) = getScopeFromString("String[] a = [23, 14]")
 
-        assertThrows<IllegalImplicitTypeConversionError> {TypeChecker(st).run(start)}
+        assertThrows<IllegalImplicitTypeConversionError> {TypeChecker(ErrorHandler(""), st).run(start)}
     }
 
     @Test
@@ -151,7 +152,7 @@ internal class TypeCheckerTest {
 
         val (st, start) = getScopeFromString(code)
 
-        assertThrows<IllegalImplicitTypeConversionError> {TypeChecker(st).run(start)}
+        assertThrows<IllegalImplicitTypeConversionError> {TypeChecker(ErrorHandler(""), st).run(start)}
     }
 
     @Test
@@ -164,7 +165,7 @@ internal class TypeCheckerTest {
         """
 
         val (st, start) = getScopeFromString(code)
-        TypeChecker(st).run(start)
+        TypeChecker(ErrorHandler(""), st).run(start)
     }
 
     @Test
@@ -181,7 +182,7 @@ internal class TypeCheckerTest {
 
         val (st, start) = getScopeFromString(code)
 
-        assertThrows<IdentifierNotDeclaredError> {TypeChecker(st).run(start)}
+        assertThrows<IdentifierNotDeclaredError> {TypeChecker(ErrorHandler(""), st).run(start)}
     }
 
     @Test
@@ -197,7 +198,7 @@ internal class TypeCheckerTest {
         """
 
         val (st, start) = getScopeFromString(code)
-        TypeChecker(st).run(start)
+        TypeChecker(ErrorHandler(""), st).run(start)
     }
 
     @Test
@@ -214,7 +215,7 @@ internal class TypeCheckerTest {
 
         val (st, start) = getScopeFromString(code)
 
-        assertThrows<IllegalImplicitTypeConversionError> {TypeChecker(st).run(start)}
+        assertThrows<IllegalImplicitTypeConversionError> {TypeChecker(ErrorHandler(""), st).run(start)}
     }
 
     @Test
@@ -230,7 +231,7 @@ internal class TypeCheckerTest {
         """
 
         val (st, start) = getScopeFromString(code)
-        TypeChecker(st).run(start)
+        TypeChecker(ErrorHandler(""), st).run(start)
     }
 
     @Test
@@ -245,7 +246,7 @@ internal class TypeCheckerTest {
 
         val (st, start) = getScopeFromString(code)
 
-        assertThrows<IllegalImplicitTypeConversionError> {TypeChecker(st).run(start)}
+        assertThrows<IllegalImplicitTypeConversionError> {TypeChecker(ErrorHandler(""), st).run(start)}
     }
 
     @Test
@@ -259,7 +260,7 @@ internal class TypeCheckerTest {
         """
 
         val (st, start) = getScopeFromString(code)
-        TypeChecker(st).run(start)
+        TypeChecker(ErrorHandler(""), st).run(start)
     }
 
     @Test
@@ -275,7 +276,7 @@ internal class TypeCheckerTest {
 
         val (st, start) = getScopeFromString(code)
 
-        assertThrows<IllegalImplicitTypeConversionError> {TypeChecker(st).run(start)}
+        assertThrows<IllegalImplicitTypeConversionError> {TypeChecker(ErrorHandler(""), st).run(start)}
     }
 
     @Test
@@ -290,7 +291,7 @@ internal class TypeCheckerTest {
         """
 
         val (st, start) = getScopeFromString(code)
-        TypeChecker(st).run(start)
+        TypeChecker(ErrorHandler(""), st).run(start)
     }
 
     @Test
@@ -305,7 +306,7 @@ internal class TypeCheckerTest {
 
         val (st, start) = getScopeFromString(code)
 
-        assertThrows<IllegalImplicitTypeConversionError> {TypeChecker(st).run(start)}
+        assertThrows<IllegalImplicitTypeConversionError> {TypeChecker(ErrorHandler(""), st).run(start)}
     }
 
     @Test
@@ -320,7 +321,7 @@ internal class TypeCheckerTest {
         """
 
         val (st, start) = getScopeFromString(code)
-        TypeChecker(st).run(start)
+        TypeChecker(ErrorHandler(""), st).run(start)
     }
 
     @Test
@@ -336,7 +337,7 @@ internal class TypeCheckerTest {
 
         val (st, start) = getScopeFromString(code)
 
-        assertThrows<IllegalImplicitTypeConversionError> {TypeChecker(st).run(start)}
+        assertThrows<IllegalImplicitTypeConversionError> {TypeChecker(ErrorHandler(""), st).run(start)}
     }
 
     @Test
@@ -351,7 +352,7 @@ internal class TypeCheckerTest {
         """
 
         val (st, start) = getScopeFromString(code)
-        TypeChecker(st).run(start)
+        TypeChecker(ErrorHandler(""), st).run(start)
     }
 
     @Test
@@ -368,7 +369,7 @@ internal class TypeCheckerTest {
 
         val (st, start) = getScopeFromString(code)
 
-        assertThrows<IdentifierNotDeclaredError> {TypeChecker(st).run(start)}
+        assertThrows<IdentifierNotDeclaredError> {TypeChecker(ErrorHandler(""), st).run(start)}
     }
 
     @Test
@@ -384,7 +385,7 @@ internal class TypeCheckerTest {
         """
 
         val (st, start) = getScopeFromString(code)
-        TypeChecker(st).run(start)
+        TypeChecker(ErrorHandler(""), st).run(start)
     }
 
     @Test
@@ -396,7 +397,7 @@ internal class TypeCheckerTest {
 
         val (st, start) = getScopeFromString(code)
 
-        assertThrows<ArrayInitializationError> {TypeChecker(st).run(start)}
+        assertThrows<ArrayInitializationError> {TypeChecker(ErrorHandler(""), st).run(start)}
     }
 
     @Test
@@ -407,7 +408,7 @@ internal class TypeCheckerTest {
         """
 
         val (st, start) = getScopeFromString(code)
-        TypeChecker(st).run(start)
+        TypeChecker(ErrorHandler(""), st).run(start)
     }
 
     @Test
@@ -418,7 +419,7 @@ internal class TypeCheckerTest {
         """
 
         val (st, start) = getScopeFromString(code)
-        TypeChecker(st).run(start)
+        TypeChecker(ErrorHandler(""), st).run(start)
     }
 
     @Test
@@ -430,7 +431,7 @@ internal class TypeCheckerTest {
 
         val (st, start) = getScopeFromString(code)
 
-        assertThrows<IllegalImplicitTypeConversionError> { TypeChecker(st).run(start) }
+        assertThrows<IllegalImplicitTypeConversionError> { TypeChecker(ErrorHandler(""), st).run(start) }
     }
 
     @Test
@@ -441,7 +442,7 @@ internal class TypeCheckerTest {
         """
 
         val (st, start) = getScopeFromString(code)
-        TypeChecker(st).run(start)
+        TypeChecker(ErrorHandler(""), st).run(start)
     }
 
     @Test
@@ -452,7 +453,7 @@ internal class TypeCheckerTest {
         """
 
         val (st, start) = getScopeFromString(code)
-        assertThrows<IllegalImplicitTypeConversionError> { TypeChecker(st).run(start) }
+        assertThrows<IllegalImplicitTypeConversionError> { TypeChecker(ErrorHandler(""), st).run(start) }
     }
 
     @Test
@@ -463,7 +464,7 @@ internal class TypeCheckerTest {
         """
 
         val (st, start) = getScopeFromString(code)
-        TypeChecker(st).run(start)
+        TypeChecker(ErrorHandler(""), st).run(start)
 }
 
     @Test
@@ -474,7 +475,7 @@ internal class TypeCheckerTest {
         """
 
         val (st, start) = getScopeFromString(code)
-        assertThrows<IllegalImplicitTypeConversionError> { TypeChecker(st).run(start) }
+        assertThrows<IllegalImplicitTypeConversionError> { TypeChecker(ErrorHandler(""), st).run(start) }
     }
 
     @Test
@@ -485,7 +486,7 @@ internal class TypeCheckerTest {
         """
 
         val (st, start) = getScopeFromString(code)
-        TypeChecker(st).run(start)
+        TypeChecker(ErrorHandler(""), st).run(start)
     }
 
     @Test
@@ -496,7 +497,7 @@ internal class TypeCheckerTest {
         """
 
         val (st, start) = getScopeFromString(code)
-        assertThrows<IncompatibleOperatorError> { TypeChecker(st).run(start) }
+        assertThrows<IncompatibleOperatorError> { TypeChecker(ErrorHandler(""), st).run(start) }
     }
 
     @Test
@@ -506,7 +507,7 @@ internal class TypeCheckerTest {
             Bool b = !true
         """
         val (st, start) = getScopeFromString(code)
-        TypeChecker(st).run(start)
+        TypeChecker(ErrorHandler(""), st).run(start)
     }
 
     @Test
@@ -517,7 +518,7 @@ internal class TypeCheckerTest {
         """
 
         val (st, start) = getScopeFromString(code)
-        assertThrows<IncompatibleOperatorError> { TypeChecker(st).run(start) }
+        assertThrows<IncompatibleOperatorError> { TypeChecker(ErrorHandler(""), st).run(start) }
     }
 
     @Test
@@ -527,7 +528,7 @@ internal class TypeCheckerTest {
             Int a = +22
         """
         val (st, start) = getScopeFromString(code)
-        TypeChecker(st).run(start)
+        TypeChecker(ErrorHandler(""), st).run(start)
     }
 
     @Test
@@ -537,7 +538,7 @@ internal class TypeCheckerTest {
             Float a = +.9
         """
         val (st, start) = getScopeFromString(code)
-        TypeChecker(st).run(start)
+        TypeChecker(ErrorHandler(""), st).run(start)
     }
 
     @Test
@@ -551,7 +552,7 @@ internal class TypeCheckerTest {
         """
 
         val (st, start) = getScopeFromString(code)
-        assertThrows<IllegalImplicitTypeConversionError> { TypeChecker(st).run(start) }
+        assertThrows<IllegalImplicitTypeConversionError> { TypeChecker(ErrorHandler(""), st).run(start) }
     }
 
     @Test
@@ -565,15 +566,14 @@ internal class TypeCheckerTest {
         """
 
         val (st, start) = getScopeFromString(code)
-        TypeChecker(st).run(start)
+        TypeChecker(ErrorHandler(""), st).run(start)
     }
 
 
     private fun getScopeFromString(input:String):Pair<SymbolTable, Start> {
-        val newInput = (input + "\n").replace("(?m)^[ \t]*\r?\n".toRegex(), "")
-        val lexer = StringLexer(newInput)
+        val lexer = StringLexer(input)
         val parser = Parser(lexer)
         val s = parser.parse()
-        return Pair(SymbolTableBuilder().buildSymbolTable(s), s)
+        return Pair(SymbolTableBuilder(ErrorHandler(input)).buildSymbolTable(s), s)
     }
 }

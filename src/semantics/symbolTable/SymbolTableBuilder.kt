@@ -2,6 +2,7 @@ package semantics.symbolTable
 
 import CompileError
 import ErrorHandler
+import ErrorTraverser
 import sablecc.analysis.DepthFirstAdapter
 import sablecc.node.*
 import semantics.symbolTable.errors.CloseScopeZeroException
@@ -9,7 +10,7 @@ import semantics.symbolTable.errors.IdentifierAlreadyDeclaredError
 import semantics.symbolTable.errors.IdentifierUsedBeforeDeclarationError
 import semantics.typeChecking.Type
 
-class SymbolTableBuilder : DepthFirstAdapter() {
+class SymbolTableBuilder(errorHandler: ErrorHandler) : ErrorTraverser(errorHandler) {
     private var currentScope = Scope(null)
     private var currentVarPrefix = ""
 
@@ -26,9 +27,6 @@ class SymbolTableBuilder : DepthFirstAdapter() {
     private fun nextAnonName(): String {
         return "AnonymousModule${anonModuleCount++}"
     }
-
-    private val errorHandler = ErrorHandler()
-    private fun error(ce:CompileError):Nothing = errorHandler.compileError(ce)
 
     private fun addVar(name:String, type: Type, isInit: Boolean = false) {
         // If the name is already used within this scope throw exception
@@ -66,7 +64,7 @@ class SymbolTableBuilder : DepthFirstAdapter() {
 
     private fun checkHasBeenDeclared(name: String) {
         currentScope.findVar(name) ?:
-            error(IdentifierUsedBeforeDeclarationError("The variable $name was used before it was declared."))
+			this.error(IdentifierUsedBeforeDeclarationError("The variable $name was used before it was declared."))
     }
 
     private fun openScope() {
@@ -136,7 +134,6 @@ class SymbolTableBuilder : DepthFirstAdapter() {
     }
 
     override fun caseAFunctiondcl(node: AFunctiondcl) {
-        errorHandler.setLineAndPos(node.identifier)
         if (rootElementMode) {
             val name = node.identifier.text!!
             val params = node.param.map { getTypeFromPType((it as AParam).type) }
@@ -164,6 +161,7 @@ class SymbolTableBuilder : DepthFirstAdapter() {
         if (rootElementMode) {
             val name = node.identifier?.text ?: nextAnonName()
             addModule(node, name)
+            addVar(name, Type.Module)
         }
         else
             super.caseAInstanceModuledcl(node)
@@ -177,7 +175,6 @@ class SymbolTableBuilder : DepthFirstAdapter() {
     override fun outAForStmt(node: AForStmt) = closeScope()
 
     override fun outAVardcl(node: AVardcl) {
-        errorHandler.setLineAndPos(node.identifier)
         val name = node.identifier.text
         val ptype = (node.parent() as ADclStmt).type
 
@@ -185,21 +182,18 @@ class SymbolTableBuilder : DepthFirstAdapter() {
     }
 
     override fun outAIdentifierValue(node: AIdentifierValue) {
-        errorHandler.setLineAndPos(node.identifier)
         val name = node.identifier.text
 
         checkHasBeenDeclared(name)
     }
 
     override fun outAAssignStmt(node: AAssignStmt) {
-        errorHandler.setLineAndPos(node.identifier)
         val name = node.identifier.text
 
         checkHasBeenDeclared(name)
     }
 
     override fun outAFunctionCallExpr(node: AFunctionCallExpr) {
-        errorHandler.setLineAndPos(node.identifier)
         val name = node.identifier.text
         if (!namedFunctionTable.any {it.key.first == name})
             error(IdentifierUsedBeforeDeclarationError("A function with name $name has not been declared."))
@@ -233,7 +227,6 @@ class SymbolTableBuilder : DepthFirstAdapter() {
         val name = node.instance.text
         val template = node.template
 
-
         addModule(node, name)
     }
 
@@ -245,8 +238,6 @@ class SymbolTableBuilder : DepthFirstAdapter() {
 
     override fun outAInstanceModuledcl(node: AInstanceModuledcl) {
         closeScope()
-        val name = nodeModuleTable[node]!!
-        addVar(name, Type.Module)
     }
 
     override fun caseAInnerModule(node: AInnerModule) {

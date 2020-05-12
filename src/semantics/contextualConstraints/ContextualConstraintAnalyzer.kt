@@ -11,14 +11,10 @@ import semantics.symbolTable.ScopedTraverser
 import semantics.symbolTable.SymbolTable
 import semantics.typeChecking.errors.IdentifierUsedBeforeAssignmentError
 
-class ContextualConstraintAnalyzer(symbolTable: SymbolTable) : ScopedTraverser(symbolTable) {
+class ContextualConstraintAnalyzer(errorHandler: ErrorHandler, symbolTable: SymbolTable) : ScopedTraverser(errorHandler, symbolTable) {
     private var openLoops: Int = 0
     private var inFunction = false
     private var initCount: Int = 0
-
-    // Error handling
-    private val errorHandler = ErrorHandler()
-    private fun error(ce: CompileError):Nothing = errorHandler.compileError(ce)
 
     fun run(node: Start) {
         caseStart(node)
@@ -26,49 +22,40 @@ class ContextualConstraintAnalyzer(symbolTable: SymbolTable) : ScopedTraverser(s
 
     override fun outADelayStmt(node: ADelayStmt) {
         if (inFunction) {
-            errorHandler.setLineAndPos(node.token)
             error(ModuleStatementUsedInFunctionException("Delay can only be used inside module declaration, not in function."))
         }
     }
 
     override fun outADelayuntilStmt(node: ADelayuntilStmt) {
         if (inFunction) {
-            errorHandler.setLineAndPos(node.token)
             error(ModuleStatementUsedInFunctionException("Delay until can only be used inside module declaration, not in function."))
         }
     }
 
     override fun outAStopStmt(node: AStopStmt) {
         if (inFunction) {
-            errorHandler.setLineAndPos(node.token)
             error(ModuleStatementUsedInFunctionException("Stop can only be used inside module declaration, not in function."))
         }
     }
 
     override fun outAStartStmt(node: AStartStmt) {
         if (inFunction) {
-            errorHandler.setLineAndPos(node.token)
             error(ModuleStatementUsedInFunctionException("Stop can only be used inside module declaration, not in function."))
         }
     }
 
     override fun outABreakStmt(node: ABreakStmt) {
-        errorHandler.setLineAndPos(node.token)
-
         if (openLoops <= 0)
             error(LoopJumpOutOfLoopError("Attempted to break but was not inside of loop."))
     }
 
     override fun outAContinueStmt(node: AContinueStmt) {
-        errorHandler.setLineAndPos(node.token)
 
         if (openLoops <= 0)
             error(LoopJumpOutOfLoopError("Attempted to continue but was not inside of loop."))
     }
 
     override fun outAReturnStmt(node: AReturnStmt) {
-        errorHandler.setLineAndPos(node.token)
-
         if (!inFunction)
             error(ReturnOutOfFunctionDeclarationError("Attempt to return from function, but was not inside of a function declaration."))
     }
@@ -85,15 +72,12 @@ class ContextualConstraintAnalyzer(symbolTable: SymbolTable) : ScopedTraverser(s
     }
 
     override fun outAIdentifierValue(node: AIdentifierValue) {
-        errorHandler.setLineAndPos(node.identifier)
-
         val identifier = symbolTable.findVar(node.identifier.text)
         if (!identifier!!.isInitialised)
             error(IdentifierUsedBeforeAssignmentError("The variable ${node.identifier.text} was used before being initialized."))
     }
 
     override fun inAFunctiondcl(node: AFunctiondcl) {
-        errorHandler.setLineAndPos(node.identifier)
         super.inAFunctiondcl(node)
         inFunction = true
     }
@@ -125,7 +109,6 @@ class ContextualConstraintAnalyzer(symbolTable: SymbolTable) : ScopedTraverser(s
 
     override fun inAInitRootElement(node: AInitRootElement) {
         super.inAInitRootElement(node)
-        errorHandler.setLineAndPos(node.token)
 
         initCount++
         if(initCount > 1)

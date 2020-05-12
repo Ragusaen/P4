@@ -1,12 +1,13 @@
 package codegeneration
 
+import ErrorHandler
 import sablecc.node.*
 import semantics.symbolTable.ScopedTraverser
 import semantics.symbolTable.SymbolTable
 import semantics.typeChecking.Type
 import java.util.*
 
-class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: SymbolTable) : ScopedTraverser(symbolTable) {
+class CodeGenerator(private val typeTable: MutableMap<Node, Type>, errorHandler: ErrorHandler, symbolTable: SymbolTable) : ScopedTraverser(errorHandler, symbolTable) {
     private object Emitter {
         private var setupCode = ""
         private var globalCode = ""
@@ -351,6 +352,8 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
 
     // Immediate handling
     override fun caseTTimeliteral(node: TTimeliteral) {
+        super.caseTTimeliteral(node)
+
         val li = node.text.indexOfFirst { it.isLetter() }
         val num = node.text.substring(0, li).toFloat()
         val suffix = node.text.substring(li)
@@ -367,11 +370,13 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
     }
 
     override fun caseTStringliteral(node: TStringliteral) {
+        super.caseTStringliteral(node)
         codeStack.push(node.text)
     }
 
     // Value handling
     override fun caseTIdentifier(node: TIdentifier) {
+        super.caseTIdentifier(node)
         codeStack.push(node.text)
     }
 
@@ -622,25 +627,31 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
     }
 
     override fun caseTDigitalpinliteral(node: TDigitalpinliteral) {
+        super.caseTDigitalpinliteral(node)
         codeStack.push(node.text.substring(1))
     }
 
     override fun caseTAnalogpinliteral(node: TAnalogpinliteral) {
+        super.caseTAnalogpinliteral(node)
         codeStack.push(node.text)
     }
 
     override fun caseTAnaloginputpintype(node: TAnaloginputpintype) {
+        super.caseTAnaloginputpintype(node)
         codeStack.push("int")
     }
     override fun caseTAnalogoutputpintype(node: TAnalogoutputpintype) {
+        super.caseTAnalogoutputpintype(node)
         codeStack.push("int")
     }
 
-    override fun caseTDigitalinputpintype(node: TDigitalinputpintype?) {
+    override fun caseTDigitalinputpintype(node: TDigitalinputpintype) {
+        super.caseTDigitalinputpintype(node)
         codeStack.push("int")
     }
 
-    override fun caseTDigitaloutputpintype(node: TDigitaloutputpintype?) {
+    override fun caseTDigitaloutputpintype(node: TDigitaloutputpintype) {
+        super.caseTDigitaloutputpintype(node)
         codeStack.push("int")
     }
 
