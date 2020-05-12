@@ -5,6 +5,7 @@ import ErrorHandler
 import sablecc.analysis.DepthFirstAdapter
 import sablecc.node.*
 import semantics.ContextualConstraints.Exceptions.LoopJumpOutOfLoopError
+import semantics.ContextualConstraints.Exceptions.MultipleInitsError
 import semantics.ContextualConstraints.Exceptions.ModuleStatementUsedInFunctionException
 import semantics.ContextualConstraints.Exceptions.ReturnOutOfFunctionDeclarationError
 import semantics.SymbolTable.ScopedTraverser
@@ -15,6 +16,7 @@ import semantics.TypeChecking.errors.IdentifierUsedBeforeAssignmentError
 class ContextualConstraintAnalyzer(symbolTable: SymbolTable) : ScopedTraverser(symbolTable) {
     private var openLoops: Int = 0
     private var inFunction = false
+    private var initCount: Int = 0
 
     // Error handling
     private val errorHandler = ErrorHandler()
@@ -56,21 +58,21 @@ class ContextualConstraintAnalyzer(symbolTable: SymbolTable) : ScopedTraverser(s
         errorHandler.setLineAndPos(node.token)
 
         if (openLoops <= 0)
-            error(LoopJumpOutOfLoopError("Attempted to break but was not inside of loop"))
+            error(LoopJumpOutOfLoopError("Attempted to break but was not inside of loop."))
     }
 
     override fun outAContinueStmt(node: AContinueStmt) {
         errorHandler.setLineAndPos(node.token)
 
         if (openLoops <= 0)
-            error(LoopJumpOutOfLoopError("Attempted to continue but was not inside of loop"))
+            error(LoopJumpOutOfLoopError("Attempted to continue but was not inside of loop."))
     }
 
     override fun outAReturnStmt(node: AReturnStmt) {
         errorHandler.setLineAndPos(node.token)
 
         if (!inFunction)
-            error(ReturnOutOfFunctionDeclarationError("Attempt to return from function, but was not inside of a function declaration"))
+            error(ReturnOutOfFunctionDeclarationError("Attempt to return from function, but was not inside of a function declaration."))
     }
 
     override fun outAVardcl(node: AVardcl) {
@@ -121,5 +123,12 @@ class ContextualConstraintAnalyzer(symbolTable: SymbolTable) : ScopedTraverser(s
     override fun outAWhileStmt(node: AWhileStmt?) {
         super.outAWhileStmt(node)
         openLoops--
+    }
+
+    override fun inAInitRootElement(node: AInitRootElement?) {
+        super.inAInitRootElement(node)
+        initCount++
+        if(initCount > 1)
+            error(MultipleInitsError("Multiple init structures are declared."))
     }
 }

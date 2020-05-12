@@ -8,12 +8,8 @@ import java.lang.Exception
 
 fun main() {
     var input = """
-every (10s) {
-    set D3 to HIGH
-    delay until (read D2)
-    set D3 to LOW
-}
-
+    Int i
+    init i = 5
 """
     input += "\n"
     input = input.replace("(?m)^[ \t]*\r?\n".toRegex(), "")

@@ -48,6 +48,8 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
 
     private var codeStack = Stack<String>()
 
+    private var initCode = ""
+
     private val instanceModuleAuxes = mutableListOf<InstanceModuleAux>()
 
     private fun generateSetup(): String {
@@ -57,8 +59,9 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
                 ", \"${it.name}\", 128, NULL, 0, &${taskPrefix + it.name}_Handle );\n" +
                 "vTaskSuspend(${taskPrefix + it.name}_Handle);\n" }
 
-
         res += "xTaskCreate(ControllerTask, \"Controller\", 128, NULL, 0, NULL);\n"
+
+        res += initCode
 
         res += "}\n"
         return res
@@ -603,6 +606,10 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
 
     override fun caseTDigitaloutputpintype(node: TDigitaloutputpintype?) {
         codeStack.push("int")
+    }
+
+    override fun caseAInitRootElement(node: AInitRootElement) {
+        initCode += getCode(node.stmt)
     }
 
     override fun caseADelayStmt(node: ADelayStmt) {
