@@ -7,6 +7,7 @@ import sablecc.node.Start
 import sablecc.parser.Parser
 import semantics.ContextualConstraints.ContextualConstraintAnalyzer
 import semantics.ContextualConstraints.Exceptions.LoopJumpOutOfLoopError
+import semantics.ContextualConstraints.Exceptions.MultipleInitsError
 import semantics.ContextualConstraints.Exceptions.ReturnOutOfFunctionDeclarationError
 import semantics.SymbolTable.SymbolTable
 import semantics.SymbolTable.SymbolTableBuilder
@@ -76,6 +77,31 @@ internal class ContextualConstraintsTest {
         assertThrows<LoopJumpOutOfLoopError> { ContextualConstraintAnalyzer(st).caseStart(start) }
     }
 
+    @Test
+    fun singleInitIsOkay(){
+        val input = """
+            init{
+            
+            }
+        """
+        val (st, start) = compileUpToContextualConstraintsAnalyzerFromString(input)
+        ContextualConstraintAnalyzer(st).caseStart(start)
+    }
+
+    @Test
+    fun multipleInitsThrowsException(){
+        val input = """
+            init{
+                
+            }
+            
+            init{
+            
+            }
+        """
+        val (st, start) = compileUpToContextualConstraintsAnalyzerFromString(input)
+        assertThrows<MultipleInitsError> { ContextualConstraintAnalyzer(st).caseStart(start) }
+    }
 
     private fun compileUpToContextualConstraintsAnalyzerFromString(input:String):Pair<SymbolTable, Start> {
         val newInput = (input + "\n").replace("(?m)^[ \t]*\r?\n".toRegex(), "")
