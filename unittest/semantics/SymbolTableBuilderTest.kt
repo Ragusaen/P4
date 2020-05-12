@@ -40,14 +40,13 @@ internal class SymbolTableBuilderTest {
 
     @Test
     fun variableDeclaredAfterUse() {
-        val stb = SymbolTableBuilder()
         val input = """
-|           every (1000) {
+            every (1000) {
                 Int a = b - 3
                 Int b = 0
             }
         """.trimMargin()
-        assertThrows<IdentifierUsedBeforeDeclarationError> {  getScopeFromString(input) }
+        assertThrows<IdentifierUsedBeforeDeclarationError> { getScopeFromString(input) }
     }
 
     @Test

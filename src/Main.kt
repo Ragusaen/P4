@@ -8,15 +8,15 @@ import java.lang.Exception
 
 fun main() {
     var input = """
-every (10s) {
-    set D3 to HIGH
-    delay until (read D2)
-    set D3 to LOW
+Int a = 0
+every (500ms) {
+    b = 0
 }
-
 """
     input += "\n"
-    input = input.replace("(?m)^[ \t]*\r?\n".toRegex(), "")
+    input = input.replace("(?m)^[ \t]*\r?\n".toRegex(), "¤")
+
+    println(input)
 
     try {
         val lexer = StringLexer(input)
@@ -30,7 +30,7 @@ every (10s) {
 
         println(cg.generate(a))
     }
-    catch (ce:CompileError) {
+    catch (ce: CompileError) {
         println("Compilation stopped due to compile error.")
         println(ce.errorMsg)
     }

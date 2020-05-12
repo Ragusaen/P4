@@ -219,6 +219,9 @@ class SymbolTableBuilder : DepthFirstAdapter() {
     override fun inATemplateModuledcl(node: ATemplateModuledcl) {
         openScope()
 
+        val name = node.identifier.text
+        currentVarPrefix = "$name->"
+
         // Add each parameter variable to the scope
         node.param.forEach {errorHandler.setLineAndPos((it as AParam).identifier); addVar((it as AParam).identifier.text, getTypeFromPType(it.type), true)}
     }

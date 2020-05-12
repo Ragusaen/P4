@@ -4,7 +4,6 @@ import sablecc.node.*
 import semantics.SymbolTable.ScopedTraverser
 import semantics.SymbolTable.SymbolTable
 import semantics.TypeChecking.Type
-import java.lang.reflect.Array
 import java.util.*
 
 class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: SymbolTable) : ScopedTraverser(symbolTable) {
@@ -48,11 +47,12 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
 
     private var codeStack = Stack<String>()
 
-    private val instanceModuleAuxes = mutableListOf<InstanceModuleAux>()
+    private val moduleAuxes = mutableListOf<ModuleAux>()
+    private val templateInstances = mutableMapOf<String, MutableList<String>>()
 
     private fun generateSetup(): String {
         var res = "void setup() {\n"
-        instanceModuleAuxes.forEach { res += "xTaskCreate(" +
+        moduleAuxes.forEach { res += "xTaskCreate(" +
                 taskPrefix + it.name +
                 ", \"${it.name}\", 128, NULL, 0, &${taskPrefix + it.name}_Handle );\n" +
                 "vTaskSuspend(${taskPrefix + it.name}_Handle);\n" }
@@ -67,11 +67,11 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
     private fun generateControllerTask(): String {
         var res = "void ControllerTask(void *pvParameters) {\n"
 
-        instanceModuleAuxes.forEach { res += "${if (it.isEveryStruct) "unsigned long" else "Bool"} ${it.name}LastValue = 0;\n" }
+        moduleAuxes.forEach { res += "${if (it.isEveryStruct) "unsigned long" else "Bool"} ${it.name}LastValue = 0;\n" }
 
         res += "\nwhile (1) {\n"
 
-        for (ima in instanceModuleAuxes) {
+        for (ima in moduleAuxes) {
             if (ima.isEveryStruct) {
                 res += "if (millis() - ${ima.name}LastValue >= ${ima.expr}) {\n${ima.name}LastValue = millis();\nvTaskResume(Task${ima.name}_Handle);\n}\n"
             } else {
@@ -86,7 +86,13 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
     private fun generateTopCode(): String {
         var res = "#include <Arduino_FreeRTOS.h>\n\ntypedef char Bool;\ntypedef unsigned int Time;\n"
 
-        instanceModuleAuxes.forEach { res += "TaskHandle_t Task${it.name}_Handle;\n" }
+        for (ma in moduleAuxes) {
+            if (ma.isTemplate) {
+                res += "struct ${ma.name}_t Mod${ma.name}[] = {"
+            } else {
+                res += "TaskHandle_t Task${ma.name}_Handle;\n"
+            }
+        }
 
         return res
     }
@@ -102,7 +108,10 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
     }
 
     private fun getCode(node: Node): String {
+        val size = codeStack.size
         node.apply(this)
+        if (size == codeStack.size)
+            println("Warning: Nothing was pushed to the codestack when getting code for node $node\n")
         return codeStack.pop()
     }
 
@@ -467,26 +476,54 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
 
     override fun caseATemplateModuledcl(node: ATemplateModuledcl) {
         inATemplateModuledcl(node)
-        indentLevel = 0
-        var moduleStruct = "struct "
-        var moduleFunDcl = "void "
-        var moduleCode = ""
-        val identifier =  getCode(node.identifier)
-        moduleStruct += identifier + "_t {\n"
-        moduleFunDcl += identifier + "_f() "
+        val name = node.identifier.text
 
-        node.innerModule.apply(this)
+        val innerModule = node.innerModule as AInnerModule
 
-        moduleStruct += codeStack.pop()
-        moduleCode += codeStack.pop()
+        // Create the struct
+        var res = "struct ${name}_t {\n"
+        // First add the formal parameters
+        for (param in node.param.map {it as AParam}) {
+            val type = getCode(param.type)
+            res += "$type ${param.identifier.text}"
+        }
 
-        moduleStruct += "}\n\n"
-        moduleCode += "\n\n"
+        // Get all variables from the inner module
+        for (dcl in innerModule.dcls.map {it as ADclStmt}) {
+            val type = getCode(dcl.type)
+            for (vdcl in dcl.vardcl.map {it as AVardcl}) {
+                res += "$type ${vdcl.identifier};\n"
+            }
+        }
+        res += "TaskHandler task_handle;\n};\n"
 
-        codeStack.push(moduleStruct)
-        codeStack.push(moduleFunDcl)
-        codeStack.push(moduleCode)
+        // Run the inner module case
+        caseAInnerModuleTemplate(innerModule, name)
+        val inner = codeStack.pop()
+
+        codeStack.push(res + "void Task$name(void *pvParameters) {\n" +
+                "struct ${name}_t *$name = (struct ${name}_t*)pvParameters)\n" +
+                "$inner\n" +
+                "}\n")
+
         outATemplateModuledcl(node)
+    }
+
+    private fun caseAInnerModuleTemplate(node: AInnerModule, name: String) {
+        node.moduleStructure.apply(this) // Pushes twice
+
+        increaseIndent()
+        val mstruct = codeStack.pop()
+        decreaseIndent()
+
+        val expr = codeStack.pop()
+
+        moduleAuxes.add(ModuleAux(name, expr, node.moduleStructure is AEveryModuleStructure, true))
+
+        codeStack.push("${singleIndent}while (1) {\n" +
+                "$mstruct" +
+                "${singleIndent.repeat(2)}vTaskSuspend(${taskPrefix}${name}->task_handle);\n" +
+                "$singleIndent}")
     }
 
     override fun caseAInstanceModuledcl(node: AInstanceModuledcl) {
@@ -513,7 +550,7 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
 
         val expr = codeStack.pop()
 
-        instanceModuleAuxes.add(InstanceModuleAux(moduleName, expr, node.moduleStructure is AEveryModuleStructure))
+        moduleAuxes.add(ModuleAux(moduleName, expr, node.moduleStructure is AEveryModuleStructure, false))
 
         codeStack.push(dcls)
         codeStack.push("${singleIndent}while (1) {\n" +
@@ -608,13 +645,32 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, symbolTable: 
     override fun caseADelayStmt(node: ADelayStmt) {
         val expr = getCode(node.expr)
 
-        codeStack.pushLineIndented("vTaskDelay( ($expr) / 15);")
+        codeStack.pushLineIndented("vTaskDelay( ($expr) / $tickratems);")
     }
 
     override fun caseADelayuntilStmt(node: ADelayuntilStmt) {
         val expr = getCode(node.expr)
 
         codeStack.pushLineIndented("while ( !($expr) ) vTaskDelay(2);")
+    }
+
+    override fun caseAModuledclStmt(node: AModuledclStmt) {
+        val templateName = node.template.text!!
+        val instanceName = node.instance.text!!
+
+        if (templateInstances[templateName] != null)
+            templateInstances[templateName]!!.add(instanceName)
+        else
+            templateInstances[templateName] = mutableListOf(instanceName)
+    }
+
+    override fun caseAStopStmt(node: AStopStmt) {
+        if (node.expr != null) {
+            val expr = getCode(node.expr)
+            codeStack.pushLineIndented("vTaskSuspend($taskPrefix${expr}_Handle);")
+        } else {
+            codeStack.pushLineIndented("vTaskSuspend(${currentModuleName}_Handle);")
+        }
     }
 
 }
