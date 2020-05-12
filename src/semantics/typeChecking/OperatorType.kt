@@ -1,4 +1,4 @@
-package semantics.TypeChecking
+package semantics.typeChecking
 
 import sablecc.node.*
 

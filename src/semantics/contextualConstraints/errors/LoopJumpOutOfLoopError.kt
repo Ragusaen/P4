@@ -1,4 +1,4 @@
-package semantics.ContextualConstraints.Exceptions
+package semantics.contextualConstraints.errors
 
 import CompileError
 

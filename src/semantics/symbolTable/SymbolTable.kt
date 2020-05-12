@@ -1,7 +1,7 @@
-package semantics.SymbolTable
+package semantics.symbolTable
 
 import sablecc.node.Node
-import semantics.TypeChecking.Type
+import semantics.typeChecking.Type
 
 
 /*

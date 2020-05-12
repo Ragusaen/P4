@@ -1,15 +1,15 @@
 import codegeneration.CodeGenerator
 import sablecc.parser.Parser
-import semantics.ContextualConstraints.ContextualConstraintAnalyzer
-import semantics.SymbolTable.SymbolTableBuilder
-import semantics.TypeChecking.TypeChecker
-import java.lang.Exception
+import semantics.contextualConstraints.ContextualConstraintAnalyzer
+import semantics.symbolTable.SymbolTableBuilder
+import semantics.typeChecking.TypeChecker
 
 
 fun main() {
     var input = """
     Int i
     init i = 5
+    init i = 2
 """
     input += "\n"
     input = input.replace("(?m)^[ \t]*\r?\n".toRegex(), "")

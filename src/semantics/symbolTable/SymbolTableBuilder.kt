@@ -1,13 +1,13 @@
-package semantics.SymbolTable
+package semantics.symbolTable
 
 import CompileError
 import ErrorHandler
 import sablecc.analysis.DepthFirstAdapter
 import sablecc.node.*
-import semantics.SymbolTable.errors.CloseScopeZeroError
-import semantics.SymbolTable.errors.IdentifierAlreadyDeclaredError
-import semantics.SymbolTable.errors.IdentifierUsedBeforeDeclarationError
-import semantics.TypeChecking.Type
+import semantics.symbolTable.errors.CloseScopeZeroException
+import semantics.symbolTable.errors.IdentifierAlreadyDeclaredError
+import semantics.symbolTable.errors.IdentifierUsedBeforeDeclarationError
+import semantics.typeChecking.Type
 
 class SymbolTableBuilder : DepthFirstAdapter() {
     private var currentScope = Scope(null)
@@ -88,7 +88,7 @@ class SymbolTableBuilder : DepthFirstAdapter() {
         if (parent != null)
             currentScope = parent
         else
-            throw CloseScopeZeroError("Attempted to close the bottom scope.")
+            throw CloseScopeZeroException("Attempted to close the bottom scope.")
     }
 
     fun buildSymbolTable(s: Start): SymbolTable {

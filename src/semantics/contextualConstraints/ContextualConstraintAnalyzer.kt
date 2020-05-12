@@ -1,17 +1,15 @@
-package semantics.ContextualConstraints
+package semantics.contextualConstraints
 
 import CompileError
 import ErrorHandler
-import sablecc.analysis.DepthFirstAdapter
 import sablecc.node.*
-import semantics.ContextualConstraints.Exceptions.LoopJumpOutOfLoopError
-import semantics.ContextualConstraints.Exceptions.MultipleInitsError
-import semantics.ContextualConstraints.Exceptions.ModuleStatementUsedInFunctionException
-import semantics.ContextualConstraints.Exceptions.ReturnOutOfFunctionDeclarationError
-import semantics.SymbolTable.ScopedTraverser
-import semantics.SymbolTable.SymbolTable
-import semantics.TypeChecking.Type
-import semantics.TypeChecking.errors.IdentifierUsedBeforeAssignmentError
+import semantics.contextualConstraints.errors.LoopJumpOutOfLoopError
+import semantics.contextualConstraints.errors.MultipleInitsError
+import semantics.contextualConstraints.errors.ModuleStatementUsedInFunctionException
+import semantics.contextualConstraints.errors.ReturnOutOfFunctionDeclarationError
+import semantics.symbolTable.ScopedTraverser
+import semantics.symbolTable.SymbolTable
+import semantics.typeChecking.errors.IdentifierUsedBeforeAssignmentError
 
 class ContextualConstraintAnalyzer(symbolTable: SymbolTable) : ScopedTraverser(symbolTable) {
     private var openLoops: Int = 0

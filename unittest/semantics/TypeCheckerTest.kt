@@ -5,13 +5,13 @@ import org.junit.jupiter.api.Test
 import sablecc.parser.Parser
 import org.junit.jupiter.api.assertThrows
 import sablecc.node.Start
-import semantics.SymbolTable.SymbolTable
-import semantics.SymbolTable.SymbolTableBuilder
-import semantics.TypeChecking.errors.IdentifierNotDeclaredError
-import semantics.TypeChecking.errors.IllegalImplicitTypeConversionError
-import semantics.TypeChecking.errors.IncompatibleOperatorError
-import semantics.TypeChecking.TypeChecker
-import semantics.TypeChecking.errors.ArrayInitializationError
+import semantics.symbolTable.SymbolTable
+import semantics.symbolTable.SymbolTableBuilder
+import semantics.typeChecking.errors.IdentifierNotDeclaredError
+import semantics.typeChecking.errors.IllegalImplicitTypeConversionError
+import semantics.typeChecking.errors.IncompatibleOperatorError
+import semantics.typeChecking.TypeChecker
+import semantics.typeChecking.errors.ArrayInitializationError
 
 internal class TypeCheckerTest {
     @Test

@@ -28,7 +28,7 @@ BoolLiteral = ("false"|"true"|"HIGH"|"LOW")
 IntLiteral = [0-9]+
 FloatLiteral = [0-9]+\.[0-9]*|[0-9]*\.[0-9]+
 TimeLiteral = [0-9]*\.?[0-9]*("ms"|"s"|"m"|"h")
-semantics.SymbolTable.Identifier = ([a-z]|[A-Z])([a-z]*|[0-9]*|[A-Z])*
+semantics.symbolTable.Identifier = ([a-z]|[A-Z])([a-z]*|[0-9]*|[A-Z])*
 Comment = ("/*"(.*?\n?)*"*/")|("//".*([^.]|"\n"))
 
 
@@ -136,4 +136,4 @@ Comment = ("/*"(.*?\n?)*"*/")|("//".*([^.]|"\n"))
 {WhiteSpace} {}
 
 
-{semantics.SymbolTable.Identifier} {return symbol(SymType.IDENTIFIER, yytext());}
+{semantics.symbolTable.Identifier} {return symbol(SymType.IDENTIFIER, yytext());}

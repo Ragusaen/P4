@@ -7,11 +7,11 @@ import org.junit.jupiter.api.Assertions.*
 import sablecc.parser.Parser
 import org.junit.jupiter.api.assertThrows
 import sablecc.node.Start
-import semantics.SymbolTable.SymbolTable
-import semantics.SymbolTable.errors.IdentifierAlreadyDeclaredError
-import semantics.SymbolTable.errors.IdentifierUsedBeforeDeclarationError
-import semantics.SymbolTable.SymbolTableBuilder
-import semantics.TypeChecking.Type
+import semantics.symbolTable.SymbolTable
+import semantics.symbolTable.errors.IdentifierAlreadyDeclaredError
+import semantics.symbolTable.errors.IdentifierUsedBeforeDeclarationError
+import semantics.symbolTable.SymbolTableBuilder
+import semantics.typeChecking.Type
 
 internal class SymbolTableBuilderTest {
     fun parseString(input: String): Start {
@@ -39,7 +39,7 @@ internal class SymbolTableBuilderTest {
     @Test
     fun variableDeclaredAfterUse() {
         val input = """
-|           every (1000) {
+            every (1000) {
                 Int a = b - 3
                 Int b = 0
             }
@@ -110,7 +110,7 @@ internal class SymbolTableBuilderTest {
     }
 
     @Test
-    fun symbolTableContainsVariablesWithSameNameInDiffirentScopes(){
+    fun symbolTableContainsVariablesWithSameNameInDifferentScopes(){
         val input = """
             Int a = 2
             template module thismodule {

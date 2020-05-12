@@ -5,13 +5,12 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import sablecc.node.Start
 import sablecc.parser.Parser
-import semantics.ContextualConstraints.ContextualConstraintAnalyzer
-import semantics.ContextualConstraints.Exceptions.LoopJumpOutOfLoopError
-import semantics.ContextualConstraints.Exceptions.MultipleInitsError
-import semantics.ContextualConstraints.Exceptions.ReturnOutOfFunctionDeclarationError
-import semantics.SymbolTable.SymbolTable
-import semantics.SymbolTable.SymbolTableBuilder
-import semantics.TypeChecking.TypeChecker
+import semantics.contextualConstraints.ContextualConstraintAnalyzer
+import semantics.contextualConstraints.errors.LoopJumpOutOfLoopError
+import semantics.contextualConstraints.errors.MultipleInitsError
+import semantics.contextualConstraints.errors.ReturnOutOfFunctionDeclarationError
+import semantics.symbolTable.SymbolTable
+import semantics.symbolTable.SymbolTableBuilder
 
 internal class ContextualConstraintsTest {
     @Test
