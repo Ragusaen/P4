@@ -295,31 +295,60 @@ internal class TypeCheckerTest {
     }
 
     @Test
-    fun forStatementWithMiddleStatementNotOfTypeBoolThrowsException() {
+    fun forStatementWithStartValueNotOfTypeIntThrowsException() {
         val code =
         """
             template module a {
                 every(100ms)
-                    for(8)
-            }
-        """
-
-        val (st, start) = getScopeFromString(code)
-
-        assertThrows<IllegalImplicitTypeConversionError> {TypeChecker(ErrorHandler(""), st).run(start)}
-    }
-
-    @Test
-    fun forStatementWithMiddleStatementOfTypeBoolIsOk() {
-        val code =
-        """
-            template module a {
-                every(100ms)
-                    for(;true;)
+                    for(i in true to 8)
                         continue
             }
         """
 
+        val (st, start) = getScopeFromString(code)
+        assertThrows<IllegalImplicitTypeConversionError> {TypeChecker(ErrorHandler(""), st).run(start)}
+    }
+
+    @Test
+    fun forStatementWithEndValueNotOfTypeIntThrowsException() {
+        val code =
+                """
+            template module a {
+                every(100ms)
+                    for(i in 1 to D5)
+                        continue
+            }
+        """
+
+        val (st, start) = getScopeFromString(code)
+        assertThrows<IllegalImplicitTypeConversionError> {TypeChecker(ErrorHandler(""), st).run(start)}
+    }
+
+    @Test
+    fun forStatementWithStepValueNotOfTypeIntThrowsException() {
+        val code =
+                """
+            template module a {
+                every(100ms)
+                    for(i in 1 to 8 step true)
+                        continue
+            }
+        """
+
+        val (st, start) = getScopeFromString(code)
+        assertThrows<IllegalImplicitTypeConversionError> {TypeChecker(ErrorHandler(""), st).run(start)}
+    }
+
+    @Test
+    fun forStatementWithValuesOfTypeIntIsOk() {
+        val code =
+        """
+            template module a {
+                every(100ms)
+                    for(i in 1 to 8 step 2)
+                        continue
+            }
+        """
         val (st, start) = getScopeFromString(code)
         TypeChecker(ErrorHandler(""), st).run(start)
     }
