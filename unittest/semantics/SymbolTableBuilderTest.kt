@@ -1,5 +1,6 @@
 package semantics
 
+import ErrorHandler
 import StringLexer
 import org.junit.jupiter.api.Test
 
@@ -200,10 +201,9 @@ internal class SymbolTableBuilderTest {
     }
 
     private fun getScopeFromString(input:String):Pair<SymbolTable, Start> {
-        val newInput = (input + "\n").replace("(?m)^[ \t]*\r?\n".toRegex(), "")
-        val lexer = StringLexer(newInput)
+        val lexer = StringLexer(input)
         val parser = Parser(lexer)
         val s = parser.parse()
-        return Pair(SymbolTableBuilder().buildSymbolTable(s), s)
+        return Pair(SymbolTableBuilder(ErrorHandler(input)).buildSymbolTable(s), s)
     }
 }

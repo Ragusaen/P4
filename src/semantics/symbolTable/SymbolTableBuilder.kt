@@ -2,6 +2,7 @@ package semantics.symbolTable
 
 import CompileError
 import ErrorHandler
+import ErrorTraverser
 import sablecc.analysis.DepthFirstAdapter
 import sablecc.node.*
 import semantics.symbolTable.errors.CloseScopeZeroException
@@ -9,7 +10,7 @@ import semantics.symbolTable.errors.IdentifierAlreadyDeclaredError
 import semantics.symbolTable.errors.IdentifierUsedBeforeDeclarationError
 import semantics.typeChecking.Type
 
-class SymbolTableBuilder : DepthFirstAdapter() {
+class SymbolTableBuilder(errorHandler: ErrorHandler) : ErrorTraverser(errorHandler) {
     private var currentScope = Scope(null)
     private var currentVarPrefix = ""
 
@@ -26,9 +27,6 @@ class SymbolTableBuilder : DepthFirstAdapter() {
     private fun nextAnonName(): String {
         return "AnonymousModule${anonModuleCount++}"
     }
-
-    private val errorHandler = ErrorHandler()
-    private fun error(ce:CompileError):Nothing = errorHandler.compileError(ce)
 
     private fun addVar(name:String, type: Type, isInit: Boolean = false) {
         // If the name is already used within this scope throw exception
@@ -73,7 +71,7 @@ class SymbolTableBuilder : DepthFirstAdapter() {
             tempScope = tempScope.parent
         }
 
-        error(IdentifierUsedBeforeDeclarationError("The variable $name was used before it was declared."))
+        this.error(IdentifierUsedBeforeDeclarationError("The variable $name was used before it was declared."))
     }
 
     private fun openScope() {
@@ -143,7 +141,6 @@ class SymbolTableBuilder : DepthFirstAdapter() {
     }
 
     override fun caseAFunctiondcl(node: AFunctiondcl) {
-        errorHandler.setLineAndPos(node.identifier)
         if (rootElementMode) {
             val name = node.identifier.text!!
             val params = node.param.map { getTypeFromPType((it as AParam).type) }

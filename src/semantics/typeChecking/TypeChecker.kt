@@ -8,15 +8,11 @@ import semantics.symbolTable.SymbolTable
 import semantics.typeChecking.errors.*
 import java.util.*
 
-class TypeChecker(symbolTable: SymbolTable) : ScopedTraverser(symbolTable) {
+class TypeChecker(errorHandler: ErrorHandler, symbolTable: SymbolTable) : ScopedTraverser(errorHandler, symbolTable) {
     fun run(node: Start): MutableMap<Node, Type> {
         caseStart(node)
         return typeTable
     }
-
-    // Error handling
-    private val errorHandler = ErrorHandler()
-    private fun error(ce:CompileError):Nothing = errorHandler.compileError(ce)
 
     private val typeStack = Stack<Type>()
 
@@ -90,7 +86,6 @@ class TypeChecker(symbolTable: SymbolTable) : ScopedTraverser(symbolTable) {
     }
 
     override fun outAFunctionCallExpr(node: AFunctionCallExpr) {
-        errorHandler.setLineAndPos(node.identifier)
         val name = node.identifier.text
         // Pop the expressions from the typeStack
         val types = mutableListOf<Type>()
@@ -182,7 +177,6 @@ class TypeChecker(symbolTable: SymbolTable) : ScopedTraverser(symbolTable) {
 
     // This is only for variables used in expressions as values
     override fun outAIdentifierValue(node: AIdentifierValue) {
-        errorHandler.setLineAndPos(node.identifier)
         val identifier = symbolTable.findVar(node.identifier.text)
         pushType(node, identifier!!.type)
     }
@@ -192,37 +186,37 @@ class TypeChecker(symbolTable: SymbolTable) : ScopedTraverser(symbolTable) {
     }
 
     override fun caseTIntliteral(node: TIntliteral) {
-        errorHandler.setLineAndPos(node)
+        super.caseTIntliteral(node)
         pushType(node, Type.Int)
     }
 
     override fun caseTFloatliteral(node: TFloatliteral) {
-        errorHandler.setLineAndPos(node)
+        super.caseTFloatliteral(node)
         pushType(node, Type.Float)
     }
 
     override fun caseTBoolliteral(node: TBoolliteral) {
-        errorHandler.setLineAndPos(node)
+        super.caseTBoolliteral(node)
         pushType(node, Type.Bool)
     }
 
     override fun caseTStringliteral(node: TStringliteral) {
-        errorHandler.setLineAndPos(node)
+        super.caseTStringliteral(node)
         pushType(node, Type.String)
     }
 
     override fun caseTTimeliteral(node: TTimeliteral) {
-        errorHandler.setLineAndPos(node)
+        super.caseTTimeliteral(node)
         pushType(node, Type.Time)
     }
 
     override fun caseTDigitalpinliteral(node: TDigitalpinliteral) {
-        errorHandler.setLineAndPos(node)
+        super.caseTDigitalpinliteral(node)
         pushType(node, Type.DigitalPin)
     }
 
     override fun caseTAnalogpinliteral(node: TAnalogpinliteral) {
-        errorHandler.setLineAndPos(node)
+        super.caseTAnalogpinliteral(node)
         pushType(node, Type.AnalogPin)
     }
 

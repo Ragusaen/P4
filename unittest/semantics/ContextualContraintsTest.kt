@@ -1,5 +1,6 @@
 package semantics
 
+import ErrorHandler
 import StringLexer
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -23,7 +24,7 @@ internal class ContextualConstraintsTest {
         """
 
         val (st, start) = compileUpToContextualConstraintsAnalyzerFromString(code)
-        assertThrows<ReturnOutOfFunctionDeclarationError> { ContextualConstraintAnalyzer(st).caseStart(start) }
+        assertThrows<ReturnOutOfFunctionDeclarationError> { ContextualConstraintAnalyzer(ErrorHandler(code), st).caseStart(start) }
     }
 
     @Test
@@ -36,7 +37,7 @@ internal class ContextualConstraintsTest {
         """
 
         val (st, start) = compileUpToContextualConstraintsAnalyzerFromString(code)
-        ContextualConstraintAnalyzer(st).caseStart(start)
+        ContextualConstraintAnalyzer(ErrorHandler(code), st).caseStart(start)
     }
 
     @Test
@@ -57,7 +58,7 @@ internal class ContextualConstraintsTest {
         """
 
         val (st, start) = compileUpToContextualConstraintsAnalyzerFromString(code)
-        ContextualConstraintAnalyzer(st).caseStart(start)
+        ContextualConstraintAnalyzer(ErrorHandler(code), st).caseStart(start)
     }
 
     @Test
@@ -73,7 +74,7 @@ internal class ContextualConstraintsTest {
             }
         """
         val (st, start) = compileUpToContextualConstraintsAnalyzerFromString(code)
-        assertThrows<LoopJumpOutOfLoopError> { ContextualConstraintAnalyzer(st).caseStart(start) }
+        assertThrows<LoopJumpOutOfLoopError> { ContextualConstraintAnalyzer(ErrorHandler(code), st).caseStart(start) }
     }
 
     @Test
@@ -84,7 +85,7 @@ internal class ContextualConstraintsTest {
             }
         """
         val (st, start) = compileUpToContextualConstraintsAnalyzerFromString(input)
-        ContextualConstraintAnalyzer(st).caseStart(start)
+        ContextualConstraintAnalyzer(ErrorHandler(input), st).caseStart(start)
     }
 
     @Test
@@ -99,15 +100,14 @@ internal class ContextualConstraintsTest {
             }
         """
         val (st, start) = compileUpToContextualConstraintsAnalyzerFromString(input)
-        assertThrows<MultipleInitsError> { ContextualConstraintAnalyzer(st).caseStart(start) }
+        assertThrows<MultipleInitsError> { ContextualConstraintAnalyzer(ErrorHandler(input), st).caseStart(start) }
     }
 
     private fun compileUpToContextualConstraintsAnalyzerFromString(input:String):Pair<SymbolTable, Start> {
-        val newInput = (input + "\n").replace("(?m)^[ \t]*\r?\n".toRegex(), "")
-        val lexer = StringLexer(newInput)
+        val lexer = StringLexer(input)
         val parser = Parser(lexer)
         val s = parser.parse()
-        val st = SymbolTableBuilder().buildSymbolTable(s)
+        val st = SymbolTableBuilder(ErrorHandler(input)).buildSymbolTable(s)
         return Pair(st, s)
     }
 }
