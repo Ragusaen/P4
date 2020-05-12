@@ -313,12 +313,13 @@ internal class TypeCheckerTest {
     }
 
     @Test
-    fun forStatementWithMiddleStatementNotOfTypeBoolThrowsException() {
+    fun forStatementWithStartValueNotOfTypeIntThrowsException() {
         val code =
         """
             template module a {
                 every(100ms)
-                    for(8)
+                    for(i in true to 8)
+                        continue
             }
         """
 
@@ -328,16 +329,46 @@ internal class TypeCheckerTest {
     }
 
     @Test
-    fun forStatementWithMiddleStatementOfTypeBoolIsOk() {
+    fun forStatementWithEndValueNotOfTypeIntThrowsException() {
         val code =
-        """
+                """
             template module a {
                 every(100ms)
-                    for(;true;)
+                    for(i in 1 to D5)
                         continue
             }
         """
 
+        val (st, start) = getScopeFromString(code)
+        assertThrows<IllegalImplicitTypeConversionError> {TypeChecker(ErrorHandler(code), st).run(start)}
+    }
+
+    @Test
+    fun forStatementWithStepValueNotOfTypeIntThrowsException() {
+        val code =
+                """
+            template module a {
+                every(100ms)
+                    for(i in 1 to 8 step true)
+                        continue
+            }
+        """
+
+        val (st, start) = getScopeFromString(code)
+
+        assertThrows<IllegalImplicitTypeConversionError> {TypeChecker(ErrorHandler(code), st).run(start)}
+    }
+
+    @Test
+    fun forStatementWithValuesOfTypeIntIsOk() {
+        val code =
+        """
+            template module a {
+                every(100ms)
+                    for(i in 1 to 8 step 2)
+                        continue
+            }
+        """
         val (st, start) = getScopeFromString(code)
         TypeChecker(ErrorHandler(code), st).run(start)
     }

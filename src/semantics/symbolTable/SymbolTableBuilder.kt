@@ -63,15 +63,8 @@ class SymbolTableBuilder(errorHandler: ErrorHandler) : ErrorTraverser(errorHandl
     }
 
     private fun checkHasBeenDeclared(name: String) {
-        var tempScope: Scope? = currentScope
-
-        while(tempScope != null) {
-            if (tempScope.variables.contains(name))
-                return
-            tempScope = tempScope.parent
-        }
-
-        this.error(IdentifierUsedBeforeDeclarationError("The variable $name was used before it was declared."))
+        currentScope.findVar(name) ?:
+			this.error(IdentifierUsedBeforeDeclarationError("The variable $name was used before it was declared."))
     }
 
     private fun openScope() {

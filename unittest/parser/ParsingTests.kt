@@ -412,7 +412,17 @@ internal class ParsingTests {
     fun parseForStmtIsParseable(){
         var input = """
            fun f(){
-                for(;true;) set D5 to HIGH
+                for(i in 1 to 4) set D5 to HIGH
+            }
+        """
+        parseString(input)
+    }
+
+    @Test
+    fun parseForStmtWithStepIsParseable(){
+        var input = """
+           fun f(){
+                for(i in 1 to 4 step 2) set D5 to HIGH
             }
         """
         parseString(input)
@@ -422,7 +432,7 @@ internal class ParsingTests {
     fun parseForStmtWithBlockIsParseable(){
         var input = """
            fun f(){
-                for(;true;){
+                for(i in 1 to 4){
                     set D5 to HIGH
                 }
             }
@@ -474,7 +484,7 @@ internal class ParsingTests {
         var input = """
            fun f(){
                 if(true) 
-                    for(;true;)
+                    for(i in 1 to 4)
                         if(true) 
                             set D5 to HIGH
                         else 

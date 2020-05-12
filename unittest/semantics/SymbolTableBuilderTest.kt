@@ -95,21 +95,6 @@ internal class SymbolTableBuilderTest {
         assertThrows<IdentifierUsedBeforeDeclarationError> {  getScopeFromString(input) }
     }
 
-
-    @Test
-    fun symbolTableBuilderThrowsErrorIfForLoopVariablesAreUsedInForLoopParens(){
-        val input = """
-            template module thismodule {
-                every (1000) {
-                    for (Int i = b; i < 2; i += 2) {
-                        Int b = 1
-                    }
-                }
-            }
-        """
-        assertThrows<IdentifierUsedBeforeDeclarationError> {  getScopeFromString(input) }
-    }
-
     @Test
     fun symbolTableContainsVariablesWithSameNameInDifferentScopes(){
         val input = """
