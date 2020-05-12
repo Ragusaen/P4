@@ -2,18 +2,13 @@ package semantics.symbolTable
 
 class Scope(val parent: Scope?) {
     val children = mutableListOf<Scope>()
-
     val variables = HashMap<String, Identifier>()
 
     fun findVar(name: String): Identifier? {
-        var tempScope: Scope? = this
-
-        while(tempScope != null) {
-            if (tempScope.variables.contains(name)) {
-                return tempScope.variables[name]!!
-            }
-            tempScope = tempScope.parent
-        }
+        if (this.variables.contains(name))
+            return this.variables[name]!!
+        else if(parent != null)
+            return parent.findVar(name)
 
         return null
     }
