@@ -7,13 +7,16 @@ import semantics.typeChecking.TypeChecker
 
 fun main() {
     var input = """
+        
+        
 Int a = 0
+
+
 every (500ms) {
     b = 0
 }
 """
     input += "\n"
-    input = input.replace("(?m)^[ \t]*\r?\n".toRegex(), "¤")
 
     println(input)
 

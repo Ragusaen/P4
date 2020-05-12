@@ -199,6 +199,13 @@ class SymbolTableBuilder : DepthFirstAdapter() {
         checkHasBeenDeclared(name)
     }
 
+    override fun outAAssignStmt(node: AAssignStmt) {
+        errorHandler.setLineAndPos(node.identifier)
+        val name = node.identifier.text
+
+        checkHasBeenDeclared(name)
+    }
+
     override fun outAFunctionCallExpr(node: AFunctionCallExpr) {
         errorHandler.setLineAndPos(node.identifier)
         val name = node.identifier.text
