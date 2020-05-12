@@ -21,7 +21,7 @@ class ErrorHandler {
         if (lastLine == null && lastPos == null)
             errorMsg = "Line and position unavailable.\n"
         else
-            errorMsg = "ERROR $lastLine, Pos $lastPos\n"
+            errorMsg = "ERROR [$lastLine, $lastPos]\n"
         errorMsg += ce.message
 
         ce.setError(errorMsg)
