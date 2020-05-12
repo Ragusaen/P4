@@ -177,7 +177,6 @@ class SymbolTableBuilder : DepthFirstAdapter() {
     }
 
     /* Tree Traversal - Rest of program */
-
     override fun inABlockStmt(node: ABlockStmt) = openScope()
     override fun outABlockStmt(node: ABlockStmt) = closeScope()
 
