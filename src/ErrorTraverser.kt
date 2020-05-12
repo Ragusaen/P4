@@ -17,10 +17,6 @@ abstract class ErrorTraverser(val errorHandler: ErrorHandler) : DepthFirstAdapte
         errorHandler.setLineAndPos(node)
     }
 
-    override fun caseTRedundantnewline(node: TRedundantnewline){
-        errorHandler.setLineAndPos(node)
-    }
-
     override fun caseTLbrace(node: TLbrace){
         errorHandler.setLineAndPos(node)
     }

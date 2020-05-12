@@ -15,7 +15,9 @@ Time a = 0s
 module ar {
     Int delta = 3
     every (500ms) {
-        a += delta * 1s
+        
+        for (i in 0 to 13)
+            a += delta * 1s
     }
 }
 """

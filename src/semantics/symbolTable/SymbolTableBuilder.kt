@@ -178,7 +178,10 @@ class SymbolTableBuilder(errorHandler: ErrorHandler) : ErrorTraverser(errorHandl
     override fun inABlockStmt(node: ABlockStmt) = openScope()
     override fun outABlockStmt(node: ABlockStmt) = closeScope()
 
-    override fun inAForStmt(node: AForStmt) = openScope()
+    override fun inAForStmt(node: AForStmt) {
+        openScope()
+        addVar(node.identifier.text, Type.Int, true)
+    }
     override fun outAForStmt(node: AForStmt) = closeScope()
 
     override fun outAVardcl(node: AVardcl) {

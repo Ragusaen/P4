@@ -68,10 +68,19 @@ class TypeChecker(errorHandler: ErrorHandler, symbolTable: SymbolTable) : Scoped
 
     override fun outAForStmt(node: AForStmt) {
         super.outAForStmt(node)
-        val conditionType = typeStack.pop()
 
-        if (conditionType != Type.Bool)
-            error(IllegalImplicitTypeConversionError("'For' expects middle expression of type Bool, but got $conditionType"))
+        val stepType = if (node.step == null) Type.Void else typeStack.pop()
+        val upperType = typeStack.pop()
+        val lowerType = typeStack.pop()
+
+        if (lowerType != Type.Int)
+            error(IllegalImplicitTypeConversionError("'For expects lower bound of type int, but got $lowerType"))
+
+        if (upperType != Type.Int)
+            error(IllegalImplicitTypeConversionError("'For expects upper bound of type int, but got $upperType"))
+
+        if (node.step != null && stepType != Type.Int)
+            error(IllegalImplicitTypeConversionError("'For expects step of type int, but got $stepType"))
     }
 
     override fun outAWhileStmt(node: AWhileStmt) {

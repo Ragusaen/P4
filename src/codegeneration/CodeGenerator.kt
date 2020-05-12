@@ -240,20 +240,16 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, errorHandler:
 
     override fun caseAForStmt(node: AForStmt) {
         inAForStmt(node)
-        val init = getCode(node.init)
-        val cond = getCode(node.condition)
-        val update = getCode(node.update)
-        var res = getIndent() + "for (${toSimpleCode(init)}; ${toSimpleCode(cond)}; ${toSimpleCode(update)})\n"
 
-        if (node.body is ABlockStmt)
-            res += getCode(node.body)
-        else {
-            increaseIndent()
-            res += getCode(node.body)
-            decreaseIndent()
-        }
+        val lower = getCode(node.lower)
+        val upper = getCode(node.upper)
+        val step = if (node.step == null) "1" else getCode(node.step)
+        val v = node.identifier.text
 
-        codeStack.push(res)
+        val body = getCode(node.body)
+
+        codeStack.pushLineIndented("for (Int $v = $lower; $v < $upper; $v += $step)\n$body")
+
         outAForStmt(node)
     }
 

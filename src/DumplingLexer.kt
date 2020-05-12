@@ -4,7 +4,7 @@ import sablecc.node.TWhitespace
 import sablecc.node.Token
 import java.io.PushbackReader
 
-open class DumplingLexer(pbr: PushbackReader) : Lexer(pbr) {
+open class DumplingLexer(input: String, size: Int = 1024) : Lexer(PushbackReader((input + "\n").reader(), size)) {
 
     var lastNewLine = true
 

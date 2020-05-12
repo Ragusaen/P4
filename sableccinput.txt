@@ -15,7 +15,6 @@ Helpers
     stringliteral = '"'('\'all | [[all - '"'] - '\'])*'"';
 
 Tokens
-    redundantnewline = '¤';
     stringtype = 'String';
     inttype = 'Int';
     floattype = 'Float';
@@ -31,6 +30,8 @@ Tokens
     else = 'else';
     while = 'while';
     for = 'for';
+    in = 'in';
+    step = 'step';
     break = 'break';
     continue = 'continue';
     rising = 'rising';
@@ -168,8 +169,8 @@ Productions
             {-> New stmt.if(condition, if_body.stmt, else_body.stmt)}
         | {while} while lparen [condition]:expr rparen eol? [body]:matched
             {-> New stmt.while(condition, body.stmt)}
-        | {for} for lparen [init]:single_stmt [a]:semicolon [condition]:expr [b]:semicolon [update]:single_stmt rparen eol? [body]:matched
-            {-> New stmt.for(init.stmt, condition, update.stmt, body.stmt)}
+        | {for} for lparen identifier in [lower]:expr to [upper]:expr forstep? rparen eol? [body]:matched
+            {-> New stmt.for(identifier, lower, upper, forstep.expr, body.stmt)}
         | {simple_stmt} simple_stmt
             {-> simple_stmt.stmt};
 
@@ -180,8 +181,8 @@ Productions
             {-> New stmt.if(condition, matched.stmt, unmatched.stmt)}
         | {while} while lparen [condition]:expr rparen eol? [body]:unmatched
             {-> New stmt.while(condition, body.stmt)}
-        | {for} for lparen [init]:single_stmt [a]:semicolon [condition]:expr [b]:semicolon [update]:single_stmt rparen eol? [body]:unmatched
-            {-> New stmt.for(init.stmt, condition, update.stmt, body.stmt)};
+        | {for} for lparen identifier in [lower]:expr to [upper]:expr forstep? rparen eol? [body]:unmatched
+            {-> New stmt.for(identifier, lower, upper, forstep.expr, body.stmt)};
 
     simple_stmt {-> stmt} =
          {single_stmt} single_stmt eol
@@ -222,6 +223,10 @@ Productions
             {-> New stmt.break(break)}
         | {continue} continue
             {-> New stmt.continue(continue)};
+
+        forstep {-> expr} =
+            step expr
+                {-> expr};
 
 /* Declaration */
     dcl {-> stmt} =
@@ -383,7 +388,7 @@ Abstract Syntax Tree
     module_structure = {every} expr [body]:stmt | {on} expr [body]:stmt;
 
 /* Statement */
-    stmt = {dcl} type vardcl* | {moduledcl} [template]:identifier [instance]:identifier expr* | {start} [token]:start identifier | {stop} [token]:stop expr? | {set_to} [pin]:expr [value]:expr | {delay} [token]:delay expr | {delayuntil} [token]:delay expr | {assign} identifier expr binop? | {block} stmt* | {if} [condition]:expr [if_body]:stmt [else_body]:stmt? | {while} [condition]:expr [body]:stmt | {for} [init]:stmt [condition]:expr [update]:stmt [body]:stmt | {expr} expr | {return} [token]:return expr? | {break} [token]:break | {continue} [token]:continue;
+    stmt = {dcl} type vardcl* | {moduledcl} [template]:identifier [instance]:identifier expr* | {start} [token]:start identifier | {stop} [token]:stop expr? | {set_to} [pin]:expr [value]:expr | {delay} [token]:delay expr | {delayuntil} [token]:delay expr | {assign} identifier expr binop? | {block} stmt* | {if} [condition]:expr [if_body]:stmt [else_body]:stmt? | {while} [condition]:expr [body]:stmt | {for} identifier [lower]:expr [upper]:expr [step]:expr? [body]:stmt | {expr} expr | {return} [token]:return expr? | {break} [token]:break | {continue} [token]:continue;
 
 /* Declaration subnodes */
     vardcl = identifier expr?;
