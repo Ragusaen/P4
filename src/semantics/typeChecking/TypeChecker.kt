@@ -35,7 +35,8 @@ class TypeChecker(errorHandler: ErrorHandler, symbolTable: SymbolTable) : Scoped
     }
 
     override fun outAModuledclStmt(node: AModuledclStmt) {
-        val name = node.instance.text
+        val (name, template) = symbolTable.findModule(node)!!
+
         // Pop the expressions from the typeStack
         val types = mutableListOf<Type>()
         for (i in 0 until node.expr.size)
@@ -44,7 +45,7 @@ class TypeChecker(errorHandler: ErrorHandler, symbolTable: SymbolTable) : Scoped
         // The expressions are popped in reverse order
         types.reverse()
 
-        val id = symbolTable.findTemplateModule(name) ?: error(IdentifierNotDeclaredError("Module with name $name does not exist"))
+        val id = symbolTable.findTemplateModule(template) ?: error(IdentifierNotDeclaredError("Module with name $template does not exist"))
 
         if (id.paramTypes != types)
             error(IllegalImplicitTypeConversionError("Module $name expects types ${id.paramTypes}, but got $types"))

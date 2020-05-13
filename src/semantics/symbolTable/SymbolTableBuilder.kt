@@ -7,6 +7,7 @@ import semantics.symbolTable.errors.CloseScopeZeroException
 import semantics.symbolTable.errors.IdentifierAlreadyDeclaredError
 import semantics.symbolTable.errors.IdentifierUsedBeforeDeclarationError
 import semantics.typeChecking.Type
+import semantics.typeChecking.errors.IdentifierNotDeclaredError
 
 class SymbolTableBuilder(errorHandler: ErrorHandler) : ErrorTraverser(errorHandler) {
     private var currentScope = Scope(null)
@@ -14,7 +15,7 @@ class SymbolTableBuilder(errorHandler: ErrorHandler) : ErrorTraverser(errorHandl
 
     private val namedFunctionTable = mutableMapOf<Pair<String, List<Type>>, Identifier>()
     private val templateModuleTable = mutableMapOf<String, TemplateModuleIdentifier>()
-    private val moduleTable = mutableListOf<String>()
+    private val moduleTable = mutableMapOf<String, String>()
     private val nodeModuleTable = mutableMapOf<Node, String>()
 
     private var rootElementMode = false
@@ -49,9 +50,13 @@ class SymbolTableBuilder(errorHandler: ErrorHandler) : ErrorTraverser(errorHandl
             throw IdentifierAlreadyDeclaredError("Template module with the name $name has already been declared.")
     }
 
-    private fun addModule(node: Node, name: String) {
-        if ( name !in moduleTable) {
-            moduleTable.add(name)
+    private fun addModule(node: Node, name: String, templateOf: String = name) {
+        if (!moduleTable.containsKey(name)) {
+            if (name != templateOf && !templateModuleTable.containsKey(templateOf)) {
+                error(IdentifierNotDeclaredError("No template module with name $templateOf exists."))
+            }
+
+            moduleTable[name] = templateOf
             nodeModuleTable[node] = name
         } else
             throw IdentifierAlreadyDeclaredError("Module with the name $name has already been declared")
@@ -82,7 +87,7 @@ class SymbolTableBuilder(errorHandler: ErrorHandler) : ErrorTraverser(errorHandl
         if (currentScope.parent != null)
             throw Exception("An unknown error occurred while building the symbol table. A scope was not closed as expected.")
 
-        return SymbolTable(namedFunctionTable, currentScope, templateModuleTable, nodeModuleTable).reset()
+        return SymbolTable(namedFunctionTable, currentScope, templateModuleTable, moduleTable, nodeModuleTable).reset()
     }
 
     /* Tree traversal */
@@ -207,9 +212,9 @@ class SymbolTableBuilder(errorHandler: ErrorHandler) : ErrorTraverser(errorHandl
 
     override fun outAModuledclStmt(node: AModuledclStmt) {
         val name = node.instance.text
-        val template = node.template
+        val template = node.template.text
 
-        addModule(node, name)
+        addModule(node, name, template)
     }
 
     override fun inAInstanceModuledcl(node: AInstanceModuledcl) {

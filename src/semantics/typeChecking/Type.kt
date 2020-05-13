@@ -1,5 +1,7 @@
 package semantics.typeChecking
 
+import semantics.typeChecking.Type.Companion.DigitalPin
+
 class Type private constructor(private val main: EType, private val subType: Type? = null) {
     private enum class EType {
         INT, FLOAT, STRING, BOOL,
@@ -36,7 +38,11 @@ class Type private constructor(private val main: EType, private val subType: Typ
                     return this.subType!! == other.subType!!
                 } else
                     return true
-            }
+            } else if ((main == EType.DIGITALPIN && (other.main == EType.DIGITALINPUTPIN || other.main == EType.DIGITALOUTPUTPIN))
+                    || (other.main == EType.DIGITALPIN && (main == EType.DIGITALINPUTPIN || main == EType.DIGITALOUTPUTPIN))
+                    || (main == EType.ANALOGPIN && (other.main == EType.ANALOGINPUTPIN || other.main == EType.ANALOGOUTPUTPIN))
+                    || (other.main == EType.ANALOGPIN && (main == EType.ANALOGINPUTPIN || main == EType.ANALOGOUTPUTPIN)))
+                            return true
         }
         return false
     }

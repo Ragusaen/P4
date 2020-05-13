@@ -8,18 +8,16 @@ import semantics.typeChecking.TypeChecker
 
 fun main() {
     var input = """
-        
-        
-Time a = 0s
-
-module ar {
-    Int delta = 3
-    every (500ms) {
-        
-        for (i in 0 to 13)
-            a += delta * 1s
+template module ar(DigitalOutputPin pin) {
+    every (1s) {
+        set pin to HIGH
+        delay(0.5s)
+        set pin to LOW
     }
 }
+
+module ar instance(D2)
+module ar other(D4)
 """
     input += "\n"
 
