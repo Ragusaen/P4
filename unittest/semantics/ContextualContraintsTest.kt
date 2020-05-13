@@ -8,6 +8,7 @@ import sablecc.node.Start
 import sablecc.parser.Parser
 import semantics.contextualConstraints.ContextualConstraintAnalyzer
 import semantics.contextualConstraints.errors.LoopJumpOutOfLoopError
+import semantics.contextualConstraints.errors.ModuleStatementUsedInFunctionException
 import semantics.contextualConstraints.errors.MultipleInitsError
 import semantics.contextualConstraints.errors.ReturnOutOfFunctionDeclarationError
 import semantics.symbolTable.SymbolTable
@@ -102,6 +103,68 @@ internal class ContextualConstraintsTest {
         val (st, start) = compileUpToContextualConstraintsAnalyzerFromString(input)
         assertThrows<MultipleInitsError> { ContextualConstraintAnalyzer(ErrorHandler(input), st).caseStart(start) }
     }
+
+    @Test
+    fun stopCannotBeUsedInsideFunction(){
+        val input = """
+            fun foo() {
+                stop
+            }
+        """
+        val (st, start) = compileUpToContextualConstraintsAnalyzerFromString(input)
+        assertThrows<ModuleStatementUsedInFunctionException> { ContextualConstraintAnalyzer(ErrorHandler(input), st).caseStart(start) }
+    }
+
+    @Test
+    fun stopCanBeUsedInsideModule(){
+        val input = """
+            module foo {
+                every (1s)
+                    stop
+            }
+        """
+        val (st, start) = compileUpToContextualConstraintsAnalyzerFromString(input)
+        ContextualConstraintAnalyzer(ErrorHandler(input), st).caseStart(start)
+    }
+
+    @Test
+    fun startCannotBeUsedInsideFunction(){
+        val input = """
+            fun foo() {
+                start (bar)
+            }
+            
+            module bar {
+                every (1s)
+                    Int b = 2
+            }
+        """
+        val (st, start) = compileUpToContextualConstraintsAnalyzerFromString(input)
+        assertThrows<ModuleStatementUsedInFunctionException> { ContextualConstraintAnalyzer(ErrorHandler(input), st).caseStart(start) }
+    }
+
+    @Test
+    fun startCanBeUsedInsideModule(){
+        val input = """
+            module foo {
+                every (1s)
+                    start (foo)
+            }
+        """
+        val (st, start) = compileUpToContextualConstraintsAnalyzerFromString(input)
+        ContextualConstraintAnalyzer(ErrorHandler(input), st).caseStart(start)
+    }
+
+    @Test
+    fun variableGetsMarkedInitialisedInDclIfIthasInitializer(){
+        val input = """
+            Int a = 3
+        """
+        val (st, start) = compileUpToContextualConstraintsAnalyzerFromString(input)
+        ContextualConstraintAnalyzer(ErrorHandler(input), st).caseStart(start)
+        assert(st.findVar("a")!!.isInitialised)
+    }
+
 
     private fun compileUpToContextualConstraintsAnalyzerFromString(input:String):Pair<SymbolTable, Start> {
         val lexer = StringLexer(input)

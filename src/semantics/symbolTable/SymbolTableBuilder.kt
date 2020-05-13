@@ -1,24 +1,21 @@
 package semantics.symbolTable
 
-import CompileError
 import ErrorHandler
 import ErrorTraverser
-import sablecc.analysis.DepthFirstAdapter
 import sablecc.node.*
 import semantics.symbolTable.errors.CloseScopeZeroException
 import semantics.symbolTable.errors.IdentifierAlreadyDeclaredError
 import semantics.symbolTable.errors.IdentifierUsedBeforeDeclarationError
 import semantics.typeChecking.Type
+import semantics.typeChecking.errors.IdentifierNotDeclaredError
 
 class SymbolTableBuilder(errorHandler: ErrorHandler) : ErrorTraverser(errorHandler) {
     private var currentScope = Scope(null)
     private var currentVarPrefix = ""
 
     private val namedFunctionTable = mutableMapOf<Pair<String, List<Type>>, Identifier>()
-    private val nodeFunctionTable = mutableMapOf<Node, Identifier>()
-
     private val templateModuleTable = mutableMapOf<String, TemplateModuleIdentifier>()
-    private val moduleTable = mutableListOf<String>()
+    private val moduleTable = mutableMapOf<String, String>()
     private val nodeModuleTable = mutableMapOf<Node, String>()
 
     private var rootElementMode = false
@@ -42,7 +39,6 @@ class SymbolTableBuilder(errorHandler: ErrorHandler) : ErrorTraverser(errorHandl
             error(IdentifierAlreadyDeclaredError("Function with the name $name with parameters: $params has already been declared."))
         else {
             namedFunctionTable[Pair(name, params)] = identifier
-            nodeFunctionTable[node] = identifier
         }
     }
 
@@ -54,9 +50,13 @@ class SymbolTableBuilder(errorHandler: ErrorHandler) : ErrorTraverser(errorHandl
             throw IdentifierAlreadyDeclaredError("Template module with the name $name has already been declared.")
     }
 
-    private fun addModule(node: Node, name: String) {
-        if ( name !in moduleTable) {
-            moduleTable.add(name)
+    private fun addModule(node: Node, name: String, templateOf: String = name) {
+        if (!moduleTable.containsKey(name)) {
+            if (name != templateOf && !templateModuleTable.containsKey(templateOf)) {
+                error(IdentifierNotDeclaredError("No template module with name $templateOf exists."))
+            }
+
+            moduleTable[name] = templateOf
             nodeModuleTable[node] = name
         } else
             throw IdentifierAlreadyDeclaredError("Module with the name $name has already been declared")
@@ -87,23 +87,7 @@ class SymbolTableBuilder(errorHandler: ErrorHandler) : ErrorTraverser(errorHandl
         if (currentScope.parent != null)
             throw Exception("An unknown error occurred while building the symbol table. A scope was not closed as expected.")
 
-        return SymbolTable(namedFunctionTable, nodeFunctionTable, currentScope, templateModuleTable, nodeModuleTable).reset()
-    }
-
-    private fun getTypeFromPType(node:PType): Type {
-        return when(node) {
-            is AIntType -> Type.Int
-            is AFloatType -> Type.Float
-            is AStringType -> Type.String
-            is ABoolType -> Type.Bool
-            is ADigitalinputpinType -> Type.DigitalInputPin
-            is ADigitaloutputpinType -> Type.DigitalOutputPin
-            is AAnaloginputpinType -> Type.AnalogInputPin
-            is AAnalogoutputpinType -> Type.AnalogOutputPin
-            is ATimeType -> Type.Time
-            is AArrayType -> Type.createArrayOf(getTypeFromPType(node.type))
-            else -> throw Exception("Unsupported node type")
-        }
+        return SymbolTable(namedFunctionTable, currentScope, templateModuleTable, moduleTable, nodeModuleTable).reset()
     }
 
     /* Tree traversal */
@@ -112,11 +96,13 @@ class SymbolTableBuilder(errorHandler: ErrorHandler) : ErrorTraverser(errorHandl
     override fun caseAProgram(node: AProgram) {
         // First add all template modules and functions to the symbol table
         rootElementMode = true
-        for (re in node.rootElement) {
-            // The root element mode is handled in each case, function and template module do no check inner code, dcl is the same.
-            // non-template modules should just be skipped
-            re.apply(this)
-        }
+        // The root element mode is handled in each case, function and template module do no check inner code, dcl is the same
+        // Do modules then functions then rest to ensure instances of template modules can be created in root and functions can be used to initialize variables
+        val (modules, other) = node.rootElement.partition{ it is AModuledclRootElement}
+        val (functions, rest) = other.partition {it is AFunctiondclRootElement}
+        modules.forEach { it.apply(this) }
+        functions.forEach { it.apply(this) }
+        rest.forEach { it.apply(this) }
 
         // Now traverse the rest of the program
         rootElementMode = false
@@ -127,18 +113,35 @@ class SymbolTableBuilder(errorHandler: ErrorHandler) : ErrorTraverser(errorHandl
 
     // Only do root element declarations if in root element mode
     override fun caseADclRootElement(node: ADclRootElement) {
-        if (rootElementMode) {
-            currentVarPrefix = "global_"
+        currentVarPrefix = "global_"
+        if (rootElementMode)
             super.caseADclRootElement(node)
-        }
+    }
+
+    override fun outAVardcl(node: AVardcl) {
+        val name = node.identifier.text
+        val ptype = (node.parent() as ADclStmt).type
+
+        addVar(name, Helper.getTypeFromPType(ptype))
+    }
+
+    override fun caseAModuledclStmt(node: AModuledclStmt) {
+        if (rootElementMode) {
+            val name = node.instance.text
+            val template = node.template.text
+
+            addModule(node, name, template)
+        } else
+            super.caseAModuledclStmt(node)
+
     }
 
     override fun caseAFunctiondcl(node: AFunctiondcl) {
         if (rootElementMode) {
             val name = node.identifier.text!!
-            val params = node.param.map { getTypeFromPType((it as AParam).type) }
+            val params = Helper.getFunParams(node)
 
-            val type = if (node.type == null) Type.Void else getTypeFromPType(node.type)
+            val type = if (node.type == null) Type.Void else Helper.getTypeFromPType(node.type)
 
             addFun(node, name, params, Identifier(type, name))
         }
@@ -149,7 +152,7 @@ class SymbolTableBuilder(errorHandler: ErrorHandler) : ErrorTraverser(errorHandl
     override fun caseATemplateModuledcl(node: ATemplateModuledcl) {
         if (rootElementMode) {
             val name = node.identifier.text
-            val params = node.param.map { getTypeFromPType((it as AParam).type) }
+            val params = node.param.map { Helper.getTypeFromPType((it as AParam).type) }
 
             addTemplateModule(node, name, TemplateModuleIdentifier(params))
         }
@@ -161,10 +164,14 @@ class SymbolTableBuilder(errorHandler: ErrorHandler) : ErrorTraverser(errorHandl
         if (rootElementMode) {
             val name = node.identifier?.text ?: nextAnonName()
             addModule(node, name)
-            addVar(name, Type.Module)
         }
         else
             super.caseAInstanceModuledcl(node)
+    }
+
+    override fun caseAInitRootElement(node: AInitRootElement) {
+        if (!rootElementMode)
+            super.caseAInitRootElement(node)
     }
 
     /* Tree Traversal - Rest of program */
@@ -176,13 +183,6 @@ class SymbolTableBuilder(errorHandler: ErrorHandler) : ErrorTraverser(errorHandl
         addVar(node.identifier.text, Type.Int, true)
     }
     override fun outAForStmt(node: AForStmt) = closeScope()
-
-    override fun outAVardcl(node: AVardcl) {
-        val name = node.identifier.text
-        val ptype = (node.parent() as ADclStmt).type
-
-        addVar(name, getTypeFromPType(ptype))
-    }
 
     override fun outAIdentifierValue(node: AIdentifierValue) {
         val name = node.identifier.text
@@ -206,7 +206,7 @@ class SymbolTableBuilder(errorHandler: ErrorHandler) : ErrorTraverser(errorHandl
         openScope()
 
         // Add each parameter variable to the scope
-        node.param.forEach {errorHandler.setLineAndPos((it as AParam).identifier); addVar((it as AParam).identifier.text, getTypeFromPType(it.type), true)}
+        node.param.forEach {errorHandler.setLineAndPos((it as AParam).identifier); addVar((it as AParam).identifier.text, Helper.getTypeFromPType(it.type), true)}
     }
     override fun outAFunctiondcl(node: AFunctiondcl) {
         closeScope()
@@ -219,18 +219,11 @@ class SymbolTableBuilder(errorHandler: ErrorHandler) : ErrorTraverser(errorHandl
         currentVarPrefix = "$name->"
 
         // Add each parameter variable to the scope
-        node.param.forEach {errorHandler.setLineAndPos((it as AParam).identifier); addVar((it as AParam).identifier.text, getTypeFromPType(it.type), true)}
+        node.param.forEach {errorHandler.setLineAndPos((it as AParam).identifier); addVar((it as AParam).identifier.text, Helper.getTypeFromPType(it.type), true)}
     }
 
     override fun outATemplateModuledcl(node: ATemplateModuledcl) {
         closeScope()
-    }
-
-    override fun outAModuledclStmt(node: AModuledclStmt) {
-        val name = node.instance.text
-        val template = node.template
-
-        addModule(node, name)
     }
 
     override fun inAInstanceModuledcl(node: AInstanceModuledcl) {

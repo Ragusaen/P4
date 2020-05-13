@@ -13,6 +13,7 @@ import semantics.symbolTable.errors.IdentifierAlreadyDeclaredError
 import semantics.symbolTable.errors.IdentifierUsedBeforeDeclarationError
 import semantics.symbolTable.SymbolTableBuilder
 import semantics.typeChecking.Type
+import semantics.typeChecking.errors.IdentifierNotDeclaredError
 
 internal class SymbolTableBuilderTest {
     fun parseString(input: String): Start {
@@ -132,6 +133,17 @@ internal class SymbolTableBuilderTest {
         st.openScope()
         assertNotNull(st.findVar("b"))
     }
+    @Test
+    fun functionCanBeUsedBeforeBeingDeclared() {
+        val input = """
+            Time a = foo()
+            
+            fun foo() {
+                return 100ms
+            }
+        """
+        getScopeFromString(input)
+    }
 
     @Test
     fun callingFunctionThatDoesntExistGivesException() {
@@ -156,34 +168,81 @@ internal class SymbolTableBuilderTest {
     }
 
     @Test
-    fun instanceOfTemplateModuleCanBeDeclared(){
+    fun templateModuleCanBeDeclared(){
         val input = """
             template module thismodule {
                 Int a = 0
                 every (1000)
                     a += 1
             }
-            module thismodule thisinstance
         """
         val st = getScopeFromString(input).first
 
         assertNotNull(st.findTemplateModule("thismodule"))
-        assertNotNull(st.findVar("thisinstance"))
     }
 
     @Test
-    fun namedModuleCanBeDeclared() {
-        val input = """
-            module thismodule {
-                every (1000) {
-                     
-                }
+    fun usingTemplateModuleNameThatIsNotDeclaredThrowsException() {
+        val code =
+                """
+            module mod this
+            
+            template module that {
+                every(100ms)
+                    stop
             }
         """
-        val st = getScopeFromString(input).first
 
-        assertNotNull(st.findVar("thismodule"))
+        assertThrows<IdentifierNotDeclaredError> { val (st, start) = getScopeFromString(code) }
     }
+
+    @Test
+    fun functionMustBeDeclaredToUse() {
+        val input = """
+            every (1s) {
+                foo()
+            }
+        """
+        assertThrows<IdentifierUsedBeforeDeclarationError> {getScopeFromString(input).first}
+    }
+
+    @Test
+    fun functionCanBeUsedAboveDecleration() {
+        val input = """
+            every (1s) {
+                foo()
+            }
+            
+            fun foo()
+                return
+        """
+        getScopeFromString(input).first
+    }
+
+    @Test
+    fun functionCanBeCalledFromInitWhenDeclaredAfter() {
+        val input = """
+            init {
+                foo()
+            }
+            
+            fun foo()
+                return
+        """
+        getScopeFromString(input).first
+    }
+
+    @Test
+    fun functionCanBeCalledFromInVariableDeclerationWhenDeclaredAfter() {
+        val input = """
+            Int a = foo()
+            
+            fun foo(): Int
+                return 3
+        """
+        getScopeFromString(input).first
+    }
+
 
     private fun getScopeFromString(input:String):Pair<SymbolTable, Start> {
         val lexer = StringLexer(input)

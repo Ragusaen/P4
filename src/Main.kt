@@ -8,8 +8,6 @@ import semantics.typeChecking.TypeChecker
 
 fun main() {
     var input = """
-        
-        
 Time a = 0s
 
 module ar {
