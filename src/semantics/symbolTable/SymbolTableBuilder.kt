@@ -97,10 +97,12 @@ class SymbolTableBuilder(errorHandler: ErrorHandler) : ErrorTraverser(errorHandl
         // First add all template modules and functions to the symbol table
         rootElementMode = true
         // The root element mode is handled in each case, function and template module do no check inner code, dcl is the same
-        // Do modules before others to ensure instances of template modules can be created in root
+        // Do modules then functions then rest to ensure instances of template modules can be created in root and functions can be used to initialize variables
         val (modules, other) = node.rootElement.partition{ it is AModuledclRootElement}
+        val (functions, rest) = other.partition {it is AFunctiondclRootElement}
         modules.forEach { it.apply(this) }
-        other.forEach { it.apply(this) }
+        functions.forEach { it.apply(this) }
+        rest.forEach { it.apply(this) }
 
         // Now traverse the rest of the program
         rootElementMode = false
@@ -111,10 +113,27 @@ class SymbolTableBuilder(errorHandler: ErrorHandler) : ErrorTraverser(errorHandl
 
     // Only do root element declarations if in root element mode
     override fun caseADclRootElement(node: ADclRootElement) {
-        if (rootElementMode) {
-            currentVarPrefix = "global_"
+        currentVarPrefix = "global_"
+        if (rootElementMode)
             super.caseADclRootElement(node)
-        }
+    }
+
+    override fun outAVardcl(node: AVardcl) {
+        val name = node.identifier.text
+        val ptype = (node.parent() as ADclStmt).type
+
+        addVar(name, Helper.getTypeFromPType(ptype))
+    }
+
+    override fun caseAModuledclStmt(node: AModuledclStmt) {
+        if (rootElementMode) {
+            val name = node.instance.text
+            val template = node.template.text
+
+            addModule(node, name, template)
+        } else
+            super.caseAModuledclStmt(node)
+
     }
 
     override fun caseAFunctiondcl(node: AFunctiondcl) {
@@ -150,6 +169,11 @@ class SymbolTableBuilder(errorHandler: ErrorHandler) : ErrorTraverser(errorHandl
             super.caseAInstanceModuledcl(node)
     }
 
+    override fun caseAInitRootElement(node: AInitRootElement) {
+        if (!rootElementMode)
+            super.caseAInitRootElement(node)
+    }
+
     /* Tree Traversal - Rest of program */
     override fun inABlockStmt(node: ABlockStmt) = openScope()
     override fun outABlockStmt(node: ABlockStmt) = closeScope()
@@ -159,13 +183,6 @@ class SymbolTableBuilder(errorHandler: ErrorHandler) : ErrorTraverser(errorHandl
         addVar(node.identifier.text, Type.Int, true)
     }
     override fun outAForStmt(node: AForStmt) = closeScope()
-
-    override fun outAVardcl(node: AVardcl) {
-        val name = node.identifier.text
-        val ptype = (node.parent() as ADclStmt).type
-
-        addVar(name, Helper.getTypeFromPType(ptype))
-    }
 
     override fun outAIdentifierValue(node: AIdentifierValue) {
         val name = node.identifier.text
@@ -207,13 +224,6 @@ class SymbolTableBuilder(errorHandler: ErrorHandler) : ErrorTraverser(errorHandl
 
     override fun outATemplateModuledcl(node: ATemplateModuledcl) {
         closeScope()
-    }
-
-    override fun outAModuledclStmt(node: AModuledclStmt) {
-        val name = node.instance.text
-        val template = node.template.text
-
-        addModule(node, name, template)
     }
 
     override fun inAInstanceModuledcl(node: AInstanceModuledcl) {

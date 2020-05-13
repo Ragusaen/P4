@@ -195,6 +195,44 @@ internal class SymbolTableBuilderTest {
         assertThrows<IdentifierUsedBeforeDeclarationError> {getScopeFromString(input).first}
     }
 
+    @Test
+    fun functionCanBeUsedAboveDecleration() {
+        val input = """
+            every (1s) {
+                foo()
+            }
+            
+            fun foo()
+                return
+        """
+        getScopeFromString(input).first
+    }
+
+    @Test
+    fun functionCanBeCalledFromInitWhenDeclaredAfter() {
+        val input = """
+            init {
+                foo()
+            }
+            
+            fun foo()
+                return
+        """
+        getScopeFromString(input).first
+    }
+
+    @Test
+    fun functionCanBeCalledFromInVariableDeclerationWhenDeclaredAfter() {
+        val input = """
+            Int a = foo()
+            
+            fun foo(): Int
+                return 3
+        """
+        getScopeFromString(input).first
+    }
+
+
     private fun getScopeFromString(input:String):Pair<SymbolTable, Start> {
         val lexer = StringLexer(input)
         val parser = Parser(lexer)
