@@ -8,8 +8,22 @@ import semantics.typeChecking.TypeChecker
 
 fun main() {
     var input = """
-fun foo() 
-    return
+Time a = 0s
+
+module ar {
+    Int delta = 3
+    every (500ms) {
+        
+        for (i in 0 to 13)
+            a += delta * 1s
+    }
+}
+
+module t{
+    every(500ms){
+        stop ar
+    }
+}
 """
     input += "\n"
 

@@ -593,7 +593,7 @@ internal class ParsingTests {
         var input = """
            fun f(){
                 DigitalOutputPin p = D5
-                start(p)
+                start p
             }
         """
         parseString(input)
@@ -603,7 +603,7 @@ internal class ParsingTests {
     fun parseStartStmtWithoutIdentifierThrowsException(){
         var input = """
            fun f(){
-                start()
+                start
             }
         """
         assertThrows<ParserException> { parseString(input) }
@@ -623,7 +623,7 @@ internal class ParsingTests {
     fun parseDelayStmtIsParseable(){
         var input = """
            fun f(){
-                delay(500ms)
+                delay 500ms
             }
         """
         parseString(input)
@@ -633,7 +633,7 @@ internal class ParsingTests {
     fun parseDelayStmtNoParamsThrowsExceptioni(){
         var input = """
            fun f(){
-                delay()
+                delay
             }
         """
         assertThrows<ParserException> { parseString(input) }
@@ -643,7 +643,7 @@ internal class ParsingTests {
     fun parseDelayUntilStmtIsParseable(){
         var input = """
            fun f(){
-                delay until(500ms)
+                delay until true
             }
         """
         parseString(input)
@@ -653,7 +653,7 @@ internal class ParsingTests {
     fun parseDelayUntilStmtNoParamsThrowsExceptioni(){
         var input = """
            fun f(){
-                delay until()
+                delay until
             }
         """
         assertThrows<ParserException> { parseString(input) }
@@ -884,9 +884,7 @@ internal class ParsingTests {
         var input = """
            Int i = 2 - --5
         """
-        val start = parseString(input)
-        val p = PrettyPrinter()
-        p.print(start)
+        parseString(input)
     }
 
     @Test
