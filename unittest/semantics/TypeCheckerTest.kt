@@ -187,27 +187,10 @@ internal class TypeCheckerTest {
     }
 
     @Test
-    fun usingTemplateModuleNameThatIsNotDeclaredThrowsException() {
-        val code =
-        """
-            module mod this
-            
-            template module that {
-                every(100ms)
-                    stop
-            }
-        """
-
-        val (st, start) = getScopeFromString(code)
-
-        assertThrows<IdentifierNotDeclaredError> {TypeChecker(ErrorHandler(code), st).run(start)}
-    }
-
-    @Test
     fun usingTemplateModuleNameThatIsDeclaredIsOk() {
         val code =
         """
-            module mod a
+            module a mod
             
             template module a {
                 every(100ms)
@@ -223,7 +206,7 @@ internal class TypeCheckerTest {
     fun moduleInstancesWithMismatchingParametersThrowsException() {
         val code =
         """
-            module mod a(50)
+            module a mod(50)
             
             template module a(Time t) {
                 every(t)
@@ -240,7 +223,7 @@ internal class TypeCheckerTest {
     fun moduleInstancesWithMatchingParametersIsOk() {
         val code =
         """
-            module mod a("abc")
+            module a mod("abc")
             
             template module a(String s) {
                 every(50ms)

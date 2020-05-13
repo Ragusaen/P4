@@ -13,6 +13,7 @@ import semantics.symbolTable.errors.IdentifierAlreadyDeclaredError
 import semantics.symbolTable.errors.IdentifierUsedBeforeDeclarationError
 import semantics.symbolTable.SymbolTableBuilder
 import semantics.typeChecking.Type
+import semantics.typeChecking.errors.IdentifierNotDeclaredError
 
 internal class SymbolTableBuilderTest {
     fun parseString(input: String): Start {
@@ -169,6 +170,21 @@ internal class SymbolTableBuilderTest {
 
         assertNotNull(st.findTemplateModule("thismodule"))
         assertNotNull(st.findVar("thisinstance"))
+    }
+
+    @Test
+    fun usingTemplateModuleNameThatIsNotDeclaredThrowsException() {
+        val code =
+                """
+            module mod this
+            
+            template module that {
+                every(100ms)
+                    stop
+            }
+        """
+
+        assertThrows<IdentifierNotDeclaredError> { val (st, start) = getScopeFromString(code) }
     }
 
     @Test
