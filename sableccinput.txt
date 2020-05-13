@@ -83,7 +83,7 @@ Tokens
     stringliteral = stringliteral;
     whitespace = (' ' | tab)+;
     eol = eol;
-    comment = '/*' all* '*/' | '//'all*eol;
+    comment = '/*' all* '*/' eol | '//'all*eol;
     digitalpinliteral = digitalpinliteral;
     analogpinliteral = analogpinliteral;
     identifier = anychar (anychar|digit)*;

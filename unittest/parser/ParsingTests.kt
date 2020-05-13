@@ -1,5 +1,6 @@
 package parser
 
+import PrettyPrinter
 import StringLexer
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -296,6 +297,14 @@ internal class ParsingTests {
     fun parseAnonymousModuleDeclarationNoDclsIsParseable(){
         val input = """
             every(5s) set D5 to HIGH
+        """
+        parseString(input)
+    }
+
+    @Test
+    fun parseOnStructureIsParseable(){
+        val input = """
+            on(true) set D5 to HIGH
         """
         parseString(input)
     }
@@ -873,9 +882,11 @@ internal class ParsingTests {
     @Test
     fun parseMinusUnaryExprIsParseable(){
         var input = """
-           Int i = 2 + -5
+           Int i = 2 - --5
         """
-        parseString(input)
+        val start = parseString(input)
+        val p = PrettyPrinter()
+        p.print(start)
     }
 
     @Test
@@ -898,6 +909,26 @@ internal class ParsingTests {
     fun parseArrayIndexingExprIsParseable(){
         var input = """
            Int i = a[2]
+        """
+        parseString(input)
+    }
+
+    @Test
+    fun parseSingleLineCommentIsParseable(){
+        var input = """
+            //Comment
+           Int i = 4  
+        """
+        parseString(input)
+    }
+
+    @Test
+    fun parseMultiLineCommentIsParseable(){
+        var input = """
+           /*
+           Comment
+           */
+           Int i = 4
         """
         parseString(input)
     }
