@@ -12,6 +12,7 @@ class SymbolTable(private val namedFunctions: Map<Pair<String, List<Type>>, Iden
                   private val nodeFunctions: Map<Node, Identifier>,
                   private var variables: Scope,
                   private val templateModules: Map<String, TemplateModuleIdentifier>,
+                  private val moduleTable: Map<String, String>,
                   private val nodeModules: Map<Node, String>
 ) {
 
@@ -22,7 +23,15 @@ class SymbolTable(private val namedFunctions: Map<Pair<String, List<Type>>, Iden
     fun findFun(node: Node): Identifier = nodeFunctions[node]!!
 
     fun findTemplateModule(name: String): TemplateModuleIdentifier? = templateModules[name]
-    fun findModule(node: Node): String? = nodeModules[node]
+
+    fun findModule(node: Node): Pair<String, String>?  {
+        val name = nodeModules[node]
+        val template = moduleTable[name]
+        if (name != null && template != null)
+            return Pair(name, template)
+        else
+            return null
+    }
 
 
     private val childN = mutableListOf(0)

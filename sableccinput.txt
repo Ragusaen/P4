@@ -36,7 +36,6 @@ Tokens
     continue = 'continue';
     rising = 'rising';
     falling = 'falling';
-    pin = 'pin';
     delay = 'delay';
     until = 'until';
     set = 'set';

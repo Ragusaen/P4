@@ -257,10 +257,6 @@ abstract class ErrorTraverser(val errorHandler: ErrorHandler) : DepthFirstAdapte
         errorHandler.setLineAndPos(node)
     }
 
-    override fun caseTPin(node: TPin){
-        errorHandler.setLineAndPos(node)
-    }
-
     override fun caseTAnalogpinliteral(node: TAnalogpinliteral){
         errorHandler.setLineAndPos(node)
     }
