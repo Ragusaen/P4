@@ -1,6 +1,5 @@
 package semantics.typeChecking
 
-import CompileError
 import ErrorHandler
 import sablecc.node.*
 import semantics.symbolTable.ScopedTraverser
@@ -159,7 +158,7 @@ class TypeChecker(errorHandler: ErrorHandler, symbolTable: SymbolTable) : Scoped
     override fun inAFunctiondcl(node: AFunctiondcl) {
         super.inAFunctiondcl(node)
 
-        currentFunctionReturnType = symbolTable.findFun(node).type
+        currentFunctionReturnType = symbolTable.findFun(node.identifier.text, Helper.getFunParams(node))!!.type
         currentFunctionName = node.identifier.text
     }
 
