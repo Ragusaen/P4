@@ -131,7 +131,7 @@ internal class ContextualConstraintsTest {
     fun startCannotBeUsedInsideFunction(){
         val input = """
             fun foo() {
-                start (bar)
+                start bar
             }
             
             module bar {
@@ -148,7 +148,7 @@ internal class ContextualConstraintsTest {
         val input = """
             module foo {
                 every (1s)
-                    start (foo)
+                    start foo
             }
         """
         val (st, start) = compileUpToContextualConstraintsAnalyzerFromString(input)
