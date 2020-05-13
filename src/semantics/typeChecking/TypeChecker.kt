@@ -56,7 +56,16 @@ class TypeChecker(errorHandler: ErrorHandler, symbolTable: SymbolTable) : Scoped
         val conditionType = typeStack.pop()
 
         if (conditionType != Type.Time)
-            error(IllegalImplicitTypeConversionError("'Every' expects expression of type Time, but got $conditionType"))
+            error(IllegalImplicitTypeConversionError("Every expects expression of type Time, but got $conditionType"))
+    }
+
+    override fun outAOnModuleStructure(node: AOnModuleStructure) {
+        super.outAOnModuleStructure(node)
+
+        val conditionType = typeStack.pop()
+
+        if (conditionType != Type.Bool)
+            error(IllegalImplicitTypeConversionError("On expects expression of type Bool, but got $conditionType"))
     }
 
     override fun outAIfStmt(node: AIfStmt) {

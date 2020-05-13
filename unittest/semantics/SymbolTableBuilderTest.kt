@@ -157,19 +157,17 @@ internal class SymbolTableBuilderTest {
     }
 
     @Test
-    fun instanceOfTemplateModuleCanBeDeclared(){
+    fun templateModuleCanBeDeclared(){
         val input = """
             template module thismodule {
                 Int a = 0
                 every (1000)
                     a += 1
             }
-            module thismodule thisinstance
         """
         val st = getScopeFromString(input).first
 
         assertNotNull(st.findTemplateModule("thismodule"))
-        assertNotNull(st.findVar("thisinstance"))
     }
 
     @Test
@@ -188,17 +186,13 @@ internal class SymbolTableBuilderTest {
     }
 
     @Test
-    fun namedModuleCanBeDeclared() {
+    fun functionMustBeDeclaredToUse() {
         val input = """
-            module thismodule {
-                every (1000) {
-                     
-                }
+            every (1s) {
+                foo()
             }
         """
-        val st = getScopeFromString(input).first
-
-        assertNotNull(st.findVar("thismodule"))
+        assertThrows<IdentifierUsedBeforeDeclarationError> {getScopeFromString(input).first}
     }
 
     private fun getScopeFromString(input:String):Pair<SymbolTable, Start> {

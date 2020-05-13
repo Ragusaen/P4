@@ -145,7 +145,6 @@ class SymbolTableBuilder(errorHandler: ErrorHandler) : ErrorTraverser(errorHandl
         if (rootElementMode) {
             val name = node.identifier?.text ?: nextAnonName()
             addModule(node, name)
-            addVar(name, Type.Module)
         }
         else
             super.caseAInstanceModuledcl(node)

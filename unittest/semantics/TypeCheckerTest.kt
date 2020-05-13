@@ -296,6 +296,18 @@ internal class TypeCheckerTest {
     }
 
     @Test
+    fun onCannotTakePinAsExpression() {
+        val code = """
+            on (D3) {
+                stop
+            }
+        """
+
+        val (st, start) = getScopeFromString(code)
+        assertThrows<IllegalImplicitTypeConversionError> { TypeChecker(ErrorHandler(code), st).run(start) }
+    }
+
+    @Test
     fun forStatementWithStartValueNotOfTypeIntThrowsException() {
         val code =
         """
