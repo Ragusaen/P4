@@ -106,7 +106,7 @@ Productions
 
 /* Function */
     functiondcl {-> functiondcl} =
-        fun identifier lparen paramlist? rparen return_type? [body]:stmt
+        fun identifier lparen paramlist? rparen return_type? eol? [body]:stmt
             {-> New functiondcl(identifier, [paramlist.param], return_type.type, body.stmt)};
 
     return_type {-> type} =

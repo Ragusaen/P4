@@ -308,6 +308,17 @@ internal class TypeCheckerTest {
     }
 
     @Test
+    fun functionCanReturnNothing() {
+        val code = """
+            fun foo()
+                return
+        """
+
+        val (st, start) = getScopeFromString(code)
+        TypeChecker(ErrorHandler(code), st).run(start)
+    }
+
+    @Test
     fun forStatementWithStartValueNotOfTypeIntThrowsException() {
         val code =
         """
