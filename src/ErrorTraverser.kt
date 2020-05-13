@@ -205,10 +205,6 @@ abstract class ErrorTraverser(val errorHandler: ErrorHandler) : DepthFirstAdapte
         errorHandler.setLineAndPos(node)
     }
 
-    override fun caseTRising(node: TRising){
-        errorHandler.setLineAndPos(node)
-    }
-
     override fun caseTFloatliteral(node: TFloatliteral){
         errorHandler.setLineAndPos(node)
     }
@@ -237,10 +233,6 @@ abstract class ErrorTraverser(val errorHandler: ErrorHandler) : DepthFirstAdapte
         errorHandler.setLineAndPos(node)
     }
 
-    override fun caseTSemicolon(node: TSemicolon){
-        errorHandler.setLineAndPos(node)
-    }
-
     override fun caseTFun(node: TFun){
         errorHandler.setLineAndPos(node)
     }
@@ -250,10 +242,6 @@ abstract class ErrorTraverser(val errorHandler: ErrorHandler) : DepthFirstAdapte
     }
 
     override fun caseTBoolliteral(node: TBoolliteral){
-        errorHandler.setLineAndPos(node)
-    }
-
-    override fun caseTFalling(node: TFalling){
         errorHandler.setLineAndPos(node)
     }
 

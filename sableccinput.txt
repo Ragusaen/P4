@@ -13,6 +13,8 @@ Helpers
     floatliteral = '-'?(digit+('.'digit*)?|'.'digit+);
     timeliteral = (intliteral | floatliteral)('ms'|'s'|'m'|'h');
     stringliteral = '"'('\'all | [[all - '"'] - '\'])*'"';
+    digitalpinliteral = 'D'digit+;
+    analogpinliteral = 'A'digit+;
 
 Tokens
     stringtype = 'String';
@@ -34,8 +36,6 @@ Tokens
     step = 'step';
     break = 'break';
     continue = 'continue';
-    rising = 'rising';
-    falling = 'falling';
     delay = 'delay';
     until = 'until';
     set = 'set';
@@ -63,7 +63,6 @@ Tokens
     multiplicationassign = '*=';
     divisionassign = '/=';
     moduloassign = '%=';
-    semicolon = ';';
     not = '!';
     colon = ':';
     comma = ',';
@@ -77,16 +76,16 @@ Tokens
     rbrace = '}';
     lbracket = '[';
     rbracket = ']';
-    boolliteral = ('false'|'true'|'HIGH'|'LOW');
-    intliteral = '-'?digit+;
-    floatliteral = '-'?(digit+('.'digit*)?|'.'digit+);
-    timeliteral = (intliteral | floatliteral)('ms'|'s'|'m'|'h');
-    stringliteral = '"'('\'all | [[all - '"'] - '\'])*'"';
+    boolliteral = boolliteral;
+    intliteral = intliteral;
+    floatliteral = floatliteral;
+    timeliteral = timeliteral;
+    stringliteral = stringliteral;
     whitespace = (' ' | tab)+;
     eol = eol;
-    comment = '/*' all* '*/' | '//'all*eol;
-    digitalpinliteral = 'D'digit+;
-    analogpinliteral = 'A'digit+;
+    comment = '/*' all* '*/' eol | '//'all*eol;
+    digitalpinliteral = digitalpinliteral;
+    analogpinliteral = analogpinliteral;
     identifier = anychar (anychar|digit)*;
 
 Ignored Tokens
