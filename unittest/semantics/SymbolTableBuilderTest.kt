@@ -133,6 +133,17 @@ internal class SymbolTableBuilderTest {
         st.openScope()
         assertNotNull(st.findVar("b"))
     }
+    @Test
+    fun functionCanBeUsedBeforeBeingDeclared() {
+        val input = """
+            Time a = foo()
+            
+            fun foo() {
+                return 100ms
+            }
+        """
+        getScopeFromString(input)
+    }
 
     @Test
     fun callingFunctionThatDoesntExistGivesException() {
