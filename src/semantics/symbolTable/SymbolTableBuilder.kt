@@ -117,11 +117,11 @@ class SymbolTableBuilder(errorHandler: ErrorHandler) : ErrorTraverser(errorHandl
     override fun caseAProgram(node: AProgram) {
         // First add all template modules and functions to the symbol table
         rootElementMode = true
-        for (re in node.rootElement) {
-            // The root element mode is handled in each case, function and template module do no check inner code, dcl is the same.
-            // non-template modules should just be skipped
-            re.apply(this)
-        }
+        // The root element mode is handled in each case, function and template module do no check inner code, dcl is the same
+        // Do modules before others to ensure instances of template modules can be created in root
+        val (modules, other) = node.rootElement.partition{ it is AModuledclRootElement}
+        modules.forEach { it.apply(this) }
+        other.forEach { it.apply(this) }
 
         // Now traverse the rest of the program
         rootElementMode = false
