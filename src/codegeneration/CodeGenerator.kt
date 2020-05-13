@@ -678,11 +678,10 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, errorHandler:
     }
 
     override fun caseAStopStmt(node: AStopStmt) {
-        if (node.expr != null) {
-            val expr = getCode(node.expr)
-            codeStack.pushLineIndented("vTaskSuspend($taskPrefix${expr}_Handle);")
+        if (node.identifier != null) {
+            codeStack.pushLineIndented("vTaskSuspend($taskPrefix${node.identifier.text}_Handle);")
         } else {
-            codeStack.pushLineIndented("vTaskSuspend(${currentModuleName}_Handle);")
+            codeStack.pushLineIndented("vTaskSuspend($taskPrefix${currentModuleName}_Handle);")
         }
     }
 

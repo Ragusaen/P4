@@ -20,6 +20,12 @@ module ar {
             a += delta * 1s
     }
 }
+
+module t{
+    every(500ms){
+        stop ar
+    }
+}
 """
     input += "\n"
 

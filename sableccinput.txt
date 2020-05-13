@@ -182,6 +182,11 @@ Productions
         | {for} for lparen identifier in [lower]:expr to [upper]:expr forstep? rparen eol? [body]:unmatched
             {-> New stmt.for(identifier, lower, upper, forstep.expr, body.stmt)};
 
+
+    forstep {-> expr} =
+        step expr
+            {-> expr};
+
     simple_stmt {-> stmt} =
          {single_stmt} single_stmt eol
              {-> single_stmt.stmt}
@@ -205,13 +210,13 @@ Productions
             {-> New stmt.assign(identifier, expr, New binop.multiplication())}
         | {moduloassign} identifier moduloassign expr
             {-> New stmt.assign(identifier, expr, New binop.modulo())}
-        | {start} start lparen identifier rparen
+        | {start} start identifier
             {-> New stmt.start(start, identifier)}
-        | {stop} stop expr?
-            {-> New stmt.stop(stop, expr)}
-        | {delay} delay lparen expr rparen
+        | {stop} stop identifier?
+            {-> New stmt.stop(stop, identifier)}
+        | {delay} delay expr
             {-> New stmt.delay(delay, expr)}
-        | {delay_until} delay until lparen expr rparen
+        | {delay_until} delay until expr
             {-> New stmt.delayuntil(delay, expr)}
         | {return} return expr?
             {-> New stmt.return(return, expr)}
@@ -222,9 +227,6 @@ Productions
         | {continue} continue
             {-> New stmt.continue(continue)};
 
-        forstep {-> expr} =
-            step expr
-                {-> expr};
 
 /* Declaration */
     dcl {-> stmt} =
@@ -386,7 +388,7 @@ Abstract Syntax Tree
     module_structure = {every} expr [body]:stmt | {on} expr [body]:stmt;
 
 /* Statement */
-    stmt = {dcl} type vardcl* | {moduledcl} [template]:identifier [instance]:identifier expr* | {start} [token]:start identifier | {stop} [token]:stop expr? | {set_to} [pin]:expr [value]:expr | {delay} [token]:delay expr | {delayuntil} [token]:delay expr | {assign} identifier expr binop? | {block} stmt* | {if} [condition]:expr [if_body]:stmt [else_body]:stmt? | {while} [condition]:expr [body]:stmt | {for} identifier [lower]:expr [upper]:expr [step]:expr? [body]:stmt | {expr} expr | {return} [token]:return expr? | {break} [token]:break | {continue} [token]:continue;
+    stmt = {dcl} type vardcl* | {moduledcl} [template]:identifier [instance]:identifier expr* | {start} [token]:start identifier | {stop} [token]:stop identifier? | {set_to} [pin]:expr [value]:expr | {delay} [token]:delay expr | {delayuntil} [token]:delay expr | {assign} identifier expr binop? | {block} stmt* | {if} [condition]:expr [if_body]:stmt [else_body]:stmt? | {while} [condition]:expr [body]:stmt | {for} identifier [lower]:expr [upper]:expr [step]:expr? [body]:stmt | {expr} expr | {return} [token]:return expr? | {break} [token]:break | {continue} [token]:continue;
 
 /* Declaration subnodes */
     vardcl = identifier expr?;
