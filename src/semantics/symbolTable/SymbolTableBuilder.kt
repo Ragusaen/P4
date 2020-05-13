@@ -1,9 +1,7 @@
 package semantics.symbolTable
 
-import CompileError
 import ErrorHandler
 import ErrorTraverser
-import sablecc.analysis.DepthFirstAdapter
 import sablecc.node.*
 import semantics.symbolTable.errors.CloseScopeZeroException
 import semantics.symbolTable.errors.IdentifierAlreadyDeclaredError
@@ -15,8 +13,6 @@ class SymbolTableBuilder(errorHandler: ErrorHandler) : ErrorTraverser(errorHandl
     private var currentVarPrefix = ""
 
     private val namedFunctionTable = mutableMapOf<Pair<String, List<Type>>, Identifier>()
-    private val nodeFunctionTable = mutableMapOf<Node, Identifier>()
-
     private val templateModuleTable = mutableMapOf<String, TemplateModuleIdentifier>()
     private val moduleTable = mutableListOf<String>()
     private val nodeModuleTable = mutableMapOf<Node, String>()
@@ -42,7 +38,6 @@ class SymbolTableBuilder(errorHandler: ErrorHandler) : ErrorTraverser(errorHandl
             error(IdentifierAlreadyDeclaredError("Function with the name $name with parameters: $params has already been declared."))
         else {
             namedFunctionTable[Pair(name, params)] = identifier
-            nodeFunctionTable[node] = identifier
         }
     }
 
@@ -87,23 +82,7 @@ class SymbolTableBuilder(errorHandler: ErrorHandler) : ErrorTraverser(errorHandl
         if (currentScope.parent != null)
             throw Exception("An unknown error occurred while building the symbol table. A scope was not closed as expected.")
 
-        return SymbolTable(namedFunctionTable, nodeFunctionTable, currentScope, templateModuleTable, nodeModuleTable).reset()
-    }
-
-    private fun getTypeFromPType(node:PType): Type {
-        return when(node) {
-            is AIntType -> Type.Int
-            is AFloatType -> Type.Float
-            is AStringType -> Type.String
-            is ABoolType -> Type.Bool
-            is ADigitalinputpinType -> Type.DigitalInputPin
-            is ADigitaloutputpinType -> Type.DigitalOutputPin
-            is AAnaloginputpinType -> Type.AnalogInputPin
-            is AAnalogoutputpinType -> Type.AnalogOutputPin
-            is ATimeType -> Type.Time
-            is AArrayType -> Type.createArrayOf(getTypeFromPType(node.type))
-            else -> throw Exception("Unsupported node type")
-        }
+        return SymbolTable(namedFunctionTable, currentScope, templateModuleTable, nodeModuleTable).reset()
     }
 
     /* Tree traversal */
@@ -136,9 +115,9 @@ class SymbolTableBuilder(errorHandler: ErrorHandler) : ErrorTraverser(errorHandl
     override fun caseAFunctiondcl(node: AFunctiondcl) {
         if (rootElementMode) {
             val name = node.identifier.text!!
-            val params = node.param.map { getTypeFromPType((it as AParam).type) }
+            val params = Helper.getFunParams(node)
 
-            val type = if (node.type == null) Type.Void else getTypeFromPType(node.type)
+            val type = if (node.type == null) Type.Void else Helper.getTypeFromPType(node.type)
 
             addFun(node, name, params, Identifier(type, name))
         }
@@ -149,7 +128,7 @@ class SymbolTableBuilder(errorHandler: ErrorHandler) : ErrorTraverser(errorHandl
     override fun caseATemplateModuledcl(node: ATemplateModuledcl) {
         if (rootElementMode) {
             val name = node.identifier.text
-            val params = node.param.map { getTypeFromPType((it as AParam).type) }
+            val params = node.param.map { Helper.getTypeFromPType((it as AParam).type) }
 
             addTemplateModule(node, name, TemplateModuleIdentifier(params))
         }
@@ -181,7 +160,7 @@ class SymbolTableBuilder(errorHandler: ErrorHandler) : ErrorTraverser(errorHandl
         val name = node.identifier.text
         val ptype = (node.parent() as ADclStmt).type
 
-        addVar(name, getTypeFromPType(ptype))
+        addVar(name, Helper.getTypeFromPType(ptype))
     }
 
     override fun outAIdentifierValue(node: AIdentifierValue) {
@@ -206,7 +185,7 @@ class SymbolTableBuilder(errorHandler: ErrorHandler) : ErrorTraverser(errorHandl
         openScope()
 
         // Add each parameter variable to the scope
-        node.param.forEach {errorHandler.setLineAndPos((it as AParam).identifier); addVar((it as AParam).identifier.text, getTypeFromPType(it.type), true)}
+        node.param.forEach {errorHandler.setLineAndPos((it as AParam).identifier); addVar((it as AParam).identifier.text, Helper.getTypeFromPType(it.type), true)}
     }
     override fun outAFunctiondcl(node: AFunctiondcl) {
         closeScope()
@@ -219,7 +198,7 @@ class SymbolTableBuilder(errorHandler: ErrorHandler) : ErrorTraverser(errorHandl
         currentVarPrefix = "$name->"
 
         // Add each parameter variable to the scope
-        node.param.forEach {errorHandler.setLineAndPos((it as AParam).identifier); addVar((it as AParam).identifier.text, getTypeFromPType(it.type), true)}
+        node.param.forEach {errorHandler.setLineAndPos((it as AParam).identifier); addVar((it as AParam).identifier.text, Helper.getTypeFromPType(it.type), true)}
     }
 
     override fun outATemplateModuledcl(node: ATemplateModuledcl) {

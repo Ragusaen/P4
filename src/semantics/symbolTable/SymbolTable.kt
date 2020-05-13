@@ -9,21 +9,15 @@ import semantics.typeChecking.Type
     they should not be directly looked up in the symbol table. For that use the ScopedTraverser.
  */
 class SymbolTable(private val namedFunctions: Map<Pair<String, List<Type>>, Identifier>,
-                  private val nodeFunctions: Map<Node, Identifier>,
                   private var variables: Scope,
                   private val templateModules: Map<String, TemplateModuleIdentifier>,
                   private val nodeModules: Map<Node, String>
 ) {
 
-
     fun findVar(name: String): Identifier? = variables.findVar(name)
-
     fun findFun(name: String, paramTypes: List<Type>): Identifier? = namedFunctions[Pair(name, paramTypes)]
-    fun findFun(node: Node): Identifier = nodeFunctions[node]!!
-
     fun findTemplateModule(name: String): TemplateModuleIdentifier? = templateModules[name]
     fun findModule(node: Node): String? = nodeModules[node]
-
 
     private val childN = mutableListOf(0)
 
