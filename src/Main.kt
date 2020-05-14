@@ -8,22 +8,9 @@ import semantics.typeChecking.TypeChecker
 
 fun main() {
     var input = """
-Time a = 0s
-
-module ar {
-    Int delta = 3
-    every (500ms) {
-        
-        for (i in 0 to 13)
-            a += delta * 1s
-    }
-}
-
-module t{
-    every(500ms){
-        stop ar
-    }
-}
+Int64 i = 54654564
+Int8 t = i
+Int k = t + i
 """
     input += "\n"
 

@@ -36,9 +36,57 @@ internal class ParsingTests {
     }
 
     @Test
+    fun parseInt8DeclarationIsParseable(){
+        val input = """
+            Int8 a = 5
+        """
+        parseString(input)
+    }
+
+    @Test
+    fun parseInt16DeclarationIsParseable(){
+        val input = """
+            Int16 a = 5
+        """
+        parseString(input)
+    }
+
+    @Test
+    fun parseInt32DeclarationIsParseable(){
+        val input = """
+            Int32 a = 5
+        """
+        parseString(input)
+    }
+
+    @Test
+    fun parseInt64DeclarationIsParseable(){
+        val input = """
+            Int64 a = 5
+        """
+        parseString(input)
+    }
+
+    @Test
     fun parseFloatDeclarationIsParseable(){
         val input = """
             Float f = 5.5
+        """
+        parseString(input)
+    }
+
+    @Test
+    fun parseFloat32DeclarationIsParseable(){
+        val input = """
+            Float32 f = 5.5
+        """
+        parseString(input)
+    }
+
+    @Test
+    fun parseFloat64DeclarationIsParseable(){
+        val input = """
+            Float64 f = 5.5
         """
         parseString(input)
     }

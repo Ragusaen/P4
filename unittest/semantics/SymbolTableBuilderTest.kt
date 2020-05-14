@@ -51,18 +51,18 @@ internal class SymbolTableBuilderTest {
 
     @Test
     fun useOfNonDeclaredFunctionThrowsDeclarationException() {
-        val code = """
+        val input = """
            every (2) {
                 foo()
            }
         """
 
-        assertThrows<IdentifierUsedBeforeDeclarationError>{ getScopeFromString(code)}
+        assertThrows<IdentifierUsedBeforeDeclarationError>{ getScopeFromString(input)}
     }
 
     @Test
     fun useOfDeclaredFunctionReturnsTableWithFunction() {
-        val code = """
+        val input = """
             fun foo(String s, Int i): String {
                 return s
             }
@@ -72,7 +72,7 @@ internal class SymbolTableBuilderTest {
             }
         """
 
-        val st = getScopeFromString(code).first
+        val st = getScopeFromString(input).first
 
         st.openScope()
         assertNotNull(st.findVar("s"))
@@ -183,7 +183,7 @@ internal class SymbolTableBuilderTest {
 
     @Test
     fun usingTemplateModuleNameThatIsNotDeclaredThrowsException() {
-        val code =
+        val input =
                 """
             module mod this
             
@@ -193,7 +193,7 @@ internal class SymbolTableBuilderTest {
             }
         """
 
-        assertThrows<IdentifierNotDeclaredError> { val (st, start) = getScopeFromString(code) }
+        assertThrows<IdentifierNotDeclaredError> { val (st, start) = getScopeFromString(input) }
     }
 
     @Test
