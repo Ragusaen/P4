@@ -27,6 +27,23 @@ internal class CodeGenerationTestsTest {
     }
 
     @Test
+    fun bothModuleAndTemplateModuleCanBeDeclared() {
+        val code = """
+            module a {
+                every(1190ms)
+                    Int b = 0
+            }
+    
+            template module tmod {
+                every(1000ms)
+                    Int a = 0
+            } 
+        """
+
+        compile(code)
+    }
+
+    @Test
     fun callingFunctionInsideAnonymousModuleCanCompile() {
         val code = """
             fun foo():Int {

@@ -68,7 +68,7 @@ class SymbolTableBuilder(errorHandler: ErrorHandler) : ErrorTraverser(errorHandl
     }
 
     private fun openScope() {
-        val newScope = Scope(currentScope)
+        val newScope = Scope(parent=currentScope)
         currentScope.children.add(newScope)
         currentScope = newScope
     }

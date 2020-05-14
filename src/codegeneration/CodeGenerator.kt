@@ -57,11 +57,12 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, errorHandler:
 
         for (ma in moduleAuxes) {
             if (ma is TemplateModuleAux) {
-                for ((i, tmp) in templateInstances[ma.name]!!.withIndex()) {
-                    res += "xTaskCreate(" +
-                            taskPrefix + ma.name +
-                            ", \"${ma.name}_${tmp.name}\", 128, (void*)&(TempMod_${ma.name}[$i]), 0, &TempMod_${ma.name}[$i].task_handle );\n" +
-                            "vTaskSuspend(TempMod_${ma.name}[$i].task_handle);\n"
+                if (templateInstances.containsKey(ma.name))
+                    for ((i, tmp) in templateInstances[ma.name]!!.withIndex()) {
+                        res += "xTaskCreate(" +
+                                taskPrefix + ma.name +
+                                ", \"${ma.name}_${tmp.name}\", 128, (void*)&(TempMod_${ma.name}[$i]), 0, &TempMod_${ma.name}[$i].task_handle );\n" +
+                                "vTaskSuspend(TempMod_${ma.name}[$i].task_handle);\n"
                 }
             } else {
                 res += "xTaskCreate(" +
@@ -82,33 +83,37 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, errorHandler:
     private fun generateControllerTask(): String {
         var res = "void ControllerTask(void *pvParameters) {\n"
 
-        for (ima in moduleAuxes) {
-            if (ima is TemplateModuleAux) {
-                val c = templateInstances[ima.name]!!.size
+        for (ma in moduleAuxes) {
+            if (ma is TemplateModuleAux) {
+                if (!templateInstances.containsKey(ma.name))
+                    continue
+                val c = templateInstances[ma.name]!!.size
                 val zeroes = "0,".repeat(c).dropLast(1)
 
-                res += "${if (ima.isEveryStruct) "unsigned long" else "Bool"} ${ima.name}LastValue[] = {$zeroes};\n"
+                res += "${if (ma.isEveryStruct) "unsigned long" else "Bool"} ${ma.name}LastValue[] = {$zeroes};\n"
             } else {
-                res += "${if (ima.isEveryStruct) "unsigned long" else "Bool"} ${ima.name}LastValue = 0;\n"
+                res += "${if (ma.isEveryStruct) "unsigned long" else "Bool"} ${ma.name}LastValue = 0;\n"
             }
         }
 
         res += "\nwhile (1) {\n"
 
-        for (ima in moduleAuxes) {
-            if (ima is TemplateModuleAux) {
-                for ((i, tma) in templateInstances[ima.name]!!.withIndex()) {
-                    if (ima.isEveryStruct) {
-                        res += "if (millis() - ${ima.name}LastValue[$i] >= ${ima.expr}) {\n${ima.name}LastValue[$i] = millis();\nvTaskResume(TempMod_${ima.name}[$i].task_handle);\n}\n"
+        for (ma in moduleAuxes) {
+            if (ma is TemplateModuleAux) {
+                if (!templateInstances.containsKey(ma.name))
+                    continue
+                for ((i, tma) in templateInstances[ma.name]!!.withIndex()) {
+                    if (ma.isEveryStruct) {
+                        res += "if (millis() - ${ma.name}LastValue[$i] >= ${ma.expr}) {\n${ma.name}LastValue[$i] = millis();\nvTaskResume(TempMod_${ma.name}[$i].task_handle);\n}\n"
                     } else {
-                        res += "if (${ima.expr} && !${ima.name}LastValue[$i]) {\nvTaskResume(TempMod_${ima.name}[$i].task_handle);\n}\n${ima.name}LastValue[$i] = ${ima.expr};\n"
+                        res += "if (${ma.expr} && !${ma.name}LastValue[$i]) {\nvTaskResume(TempMod_${ma.name}[$i].task_handle);\n}\n${ma.name}LastValue[$i] = ${ma.expr};\n"
                     }
                 }
             } else {
-                if (ima.isEveryStruct) {
-                    res += "if (millis() - ${ima.name}LastValue >= ${ima.expr}) {\n${ima.name}LastValue = millis();\nvTaskResume(Task${ima.name}_Handle);\n}\n"
+                if (ma.isEveryStruct) {
+                    res += "if (millis() - ${ma.name}LastValue >= ${ma.expr}) {\n${ma.name}LastValue = millis();\nvTaskResume(Task${ma.name}_Handle);\n}\n"
                 } else {
-                    res += "if (${ima.expr} && !${ima.name}LastValue) {\nvTaskResume(Task${ima.name}_Handle);\n}\n${ima.name}LastValue = ${ima.expr};\n"
+                    res += "if (${ma.expr} && !${ma.name}LastValue) {\nvTaskResume(Task${ma.name}_Handle);\n}\n${ma.name}LastValue = ${ma.expr};\n"
                 }
             }
         }
@@ -537,7 +542,7 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, errorHandler:
         val identifier = getCode(node.identifier)
 
         var arguments = ""
-        if (node.expr != null) {
+        if (node.expr.firstOrNull() != null) {
             arguments += getCode(node.expr.first())
             for (arg in node.expr.drop(1)) {
                 arguments += ", " + getCode(arg)
