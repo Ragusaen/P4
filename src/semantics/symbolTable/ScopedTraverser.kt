@@ -2,15 +2,9 @@ package semantics.symbolTable
 
 import ErrorHandler
 import ErrorTraverser
-import sablecc.analysis.DepthFirstAdapter
 import sablecc.node.*
 
 open class ScopedTraverser(errorHandler: ErrorHandler, protected val symbolTable: SymbolTable) : ErrorTraverser(errorHandler) {
-
-    fun traverse(startNode: Start) {
-        caseStart(startNode)
-    }
-
     override fun caseStart(node: Start) {
         symbolTable.reset()
         super.caseStart(node)
