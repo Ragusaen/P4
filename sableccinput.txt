@@ -19,7 +19,13 @@ Helpers
 Tokens
     stringtype = 'String';
     inttype = 'Int';
+    int8type = 'Int8';
+    int16type = 'Int16';
+    int32type = 'Int32';
+    int64type = 'Int64';
     floattype = 'Float';
+    float32type = 'Float32';
+    float64type = 'Float64';
     booltype = 'Bool';
     timetype = 'Time';
     digitaloutputpintype = 'DigitalOutputPin';
@@ -256,7 +262,13 @@ Productions
     type {-> type} =
         {string} stringtype {-> New type.string()}
         | {int} inttype {-> New type.int()}
+        | {int8} int8type {-> New type.int8()}
+        | {int16} int16type {-> New type.int16()}
+        | {int32} int32type {-> New type.int32()}
+        | {int64} int64type {-> New type.int64()}
         | {float} floattype {-> New type.float()}
+        | {float32} float32type {-> New type.float32()}
+        | {float64} float64type {-> New type.float64()}
         | {bool} booltype {-> New type.bool()}
         | {time} timetype {-> New type.time()}
         | {array} type lbracket expr? rbracket {-> New type.array(type, expr)}
@@ -392,7 +404,7 @@ Abstract Syntax Tree
 
 /* Declaration subnodes */
     vardcl = identifier expr?;
-    type = {string} | {int} | {float} | {bool} | {time} | {digitaloutputpin} | {digitalinputpin} | {analogoutputpin} | {analoginputpin} | {array} type [size]:expr?;
+    type = {string} | {int} | {int8} | {int16} | {int32} | {int64} | {float} | {float32} | {float64} | {bool} | {time} | {digitaloutputpin} | {digitalinputpin} | {analogoutputpin} | {analoginputpin} | {array} type [size]:expr?;
 
 /* Expression */
     expr = {binop} [l]:expr binop [r]:expr | {unop} unop expr | {function_call} identifier expr* | {value} value | {index} [value]:expr [index]:expr | {read} [pin]:expr;
