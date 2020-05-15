@@ -175,8 +175,10 @@ Productions
             {-> New stmt.while(condition, body.stmt)}
         | {for} for lparen identifier in [lower]:expr to [upper]:expr forstep? rparen eol? [body]:matched
             {-> New stmt.for(identifier, lower, upper, forstep.expr, body.stmt)}
-        | {simple_stmt} simple_stmt
-            {-> simple_stmt.stmt};
+        | {single_stmt} single_stmt eol
+            {-> single_stmt.stmt}
+        | {block} lbrace [start]:eol? stmt* rbrace [end]:eol?
+            {-> New stmt.block([stmt])};
 
     unmatched {-> stmt} =
         {unmatched_if_simple} if lparen [condition]:expr rparen eol? stmt
@@ -188,16 +190,9 @@ Productions
         | {for} for lparen identifier in [lower]:expr to [upper]:expr forstep? rparen eol? [body]:unmatched
             {-> New stmt.for(identifier, lower, upper, forstep.expr, body.stmt)};
 
-
     forstep {-> expr} =
         step expr
             {-> expr};
-
-    simple_stmt {-> stmt} =
-         {single_stmt} single_stmt eol
-             {-> single_stmt.stmt}
-         | {block} lbrace [start]:eol? stmt* rbrace [end]:eol?
-              {-> New stmt.block([stmt])};
 
     single_stmt {-> stmt} =
         {dcl} dcl
