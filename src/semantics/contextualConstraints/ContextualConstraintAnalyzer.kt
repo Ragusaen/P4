@@ -104,25 +104,21 @@ class ContextualConstraintAnalyzer(errorHandler: ErrorHandler, symbolTable: Symb
 
     override fun inATemplateModuledcl(node: ATemplateModuledcl) {
         super.inATemplateModuledcl(node)
-
         inModule = true
     }
 
     override fun outATemplateModuledcl(node: ATemplateModuledcl) {
         super.outATemplateModuledcl(node)
-
         inModule = false
     }
 
     override fun inAInstanceModuledcl(node: AInstanceModuledcl) {
         super.inAInstanceModuledcl(node)
-
         inModule = true
     }
 
     override fun outAInstanceModuledcl(node: AInstanceModuledcl) {
         super.outAInstanceModuledcl(node)
-
         inModule = false
     }
 
