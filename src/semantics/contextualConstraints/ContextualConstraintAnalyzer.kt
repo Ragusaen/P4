@@ -13,6 +13,7 @@ import semantics.typeChecking.errors.IdentifierUsedBeforeAssignmentError
 class ContextualConstraintAnalyzer(errorHandler: ErrorHandler, symbolTable: SymbolTable) : ScopedTraverser(errorHandler, symbolTable) {
     private var openLoops: Int = 0
     private var inFunction = false
+    private var inModule = false
     private var initCount: Int = 0
 
     fun run(node: Start) {
@@ -20,27 +21,23 @@ class ContextualConstraintAnalyzer(errorHandler: ErrorHandler, symbolTable: Symb
     }
 
     override fun outADelayStmt(node: ADelayStmt) {
-        if (inFunction) {
-            error(ModuleStatementUsedInFunctionException("Delay can only be used inside module declaration, not in function."))
-        }
+        if (!inModule)
+            error(ModuleStatementUsedInFunctionException("Delay can only be used inside module declaration."))
     }
 
     override fun outADelayuntilStmt(node: ADelayuntilStmt) {
-        if (inFunction) {
-            error(ModuleStatementUsedInFunctionException("Delay until can only be used inside module declaration, not in function."))
-        }
+        if (!inModule)
+            error(ModuleStatementUsedInFunctionException("Delay until can only be used inside module declaration."))
     }
 
     override fun outAStopStmt(node: AStopStmt) {
-        if (inFunction) {
-            error(ModuleStatementUsedInFunctionException("Stop can only be used inside module declaration, not in function."))
-        }
+        if (!inModule)
+            error(ModuleStatementUsedInFunctionException("Stop can only be used inside module declaration."))
     }
 
     override fun outAStartStmt(node: AStartStmt) {
-        if (inFunction) {
-            error(ModuleStatementUsedInFunctionException("Stop can only be used inside module declaration, not in function."))
-        }
+        if (!inModule)
+            error(ModuleStatementUsedInFunctionException("Stop can only be used inside module declaration."))
     }
 
     override fun outABreakStmt(node: ABreakStmt) {
@@ -100,9 +97,33 @@ class ContextualConstraintAnalyzer(errorHandler: ErrorHandler, symbolTable: Symb
         openLoops++
     }
 
-    override fun outAWhileStmt(node: AWhileStmt?) {
+    override fun outAWhileStmt(node: AWhileStmt) {
         super.outAWhileStmt(node)
         openLoops--
+    }
+
+    override fun inATemplateModuledcl(node: ATemplateModuledcl) {
+        super.inATemplateModuledcl(node)
+
+        inModule = true
+    }
+
+    override fun outATemplateModuledcl(node: ATemplateModuledcl) {
+        super.outATemplateModuledcl(node)
+
+        inModule = false
+    }
+
+    override fun inAInstanceModuledcl(node: AInstanceModuledcl) {
+        super.inAInstanceModuledcl(node)
+
+        inModule = true
+    }
+
+    override fun outAInstanceModuledcl(node: AInstanceModuledcl) {
+        super.outAInstanceModuledcl(node)
+
+        inModule = false
     }
 
     override fun inAInitRootElement(node: AInitRootElement) {
