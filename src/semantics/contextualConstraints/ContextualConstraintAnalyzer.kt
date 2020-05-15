@@ -1,6 +1,5 @@
 package semantics.contextualConstraints
 
-import CompileError
 import ErrorHandler
 import sablecc.node.*
 import semantics.contextualConstraints.errors.LoopJumpOutOfLoopError
@@ -50,7 +49,6 @@ class ContextualConstraintAnalyzer(errorHandler: ErrorHandler, symbolTable: Symb
     }
 
     override fun outAContinueStmt(node: AContinueStmt) {
-
         if (openLoops <= 0)
             error(LoopJumpOutOfLoopError("Attempted to continue but was not inside of loop."))
     }
@@ -63,17 +61,17 @@ class ContextualConstraintAnalyzer(errorHandler: ErrorHandler, symbolTable: Symb
     override fun outAVardcl(node: AVardcl) {
         val identifier = symbolTable.findVar(node.identifier.text)!!
         if (node.expr != null) {
-            identifier.isInitialised = true
+            identifier.isInitialized = true
         }
     }
 
     override fun outAAssignStmt(node: AAssignStmt) {
-        symbolTable.findVar(node.identifier.text)!!.isInitialised = true
+        symbolTable.findVar(node.identifier.text)!!.isInitialized = true
     }
 
     override fun outAIdentifierValue(node: AIdentifierValue) {
         val identifier = symbolTable.findVar(node.identifier.text)
-        if (!identifier!!.isInitialised)
+        if (!identifier!!.isInitialized)
             error(IdentifierUsedBeforeAssignmentError("The variable ${node.identifier.text} was used before being initialized."))
     }
 

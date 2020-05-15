@@ -162,7 +162,7 @@ internal class ContextualConstraintsTest {
         """
         val (st, start) = compileUpToContextualConstraintsAnalyzerFromString(input)
         ContextualConstraintAnalyzer(ErrorHandler(input), st).caseStart(start)
-        assert(st.findVar("a")!!.isInitialised)
+        assert(st.findVar("a")!!.isInitialized)
     }
 
 
