@@ -298,14 +298,14 @@ Productions
             {-> relation.expr};
 
     relation {-> expr} =
-        {greaterthan} relation greaterthan term
-            {-> New expr.binop(relation.expr, New binop.greaterthan(), term.expr)}
-        | {lessthan} relation lessthan term
-            {-> New expr.binop(relation.expr, New binop.lessthan(), term.expr)}
-        | {lessthanorequalto} relation lessthanorequalto term
-            {-> New expr.unop(New unop.not(), New expr.binop(relation.expr, New binop.greaterthan(), term.expr))}
-        | {greaterthanorequalto} relation greaterthanorequalto term
-            {-> New expr.unop(New unop.not(), New expr.binop(relation.expr, New binop.lessthan(), term.expr))}
+        {greaterthan} relation greaterthan read_expr
+            {-> New expr.binop(relation.expr, New binop.greaterthan(), read_expr.expr)}
+        | {lessthan} relation lessthan read_expr
+            {-> New expr.binop(relation.expr, New binop.lessthan(), read_expr.expr)}
+        | {lessthanorequalto} relation lessthanorequalto read_expr
+            {-> New expr.unop(New unop.not(), New expr.binop(relation.expr, New binop.greaterthan(), read_expr.expr))}
+        | {greaterthanorequalto} relation greaterthanorequalto read_expr
+            {-> New expr.unop(New unop.not(), New expr.binop(relation.expr, New binop.lessthan(), read_expr.expr))}
         | {read} read_expr
             {-> read_expr.expr};
 
