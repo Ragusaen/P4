@@ -1,6 +1,5 @@
 package semantics.contextualConstraints
 
-import CompileError
 import ErrorHandler
 import sablecc.node.*
 import semantics.contextualConstraints.errors.LoopJumpOutOfLoopError
@@ -14,6 +13,7 @@ import semantics.typeChecking.errors.IdentifierUsedBeforeAssignmentError
 class ContextualConstraintAnalyzer(errorHandler: ErrorHandler, symbolTable: SymbolTable) : ScopedTraverser(errorHandler, symbolTable) {
     private var openLoops: Int = 0
     private var inFunction = false
+    private var inModule = false
     private var initCount: Int = 0
 
     fun run(node: Start) {
@@ -21,27 +21,23 @@ class ContextualConstraintAnalyzer(errorHandler: ErrorHandler, symbolTable: Symb
     }
 
     override fun outADelayStmt(node: ADelayStmt) {
-        if (inFunction) {
-            error(ModuleStatementUsedInFunctionException("Delay can only be used inside module declaration, not in function."))
-        }
+        if (!inModule)
+            error(ModuleStatementUsedInFunctionException("Delay can only be used inside module declaration."))
     }
 
     override fun outADelayuntilStmt(node: ADelayuntilStmt) {
-        if (inFunction) {
-            error(ModuleStatementUsedInFunctionException("Delay until can only be used inside module declaration, not in function."))
-        }
+        if (!inModule)
+            error(ModuleStatementUsedInFunctionException("Delay until can only be used inside module declaration."))
     }
 
     override fun outAStopStmt(node: AStopStmt) {
-        if (inFunction) {
-            error(ModuleStatementUsedInFunctionException("Stop can only be used inside module declaration, not in function."))
-        }
+        if (!inModule)
+            error(ModuleStatementUsedInFunctionException("Stop can only be used inside module declaration."))
     }
 
     override fun outAStartStmt(node: AStartStmt) {
-        if (inFunction) {
-            error(ModuleStatementUsedInFunctionException("Stop can only be used inside module declaration, not in function."))
-        }
+        if (!inModule)
+            error(ModuleStatementUsedInFunctionException("Stop can only be used inside module declaration."))
     }
 
     override fun outABreakStmt(node: ABreakStmt) {
@@ -50,7 +46,6 @@ class ContextualConstraintAnalyzer(errorHandler: ErrorHandler, symbolTable: Symb
     }
 
     override fun outAContinueStmt(node: AContinueStmt) {
-
         if (openLoops <= 0)
             error(LoopJumpOutOfLoopError("Attempted to continue but was not inside of loop."))
     }
@@ -63,17 +58,17 @@ class ContextualConstraintAnalyzer(errorHandler: ErrorHandler, symbolTable: Symb
     override fun outAVardcl(node: AVardcl) {
         val identifier = symbolTable.findVar(node.identifier.text)!!
         if (node.expr != null) {
-            identifier.isInitialised = true
+            identifier.isInitialized = true
         }
     }
 
     override fun outAAssignStmt(node: AAssignStmt) {
-        symbolTable.findVar(node.identifier.text)!!.isInitialised = true
+        symbolTable.findVar(node.identifier.text)!!.isInitialized = true
     }
 
     override fun outAIdentifierValue(node: AIdentifierValue) {
         val identifier = symbolTable.findVar(node.identifier.text)
-        if (!identifier!!.isInitialised)
+        if (!identifier!!.isInitialized)
             error(IdentifierUsedBeforeAssignmentError("The variable ${node.identifier.text} was used before being initialized."))
     }
 
@@ -102,9 +97,29 @@ class ContextualConstraintAnalyzer(errorHandler: ErrorHandler, symbolTable: Symb
         openLoops++
     }
 
-    override fun outAWhileStmt(node: AWhileStmt?) {
+    override fun outAWhileStmt(node: AWhileStmt) {
         super.outAWhileStmt(node)
         openLoops--
+    }
+
+    override fun inATemplateModuledcl(node: ATemplateModuledcl) {
+        super.inATemplateModuledcl(node)
+        inModule = true
+    }
+
+    override fun outATemplateModuledcl(node: ATemplateModuledcl) {
+        super.outATemplateModuledcl(node)
+        inModule = false
+    }
+
+    override fun inAInstanceModuledcl(node: AInstanceModuledcl) {
+        super.inAInstanceModuledcl(node)
+        inModule = true
+    }
+
+    override fun outAInstanceModuledcl(node: AInstanceModuledcl) {
+        super.outAInstanceModuledcl(node)
+        inModule = false
     }
 
     override fun inAInitRootElement(node: AInitRootElement) {

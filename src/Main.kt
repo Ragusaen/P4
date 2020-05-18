@@ -8,14 +8,8 @@ import semantics.typeChecking.TypeChecker
 
 fun main() {
     var input = """
-fun foo():Int {
-    return 0
-}
-
-template module a {
-    every(1000ms) {
-        Int a = foo()
-    }
+every(1000ms) {
+    delay 1000ms
 }
 """
     input += "\n"
