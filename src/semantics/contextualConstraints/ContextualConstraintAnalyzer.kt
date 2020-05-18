@@ -14,7 +14,7 @@ class ContextualConstraintAnalyzer(errorHandler: ErrorHandler, symbolTable: Symb
     private var openLoops: Int = 0
     private var inFunction = false
     private var inModule = false
-    private var initCount: Int = 0
+    private var initHasAppeared = false
 
     fun run(node: Start) {
         caseStart(node)
@@ -122,11 +122,11 @@ class ContextualConstraintAnalyzer(errorHandler: ErrorHandler, symbolTable: Symb
         inModule = false
     }
 
-    override fun inAInitRootElement(node: AInitRootElement) {
+    override fun outAInitRootElement(node: AInitRootElement) {
         super.inAInitRootElement(node)
 
-        initCount++
-        if(initCount > 1)
+        if(initHasAppeared)
             error(MultipleInitsError("Multiple init structures are declared."))
+        initHasAppeared = true
     }
 }

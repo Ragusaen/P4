@@ -8,8 +8,8 @@ import semantics.typeChecking.TypeChecker
 
 fun main() {
     var input = """
-every(1000ms) {
-    delay 1000ms
+fun a() {
+    // Do
 }
 """
     input += "\n"

@@ -962,9 +962,20 @@ internal class ParsingTests {
     @Test
     fun parseSingleLineCommentIsParseable(){
         var input = """
-            //Comment
+            // Comment
            Int i = 4  
         """
+        parseString(input)
+    }
+
+    @Test
+    fun parseCommentInFunctionIsParseable(){
+        var input = """
+            fun a() {
+                // Do
+            }
+        """
+
         parseString(input)
     }
 
