@@ -8,8 +8,12 @@ import semantics.typeChecking.TypeChecker
 
 fun main() {
     var input = """
+        //Test
 fun a() {
-    // Do
+    /* */
+    /*
+    */
+    //Test
 }
 """
     input += "\n"

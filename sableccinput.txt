@@ -8,6 +8,7 @@ Helpers
     cr = 13;
     lf = 10;
     eol = cr lf | cr | lf;
+    noteol = [all - [cr + lf]];
     boolliteral = ('false'|'true'|'HIGH'|'LOW');
     intliteral = '-'?digit+;
     floatliteral = '-'?(digit+('.'digit*)?|'.'digit+);
@@ -89,7 +90,7 @@ Tokens
     stringliteral = stringliteral;
     whitespace = (' ' | tab)+;
     eol = eol;
-    comment = '/*' all* '*/' eol | '//'all*eol;
+    comment = '/*' all* '*/' eol | '//'noteol* eol;
     digitalpinliteral = digitalpinliteral;
     analogpinliteral = analogpinliteral;
     identifier = anychar (anychar|digit)*;
