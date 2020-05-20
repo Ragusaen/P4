@@ -8,8 +8,11 @@ import semantics.typeChecking.TypeChecker
 
 fun main() {
     var input = """
-fun foo() 
-    return
+Bool state = LOW
+every(1s){
+    state = !state
+    set D4 to state
+}
 """
     input += "\n"
 
