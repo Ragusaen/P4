@@ -25,6 +25,13 @@ class TypeChecker(errorHandler: ErrorHandler, symbolTable: SymbolTable) : Scoped
     private var currentFunctionReturnType: Type? = null
     private var currentFunctionName:String? = null
 
+    override fun inAFunctiondcl(node: AFunctiondcl) {
+        super.inAFunctiondcl(node)
+
+        currentFunctionReturnType = symbolTable.findFun(node.identifier.text, Helper.getFunParams(node))!!.type
+        currentFunctionName = node.identifier.text
+    }
+
     override fun outAReturnStmt(node: AReturnStmt) {
         val type = if (node.expr == null)
             Type.Void
@@ -163,13 +170,6 @@ class TypeChecker(errorHandler: ErrorHandler, symbolTable: SymbolTable) : Scoped
                 else
                     error(IllegalImplicitTypeConversionError("Cannot initialize the variable ${node.identifier.text} of type ${identifier.type} with value of type $typeE."))
         }
-    }
-
-    override fun inAFunctiondcl(node: AFunctiondcl) {
-        super.inAFunctiondcl(node)
-
-        currentFunctionReturnType = symbolTable.findFun(node.identifier.text, Helper.getFunParams(node))!!.type
-        currentFunctionName = node.identifier.text
     }
 
     override fun outAUnopExpr(node: AUnopExpr) {
