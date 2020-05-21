@@ -22,7 +22,7 @@ class TypeChecker(errorHandler: ErrorHandler, symbolTable: SymbolTable) : Scoped
         typeTable[node] = type
     }
 
-    fun getType(node: Node): Type {
+    private fun getType(node: Node): Type {
         val prevSize = typeStack.size
         node.apply(this)
         if (typeStack.size <= prevSize)
@@ -41,10 +41,7 @@ class TypeChecker(errorHandler: ErrorHandler, symbolTable: SymbolTable) : Scoped
     }
 
     override fun outAReturnStmt(node: AReturnStmt) {
-        val type = if (node.expr == null)
-            Type.Void
-        else
-            typeStack.pop()
+        val type = if (node.expr == null) Type.Void else typeStack.pop()
 
         if (currentFunctionReturnType != type) {
             error(IllegalImplicitTypeConversionError(
