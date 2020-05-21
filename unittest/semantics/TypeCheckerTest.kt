@@ -636,6 +636,19 @@ internal class TypeCheckerTest {
         TypeChecker(ErrorHandler(input), st).run(start)
     }
 
+    @Test
+    fun incorrectReturnTypeInFunctionThrowsError(){
+        val input =
+        """
+            fun a():Int {
+                return
+            }
+        """
+
+        val (st, start) = getScopeFromString(input)
+        assertThrows<IllegalImplicitTypeConversionError> { TypeChecker(ErrorHandler(input), st).run(start) }
+    }
+
     private fun getScopeFromString(input:String):Pair<SymbolTable, Start> {
         val lexer = StringLexer(input)
         val parser = Parser(lexer)

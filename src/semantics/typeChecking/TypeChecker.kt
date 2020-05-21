@@ -26,10 +26,11 @@ class TypeChecker(errorHandler: ErrorHandler, symbolTable: SymbolTable) : Scoped
     private var currentFunctionName:String? = null
 
     override fun outAReturnStmt(node: AReturnStmt) {
-        if (node.expr == null)
-            return
+        val type = if (node.expr == null)
+            Type.Void
+        else
+            typeStack.pop()
 
-        val type = typeStack.pop()
         if (currentFunctionReturnType != type) {
             error(IllegalImplicitTypeConversionError(
                     "In function $currentFunctionName:\n" +
