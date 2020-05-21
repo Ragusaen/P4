@@ -5,7 +5,8 @@ import semantics.typeChecking.Type.Companion.DigitalPin
 class Type private constructor(private val main: EType, private val subType: Type? = null) {
     private enum class EType {
         INT, INT8, INT16, INT32, INT64,
-        FLOAT, FLOAT32, FLOAT64, STRING, BOOL,
+        UINT, UINT8, UINT16, UINT32, UINT64,
+        FLOAT, STRING, BOOL,
         DIGITALINPUTPIN, DIGITALOUTPUTPIN,
         ANALOGINPUTPIN, ANALOGOUTPUTPIN,
         DIGITALPIN, ANALOGPIN,
@@ -18,6 +19,11 @@ class Type private constructor(private val main: EType, private val subType: Typ
         val Int16 = Type(EType.INT16)
         val Int32 = Type(EType.INT32)
         val Int64 = Type(EType.INT64)
+        val Uint = Type(EType.UINT)
+        val Uint8 = Type(EType.UINT8)
+        val Uint16 = Type(EType.UINT16)
+        val Uint32 = Type(EType.UINT32)
+        val Uint64 = Type(EType.UINT64)
         val Float = Type(EType.FLOAT)
         val String = Type(EType.STRING)
         val Bool = Type(EType.BOOL)
@@ -56,6 +62,7 @@ class Type private constructor(private val main: EType, private val subType: Typ
     }
 
     fun isIntType(): Boolean = main == EType.INT || main == EType.INT8 || main == EType.INT16 || main == EType.INT32 || main == EType.INT64
+            || main == EType.UINT || main == EType.UINT8 || main == EType.UINT16 || main == EType.UINT32 || main == EType.UINT64
 
     fun isArray(): Boolean = main == EType.ARRAY
     fun getArraySubType(): Type = subType!!

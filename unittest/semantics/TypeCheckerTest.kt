@@ -636,19 +636,6 @@ internal class TypeCheckerTest {
         TypeChecker(ErrorHandler(input), st).run(start)
     }
 
-    @Test
-    fun assigningFloatToAnotherFloatTypeIsOk(){
-        val input =
-                """
-            Float64 i = 254567.457645
-            Float32 k = i
-        """
-
-        val (st, start) = getScopeFromString(input)
-        TypeChecker(ErrorHandler(input), st).run(start)
-    }
-
-
     private fun getScopeFromString(input:String):Pair<SymbolTable, Start> {
         val lexer = StringLexer(input)
         val parser = Parser(lexer)

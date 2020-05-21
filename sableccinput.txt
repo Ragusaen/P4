@@ -24,6 +24,11 @@ Tokens
     int16type = 'Int16';
     int32type = 'Int32';
     int64type = 'Int64';
+    uinttype = 'Uint';
+    uint8type = 'Uint8';
+    uint16type = 'Uint16';
+    uint32type = 'Uint32';
+    uint64type = 'Uint64';
     floattype = 'Float';
     booltype = 'Bool';
     timetype = 'Time';
@@ -31,6 +36,7 @@ Tokens
     digitalinputpintype = 'DigitalInputPin';
     analogoutputpintype = 'AnalogOutputPin';
     analoginputpintype = 'AnalogInputPin';
+    unsigned  = 'unsigned';
     every = 'every';
     if = 'if';
     on = 'on';
@@ -260,6 +266,11 @@ Productions
         | {int16} int16type {-> New type.int16()}
         | {int32} int32type {-> New type.int32()}
         | {int64} int64type {-> New type.int64()}
+        | {uint} uinttype {-> New type.uint()}
+        | {uint8} uint8type {-> New type.uint8()}
+        | {uint16} uint16type {-> New type.uint16()}
+        | {uint32} uint32type {-> New type.uint32()}
+        | {uint64} uint64type {-> New type.uint64()}
         | {float} floattype {-> New type.float()}
         | {bool} booltype {-> New type.bool()}
         | {time} timetype {-> New type.time()}
@@ -396,7 +407,7 @@ Abstract Syntax Tree
 
 /* Declaration subnodes */
     vardcl = identifier expr?;
-    type = {string} | {int} | {int8} | {int16} | {int32} | {int64} | {float} | {bool} | {time} | {digitaloutputpin} | {digitalinputpin} | {analogoutputpin} | {analoginputpin} | {array} type [size]:expr?;
+    type = {string} | {int} | {int8} | {int16} | {int32} | {int64} | {uint} | {uint8} | {uint16} | {uint32} | {uint64} | {float} | {bool} | {time} | {digitaloutputpin} | {digitalinputpin} | {analogoutputpin} | {analoginputpin} | {array} type [size]:expr?;
 
 /* Expression */
     expr = {binop} [l]:expr binop [r]:expr | {unop} unop expr | {function_call} identifier expr* | {value} value | {index} [value]:expr [index]:expr | {read} [pin]:expr;

@@ -274,7 +274,7 @@ class TypeChecker(errorHandler: ErrorHandler, symbolTable: SymbolTable) : Scoped
         if ((pin == Type.DigitalOutputPin || pin == Type.DigitalPin) && value != Type.Bool)
             error(IllegalImplicitTypeConversionError("Pin was digital so Bool was expected, but instead $value was found"))
         else if ((pin == Type.AnalogOutputPin || pin == Type.AnalogPin) && !value.isIntType())
-            error(IllegalImplicitTypeConversionError("Pin was analog so an Int between 0 and 1023 (inclusive) was expected, but $value was found"))
+            error(IllegalImplicitTypeConversionError("Pin was analog so an Int between 0 and 255 (inclusive) was expected, but $value was found"))
         else if (pin == Type.AnalogInputPin || pin == Type.DigitalInputPin)
             error(IllegalImplicitTypeConversionError("Cannot set value of input pin."))
         else if (!(pin == Type.DigitalOutputPin || pin == Type.AnalogOutputPin || pin == Type.DigitalPin || pin == Type.AnalogPin))

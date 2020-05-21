@@ -9,6 +9,16 @@ import semantics.typeChecking.TypeChecker
 fun main() {
     var input = """
 Float f = 5.4
+Int a = 5
+Int8 b = 5
+Int16 c = 5
+Int32 d = 5
+Int64 e = 4
+Uint m = 5
+Uint8 g = 5
+Uint16 h = 5
+Uint32 q = 5
+Uint64 k = 5
 """
     input += "\n"
 

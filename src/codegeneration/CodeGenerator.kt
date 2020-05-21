@@ -123,7 +123,7 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, errorHandler:
     }
 
     private fun generateTopCode(): String {
-        var res = "#include <Arduino_FreeRTOS.h>\n\ntypedef char Bool;\ntypedef unsigned int Time;\ntypedef int DigitalOutputPin;\n"
+        var res = "#include <Arduino_FreeRTOS.h>\n#include <stdint.h>\n\ntypedef char Bool;\ntypedef unsigned int Time;\ntypedef int DigitalOutputPin;\n"
 
         // Generate code for modules
         for (ma in moduleAuxes) {
@@ -445,23 +445,43 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, errorHandler:
 
     // Type handling
     override fun caseAIntType(node: AIntType) {
-        codeStack.push("int")
+        codeStack.push("int16_t")
     }
 
     override fun caseAInt8Type(node: AInt8Type) {
-        codeStack.push("char")
+        codeStack.push("int8_t")
     }
 
     override fun caseAInt16Type(node: AInt16Type) {
-        codeStack.push("int")
+        codeStack.push("int16_t")
     }
 
     override fun caseAInt32Type(node: AInt32Type) {
-        codeStack.push("long")
+        codeStack.push("int32_t")
     }
 
     override fun caseAInt64Type(node: AInt64Type) {
-        codeStack.push("long long")
+        codeStack.push("int64_t")
+    }
+
+    override fun caseAUintType(node: AUintType) {
+        codeStack.push("uint16_t")
+    }
+
+    override fun caseAUint8Type(node: AUint8Type) {
+        codeStack.push("uint8_t")
+    }
+
+    override fun caseAUint16Type(node: AUint16Type) {
+        codeStack.push("uint16_t")
+    }
+
+    override fun caseAUint32Type(node: AUint32Type) {
+        codeStack.push("uint32_t")
+    }
+
+    override fun caseAUint64Type(node: AUint64Type) {
+        codeStack.push("uint64_t")
     }
 
     override fun caseAFloatType(node: AFloatType) {
