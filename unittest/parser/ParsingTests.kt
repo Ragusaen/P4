@@ -36,9 +36,57 @@ internal class ParsingTests {
     }
 
     @Test
+    fun parseInt8DeclarationIsParseable(){
+        val input = """
+            Int8 a = 5
+        """
+        parseString(input)
+    }
+
+    @Test
+    fun parseInt16DeclarationIsParseable(){
+        val input = """
+            Int16 a = 5
+        """
+        parseString(input)
+    }
+
+    @Test
+    fun parseInt32DeclarationIsParseable(){
+        val input = """
+            Int32 a = 5
+        """
+        parseString(input)
+    }
+
+    @Test
+    fun parseInt64DeclarationIsParseable(){
+        val input = """
+            Int64 a = 5
+        """
+        parseString(input)
+    }
+
+    @Test
     fun parseFloatDeclarationIsParseable(){
         val input = """
             Float f = 5.5
+        """
+        parseString(input)
+    }
+
+    @Test
+    fun parseFloat32DeclarationIsParseable(){
+        val input = """
+            Float32 f = 5.5
+        """
+        parseString(input)
+    }
+
+    @Test
+    fun parseFloat64DeclarationIsParseable(){
+        val input = """
+            Float64 f = 5.5
         """
         parseString(input)
     }
@@ -593,7 +641,7 @@ internal class ParsingTests {
         var input = """
            fun f(){
                 DigitalOutputPin p = D5
-                start(p)
+                start p
             }
         """
         parseString(input)
@@ -603,7 +651,7 @@ internal class ParsingTests {
     fun parseStartStmtWithoutIdentifierThrowsException(){
         var input = """
            fun f(){
-                start()
+                start
             }
         """
         assertThrows<ParserException> { parseString(input) }
@@ -623,7 +671,7 @@ internal class ParsingTests {
     fun parseDelayStmtIsParseable(){
         var input = """
            fun f(){
-                delay(500ms)
+                delay 500ms
             }
         """
         parseString(input)
@@ -633,7 +681,7 @@ internal class ParsingTests {
     fun parseDelayStmtNoParamsThrowsExceptioni(){
         var input = """
            fun f(){
-                delay()
+                delay
             }
         """
         assertThrows<ParserException> { parseString(input) }
@@ -643,7 +691,7 @@ internal class ParsingTests {
     fun parseDelayUntilStmtIsParseable(){
         var input = """
            fun f(){
-                delay until(500ms)
+                delay until true
             }
         """
         parseString(input)
@@ -653,7 +701,7 @@ internal class ParsingTests {
     fun parseDelayUntilStmtNoParamsThrowsExceptioni(){
         var input = """
            fun f(){
-                delay until()
+                delay until
             }
         """
         assertThrows<ParserException> { parseString(input) }
@@ -884,9 +932,7 @@ internal class ParsingTests {
         var input = """
            Int i = 2 - --5
         """
-        val start = parseString(input)
-        val p = PrettyPrinter()
-        p.print(start)
+        parseString(input)
     }
 
     @Test
@@ -916,9 +962,20 @@ internal class ParsingTests {
     @Test
     fun parseSingleLineCommentIsParseable(){
         var input = """
-            //Comment
+            // Comment
            Int i = 4  
         """
+        parseString(input)
+    }
+
+    @Test
+    fun parseCommentInFunctionIsParseable(){
+        var input = """
+            fun a() {
+                // Do
+            }
+        """
+
         parseString(input)
     }
 

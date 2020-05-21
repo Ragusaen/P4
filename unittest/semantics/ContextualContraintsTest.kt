@@ -17,33 +17,33 @@ import semantics.symbolTable.SymbolTableBuilder
 internal class ContextualConstraintsTest {
     @Test
     fun returnOutOfFunctionDeclarationThrowsException() {
-        val code =
+        val input =
         """
             every (100ms) {
                 return
             }
         """
 
-        val (st, start) = compileUpToContextualConstraintsAnalyzerFromString(code)
-        assertThrows<ReturnOutOfFunctionDeclarationError> { ContextualConstraintAnalyzer(ErrorHandler(code), st).caseStart(start) }
+        val (st, start) = compileUpToContextualConstraintsAnalyzerFromString(input)
+        assertThrows<ReturnOutOfFunctionDeclarationError> { ContextualConstraintAnalyzer(ErrorHandler(input), st).caseStart(start) }
     }
 
     @Test
     fun returnInsideFunctionDeclarationIsOkay() {
-        val code =
+        val input =
         """
             fun foo():Int {
                 return 5
             }
         """
 
-        val (st, start) = compileUpToContextualConstraintsAnalyzerFromString(code)
-        ContextualConstraintAnalyzer(ErrorHandler(code), st).caseStart(start)
+        val (st, start) = compileUpToContextualConstraintsAnalyzerFromString(input)
+        ContextualConstraintAnalyzer(ErrorHandler(input), st).caseStart(start)
     }
 
     @Test
     fun breakAndContinueInsideNestedLoopsIsOkay() {
-        val code = """
+        val input = """
             every(100ms) {
                 while(true) {
                     while(false) {
@@ -58,13 +58,13 @@ internal class ContextualConstraintsTest {
             }
         """
 
-        val (st, start) = compileUpToContextualConstraintsAnalyzerFromString(code)
-        ContextualConstraintAnalyzer(ErrorHandler(code), st).caseStart(start)
+        val (st, start) = compileUpToContextualConstraintsAnalyzerFromString(input)
+        ContextualConstraintAnalyzer(ErrorHandler(input), st).caseStart(start)
     }
 
     @Test
     fun breakOutsideLoopThrowsException() {
-        val code =
+        val input =
         """
             every(100ms) {
                 while(true) {
@@ -74,8 +74,8 @@ internal class ContextualConstraintsTest {
                 break
             }
         """
-        val (st, start) = compileUpToContextualConstraintsAnalyzerFromString(code)
-        assertThrows<LoopJumpOutOfLoopError> { ContextualConstraintAnalyzer(ErrorHandler(code), st).caseStart(start) }
+        val (st, start) = compileUpToContextualConstraintsAnalyzerFromString(input)
+        assertThrows<LoopJumpOutOfLoopError> { ContextualConstraintAnalyzer(ErrorHandler(input), st).caseStart(start) }
     }
 
     @Test
@@ -131,7 +131,7 @@ internal class ContextualConstraintsTest {
     fun startCannotBeUsedInsideFunction(){
         val input = """
             fun foo() {
-                start (bar)
+                start bar
             }
             
             module bar {
@@ -148,7 +148,7 @@ internal class ContextualConstraintsTest {
         val input = """
             module foo {
                 every (1s)
-                    start (foo)
+                    start foo
             }
         """
         val (st, start) = compileUpToContextualConstraintsAnalyzerFromString(input)
@@ -162,7 +162,7 @@ internal class ContextualConstraintsTest {
         """
         val (st, start) = compileUpToContextualConstraintsAnalyzerFromString(input)
         ContextualConstraintAnalyzer(ErrorHandler(input), st).caseStart(start)
-        assert(st.findVar("a")!!.isInitialised)
+        assert(st.findVar("a")!!.isInitialized)
     }
 
 

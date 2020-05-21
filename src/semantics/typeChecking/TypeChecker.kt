@@ -22,6 +22,14 @@ class TypeChecker(errorHandler: ErrorHandler, symbolTable: SymbolTable) : Scoped
         typeTable[node] = type
     }
 
+    fun getType(node: Node): Type {
+        val prevSize = typeStack.size
+        node.apply(this)
+        if (typeStack.size <= prevSize)
+            println("Warning: Nothing was pushed to the typestack when getting type for node ${node::class.simpleName}\n")
+        return typeStack.pop()
+    }
+
     private var currentFunctionReturnType: Type? = null
     private var currentFunctionName:String? = null
 
@@ -85,14 +93,14 @@ class TypeChecker(errorHandler: ErrorHandler, symbolTable: SymbolTable) : Scoped
         val upperType = typeStack.pop()
         val lowerType = typeStack.pop()
 
-        if (lowerType != Type.Int)
-            error(IllegalImplicitTypeConversionError("'For expects lower bound of type int, but got $lowerType"))
+        if (!lowerType.isIntType())
+            error(IllegalImplicitTypeConversionError("'For expects lower bound of type Int, but got $lowerType"))
 
-        if (upperType != Type.Int)
-            error(IllegalImplicitTypeConversionError("'For expects upper bound of type int, but got $upperType"))
+        if (!upperType.isIntType())
+            error(IllegalImplicitTypeConversionError("'For expects upper bound of type Int, but got $upperType"))
 
-        if (node.step != null && stepType != Type.Int)
-            error(IllegalImplicitTypeConversionError("'For expects step of type int, but got $stepType"))
+        if (node.step != null && !stepType.isIntType())
+            error(IllegalImplicitTypeConversionError("'For expects step of type Int, but got $stepType"))
     }
 
     override fun outAWhileStmt(node: AWhileStmt) {
@@ -180,9 +188,9 @@ class TypeChecker(errorHandler: ErrorHandler, symbolTable: SymbolTable) : Scoped
         when(node.unop) {
             is ANotUnop -> if (exprType != Type.Bool)
                 error(IncompatibleOperatorError("Cannot apply conditional unary '!' operator to expression of $exprType"))
-            is APlusUnop -> if (exprType != Type.Int && exprType != Type.Float)
+            is APlusUnop -> if (!exprType.isIntType() && !exprType.isFloatType())
                 error(IncompatibleOperatorError("Cannot apply conditional unary '+' operator to expression of $exprType"))
-            is AMinusUnop -> if (exprType != Type.Int && exprType != Type.Float)
+            is AMinusUnop -> if (!exprType.isIntType() && !exprType.isFloatType())
                 error(IncompatibleOperatorError("Cannot apply conditional unary '-' operator to expression of $exprType"))
         }
     }
@@ -246,7 +254,7 @@ class TypeChecker(errorHandler: ErrorHandler, symbolTable: SymbolTable) : Scoped
         val value = typeStack.pop()
 
         if (value.isArray())
-            if (index == Type.Int)
+            if (index.isIntType())
                 pushType(node, value.getArraySubType())
             else error(IllegalImplicitTypeConversionError("Indexing must be of type Int, but got $index"))
         else
@@ -267,18 +275,19 @@ class TypeChecker(errorHandler: ErrorHandler, symbolTable: SymbolTable) : Scoped
             error(Exception("Array literal was of size 0 (should have been caught in parser)"))
     }
 
-    override fun outASetToStmt(node: ASetToStmt) {
-        val value = typeStack.pop()
-        val pin = typeStack.pop()
+    override fun caseASetToStmt(node: ASetToStmt) {
+        val pin = getType(node.pin)
 
-        if ((pin == Type.DigitalOutputPin || pin == Type.DigitalPin) && value != Type.Bool)
-            error(IllegalImplicitTypeConversionError("Pin was digital so Bool was expected, but instead $value was found"))
-        else if ((pin == Type.AnalogOutputPin || pin == Type.AnalogPin) && value != Type.Int)
-            error(IllegalImplicitTypeConversionError("Pin was analog so an Int between 0 and 1023 (inclusive) was expected, but $value was found"))
-        else if (pin == Type.AnalogInputPin || pin == Type.DigitalInputPin)
+        if (pin.exactlyEquals(Type.AnalogInputPin) || pin.exactlyEquals(Type.DigitalInputPin))
             error(IllegalImplicitTypeConversionError("Cannot set value of input pin."))
-        else if (!(pin == Type.DigitalOutputPin || pin == Type.AnalogOutputPin || pin == Type.DigitalPin || pin == Type.AnalogPin))
+        if (!(pin == Type.DigitalPin || pin == Type.AnalogPin))
             error(IllegalImplicitTypeConversionError("Expected type DigitalOutputPin, AnalogOutputPin, DigitalPin or AnalogPin, but got $pin"))
+
+        val value = getType(node.value)
+        if (pin == Type.DigitalPin && value != Type.Bool) // Covers all digital pin types (input has already been ruled out)
+            error(IllegalImplicitTypeConversionError("Pin was digital so Bool was expected, but instead $value was found"))
+        else if (pin == Type.AnalogPin && !value.isIntType())
+            error(IllegalImplicitTypeConversionError("Pin was analog so an Int between 0 and 1023 (inclusive) was expected, but $value was found"))
 
         typeTable[node] = pin
     }

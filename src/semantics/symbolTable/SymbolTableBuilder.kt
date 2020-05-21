@@ -33,7 +33,7 @@ class SymbolTableBuilder(errorHandler: ErrorHandler) : ErrorTraverser(errorHandl
             currentScope.variables[name] = Identifier(type, currentVarPrefix + name, isInit)
     }
 
-    private fun addFun(node: Node, name:String, params: List<Type>, identifier: Identifier) {
+    private fun addFun(name:String, params: List<Type>, identifier: Identifier) {
         // If the name is already used within this scope throw exception
         if (Pair(name, params) in namedFunctionTable)
             error(IdentifierAlreadyDeclaredError("Function with the name $name with parameters: $params has already been declared."))
@@ -68,7 +68,7 @@ class SymbolTableBuilder(errorHandler: ErrorHandler) : ErrorTraverser(errorHandl
     }
 
     private fun openScope() {
-        val newScope = Scope(currentScope)
+        val newScope = Scope(parent=currentScope)
         currentScope.children.add(newScope)
         currentScope = newScope
     }
@@ -143,7 +143,7 @@ class SymbolTableBuilder(errorHandler: ErrorHandler) : ErrorTraverser(errorHandl
 
             val type = if (node.type == null) Type.Void else Helper.getTypeFromPType(node.type)
 
-            addFun(node, name, params, Identifier(type, name))
+            addFun(name, params, Identifier(type, name))
         }
         else
             super.caseAFunctiondcl(node)

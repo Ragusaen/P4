@@ -8,6 +8,7 @@ Helpers
     cr = 13;
     lf = 10;
     eol = cr lf | cr | lf;
+    noteol = [all - [cr + lf]];
     boolliteral = ('false'|'true'|'HIGH'|'LOW');
     intliteral = '-'?digit+;
     floatliteral = '-'?(digit+('.'digit*)?|'.'digit+);
@@ -19,7 +20,13 @@ Helpers
 Tokens
     stringtype = 'String';
     inttype = 'Int';
+    int8type = 'Int8';
+    int16type = 'Int16';
+    int32type = 'Int32';
+    int64type = 'Int64';
     floattype = 'Float';
+    float32type = 'Float32';
+    float64type = 'Float64';
     booltype = 'Bool';
     timetype = 'Time';
     digitaloutputpintype = 'DigitalOutputPin';
@@ -83,7 +90,7 @@ Tokens
     stringliteral = stringliteral;
     whitespace = (' ' | tab)+;
     eol = eol;
-    comment = '/*' all* '*/' eol | '//'all*eol;
+    comment = '/*' all* '*/' eol | '//'noteol* eol;
     digitalpinliteral = digitalpinliteral;
     analogpinliteral = analogpinliteral;
     identifier = anychar (anychar|digit)*;
@@ -169,8 +176,10 @@ Productions
             {-> New stmt.while(condition, body.stmt)}
         | {for} for lparen identifier in [lower]:expr to [upper]:expr forstep? rparen eol? [body]:matched
             {-> New stmt.for(identifier, lower, upper, forstep.expr, body.stmt)}
-        | {simple_stmt} simple_stmt
-            {-> simple_stmt.stmt};
+        | {single_stmt} single_stmt eol
+            {-> single_stmt.stmt}
+        | {block} lbrace [start]:eol? stmt* rbrace [end]:eol?
+            {-> New stmt.block([stmt])};
 
     unmatched {-> stmt} =
         {unmatched_if_simple} if lparen [condition]:expr rparen eol? stmt
@@ -182,11 +191,9 @@ Productions
         | {for} for lparen identifier in [lower]:expr to [upper]:expr forstep? rparen eol? [body]:unmatched
             {-> New stmt.for(identifier, lower, upper, forstep.expr, body.stmt)};
 
-    simple_stmt {-> stmt} =
-         {single_stmt} single_stmt eol
-             {-> single_stmt.stmt}
-         | {block} lbrace [start]:eol? stmt* rbrace [end]:eol?
-              {-> New stmt.block([stmt])};
+    forstep {-> expr} =
+        step expr
+            {-> expr};
 
     single_stmt {-> stmt} =
         {dcl} dcl
@@ -205,13 +212,13 @@ Productions
             {-> New stmt.assign(identifier, expr, New binop.multiplication())}
         | {moduloassign} identifier moduloassign expr
             {-> New stmt.assign(identifier, expr, New binop.modulo())}
-        | {start} start lparen identifier rparen
+        | {start} start identifier
             {-> New stmt.start(start, identifier)}
-        | {stop} stop expr?
-            {-> New stmt.stop(stop, expr)}
-        | {delay} delay lparen expr rparen
+        | {stop} stop identifier?
+            {-> New stmt.stop(stop, identifier)}
+        | {delay} delay expr
             {-> New stmt.delay(delay, expr)}
-        | {delay_until} delay until lparen expr rparen
+        | {delay_until} delay until expr
             {-> New stmt.delayuntil(delay, expr)}
         | {return} return expr?
             {-> New stmt.return(return, expr)}
@@ -222,9 +229,6 @@ Productions
         | {continue} continue
             {-> New stmt.continue(continue)};
 
-        forstep {-> expr} =
-            step expr
-                {-> expr};
 
 /* Declaration */
     dcl {-> stmt} =
@@ -254,7 +258,13 @@ Productions
     type {-> type} =
         {string} stringtype {-> New type.string()}
         | {int} inttype {-> New type.int()}
+        | {int8} int8type {-> New type.int8()}
+        | {int16} int16type {-> New type.int16()}
+        | {int32} int32type {-> New type.int32()}
+        | {int64} int64type {-> New type.int64()}
         | {float} floattype {-> New type.float()}
+        | {float32} float32type {-> New type.float32()}
+        | {float64} float64type {-> New type.float64()}
         | {bool} booltype {-> New type.bool()}
         | {time} timetype {-> New type.time()}
         | {array} type lbracket expr? rbracket {-> New type.array(type, expr)}
@@ -289,14 +299,14 @@ Productions
             {-> relation.expr};
 
     relation {-> expr} =
-        {greaterthan} relation greaterthan term
-            {-> New expr.binop(relation.expr, New binop.greaterthan(), term.expr)}
-        | {lessthan} relation lessthan term
-            {-> New expr.binop(relation.expr, New binop.lessthan(), term.expr)}
-        | {lessthanorequalto} relation lessthanorequalto term
-            {-> New expr.unop(New unop.not(), New expr.binop(relation.expr, New binop.greaterthan(), term.expr))}
-        | {greaterthanorequalto} relation greaterthanorequalto term
-            {-> New expr.unop(New unop.not(), New expr.binop(relation.expr, New binop.lessthan(), term.expr))}
+        {greaterthan} relation greaterthan read_expr
+            {-> New expr.binop(relation.expr, New binop.greaterthan(), read_expr.expr)}
+        | {lessthan} relation lessthan read_expr
+            {-> New expr.binop(relation.expr, New binop.lessthan(), read_expr.expr)}
+        | {lessthanorequalto} relation lessthanorequalto read_expr
+            {-> New expr.unop(New unop.not(), New expr.binop(relation.expr, New binop.greaterthan(), read_expr.expr))}
+        | {greaterthanorequalto} relation greaterthanorequalto read_expr
+            {-> New expr.unop(New unop.not(), New expr.binop(relation.expr, New binop.lessthan(), read_expr.expr))}
         | {read} read_expr
             {-> read_expr.expr};
 
@@ -386,11 +396,11 @@ Abstract Syntax Tree
     module_structure = {every} expr [body]:stmt | {on} expr [body]:stmt;
 
 /* Statement */
-    stmt = {dcl} type vardcl* | {moduledcl} [template]:identifier [instance]:identifier expr* | {start} [token]:start identifier | {stop} [token]:stop expr? | {set_to} [pin]:expr [value]:expr | {delay} [token]:delay expr | {delayuntil} [token]:delay expr | {assign} identifier expr binop? | {block} stmt* | {if} [condition]:expr [if_body]:stmt [else_body]:stmt? | {while} [condition]:expr [body]:stmt | {for} identifier [lower]:expr [upper]:expr [step]:expr? [body]:stmt | {expr} expr | {return} [token]:return expr? | {break} [token]:break | {continue} [token]:continue;
+    stmt = {dcl} type vardcl* | {moduledcl} [template]:identifier [instance]:identifier expr* | {start} [token]:start identifier | {stop} [token]:stop identifier? | {set_to} [pin]:expr [value]:expr | {delay} [token]:delay expr | {delayuntil} [token]:delay expr | {assign} identifier expr binop? | {block} stmt* | {if} [condition]:expr [if_body]:stmt [else_body]:stmt? | {while} [condition]:expr [body]:stmt | {for} identifier [lower]:expr [upper]:expr [step]:expr? [body]:stmt | {expr} expr | {return} [token]:return expr? | {break} [token]:break | {continue} [token]:continue;
 
 /* Declaration subnodes */
     vardcl = identifier expr?;
-    type = {string} | {int} | {float} | {bool} | {time} | {digitaloutputpin} | {digitalinputpin} | {analogoutputpin} | {analoginputpin} | {array} type [size]:expr?;
+    type = {string} | {int} | {int8} | {int16} | {int32} | {int64} | {float} | {float32} | {float64} | {bool} | {time} | {digitaloutputpin} | {digitalinputpin} | {analogoutputpin} | {analoginputpin} | {array} type [size]:expr?;
 
 /* Expression */
     expr = {binop} [l]:expr binop [r]:expr | {unop} unop expr | {function_call} identifier expr* | {value} value | {index} [value]:expr [index]:expr | {read} [pin]:expr;
