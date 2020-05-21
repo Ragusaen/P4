@@ -19,8 +19,6 @@ class Type private constructor(private val main: EType, private val subType: Typ
         val Int32 = Type(EType.INT32)
         val Int64 = Type(EType.INT64)
         val Float = Type(EType.FLOAT)
-        val Float32 = Type(EType.FLOAT32)
-        val Float64 = Type(EType.FLOAT64)
         val String = Type(EType.STRING)
         val Bool = Type(EType.BOOL)
         val Time = Type(EType.TIME)
@@ -48,8 +46,6 @@ class Type private constructor(private val main: EType, private val subType: Typ
                     return true
             } else if(isIntType() && other.isIntType())
                 return true
-            else if(isFloatType() && other.isFloatType())
-                return true
             else if ((main == EType.DIGITALPIN && (other.main == EType.DIGITALINPUTPIN || other.main == EType.DIGITALOUTPUTPIN))
                     || (other.main == EType.DIGITALPIN && (main == EType.DIGITALINPUTPIN || main == EType.DIGITALOUTPUTPIN))
                     || (main == EType.ANALOGPIN && (other.main == EType.ANALOGINPUTPIN || other.main == EType.ANALOGOUTPUTPIN))
@@ -60,7 +56,6 @@ class Type private constructor(private val main: EType, private val subType: Typ
     }
 
     fun isIntType(): Boolean = main == EType.INT || main == EType.INT8 || main == EType.INT16 || main == EType.INT32 || main == EType.INT64
-    fun isFloatType(): Boolean = main == EType.FLOAT || main == EType.FLOAT32 || main == EType.FLOAT64
 
     fun isArray(): Boolean = main == EType.ARRAY
     fun getArraySubType(): Type = subType!!

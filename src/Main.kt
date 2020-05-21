@@ -8,13 +8,7 @@ import semantics.typeChecking.TypeChecker
 
 fun main() {
     var input = """
-        //Test
-fun a() {
-    /* */
-    /*
-    */
-    //Test
-}
+Float f = 5.4
 """
     input += "\n"
 

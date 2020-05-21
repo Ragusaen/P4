@@ -453,27 +453,19 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, errorHandler:
     }
 
     override fun caseAInt16Type(node: AInt16Type) {
-        codeStack.push("short int")
-    }
-
-    override fun caseAInt32Type(node: AInt32Type) {
         codeStack.push("int")
     }
 
+    override fun caseAInt32Type(node: AInt32Type) {
+        codeStack.push("long")
+    }
+
     override fun caseAInt64Type(node: AInt64Type) {
-        codeStack.push("long int")
+        codeStack.push("long long")
     }
 
     override fun caseAFloatType(node: AFloatType) {
         codeStack.push("float")
-    }
-
-    override fun caseAFloat32Type(node: AFloat32Type?) {
-        codeStack.push("float")
-    }
-
-    override fun caseAFloat64Type(node: AFloat64Type?) {
-        codeStack.push("double")
     }
 
     override fun caseATimeType(node: ATimeType) {
