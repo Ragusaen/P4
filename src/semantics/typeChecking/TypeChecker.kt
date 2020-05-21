@@ -33,10 +33,7 @@ class TypeChecker(errorHandler: ErrorHandler, symbolTable: SymbolTable) : Scoped
     }
 
     override fun outAReturnStmt(node: AReturnStmt) {
-        val type = if (node.expr == null)
-            Type.Void
-        else
-            typeStack.pop()
+        val type = if (node.expr == null) Type.Void else typeStack.pop()
 
         if (currentFunctionReturnType != type) {
             error(IllegalImplicitTypeConversionError(
