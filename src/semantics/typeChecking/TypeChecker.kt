@@ -22,7 +22,7 @@ class TypeChecker(errorHandler: ErrorHandler, symbolTable: SymbolTable) : Scoped
         typeTable[node] = type
     }
 
-    fun getType(node: Node): Type {
+    private fun getType(node: Node): Type {
         val prevSize = typeStack.size
         node.apply(this)
         if (typeStack.size <= prevSize)
