@@ -1,9 +1,13 @@
 import codegeneration.CodeGenerator
+import sablecc.lexer.LexerException
+import sablecc.node.TWhitespace
+import sablecc.node.Token
 import sablecc.parser.Parser
 import sablecc.parser.ParserException
 import semantics.contextualConstraints.ContextualConstraintAnalyzer
 import semantics.symbolTable.SymbolTableBuilder
 import semantics.typeChecking.TypeChecker
+import java.lang.Exception
 
 
 fun main() {
@@ -36,6 +40,29 @@ template module temp {
             errorHandler.setLineAndPos(e.token)
             val msg = e.message?.replace("eol", "end of line")
             errorHandler.compileError(SableCCException(msg ?: "No message provided by SableCC"))
+        } catch (e: LexerException) {
+            val msg = e.message
+
+            if (msg != null) {
+                // Grab line and column from the string because the LexerException cannot pass along a token for it
+                val match = """\[(\d+),(\d+)\]""".toRegex().find(msg)?.groupValues
+
+                if (match != null) {
+                    val (line, column) = match.drop(1).map {Integer.parseInt(it)}
+
+                    // Create a fake token to pass to the error handler
+                    val fakeToken = TWhitespace("FakeToken")
+                    fakeToken.line = line
+                    fakeToken.pos = column
+                    errorHandler.setLineAndPos(fakeToken)
+                    errorHandler.compileError(SableCCException(msg.replace("""\[(\d+),(\d+)\]""".toRegex(), "")))
+                } else {
+                    errorHandler.compileError(SableCCException(msg))
+                }
+
+            } else
+                errorHandler.compileError(SableCCException("No message provided by SableCC"))
+            throw Exception("If it reaches this point, I have no idea what has happened...")
         }
 
         val st = SymbolTableBuilder(errorHandler).buildSymbolTable(startNode)
