@@ -12,7 +12,9 @@ import java.lang.Exception
 
 fun main() {
     var input = """
-Int a; b = 3
+Int a = 34
+Int b = 3
+Int a = 3
 """
     input += "\n"
 
@@ -20,7 +22,6 @@ Int a; b = 3
         val errorHandler = ErrorHandler(input)
 
         val lexer = StringLexer(input)
-
         val parser = Parser(lexer)
 
         val startNode = try {
@@ -28,13 +29,18 @@ Int a; b = 3
         } catch (e: ParserException) {
             errorHandler.setLineAndPos(e.token)
             val msg = e.message?.replace("eol", "end of line")
-            errorHandler.compileError(SableCCException(msg ?: "No message provided by SableCC"))
+            if (msg != null) {
+                val nmsg = msg.replace("""\[(\d+),(\d+)]""".toRegex(), "")
+                errorHandler.compileError(SableCCException("This token cannot be placed here. $nmsg"))
+            } else {
+                errorHandler.compileError(SableCCException("Sorry, no message to display"))
+            }
         } catch (e: LexerException) {
             val msg = e.message
 
             if (msg != null) {
                 // Grab line and column from the string because the LexerException cannot pass along a token for it
-                val match = """\[(\d+),(\d+)\]""".toRegex().find(msg)?.groupValues
+                val match = """\[(\d+),(\d+)]""".toRegex().find(msg)?.groupValues
 
                 if (match != null) {
                     val (line, column) = match.drop(1).map {Integer.parseInt(it)}
@@ -44,14 +50,14 @@ Int a; b = 3
                     fakeToken.line = line
                     fakeToken.pos = column
                     errorHandler.setLineAndPos(fakeToken)
-                    errorHandler.compileError(SableCCException(msg.replace("""\[(\d+),(\d+)\]""".toRegex(), "")))
+                    val nmsg = msg.replace("""\[(\d+),(\d+)\]""".toRegex(), "")
+                    errorHandler.compileError(SableCCException("This symbol does not exist in Dumpling. $nmsg"))
                 } else {
                     errorHandler.compileError(SableCCException(msg))
                 }
 
             } else
                 errorHandler.compileError(SableCCException("No message provided by SableCC"))
-            throw Exception("If it reaches this point, I have no idea what has happened...")
         }
 
         val st = SymbolTableBuilder(errorHandler).buildSymbolTable(startNode)

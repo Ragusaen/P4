@@ -2,6 +2,8 @@ package semantics.symbolTable
 
 import ErrorHandler
 import ErrorTraverser
+import getNearestToken
+import getOtherPointFromToken
 import sablecc.node.*
 import semantics.symbolTable.errors.CloseScopeZeroException
 import semantics.symbolTable.errors.IdentifierAlreadyDeclaredError
@@ -25,12 +27,17 @@ class SymbolTableBuilder(errorHandler: ErrorHandler) : ErrorTraverser(errorHandl
         return "AnonymousModule${anonModuleCount++}"
     }
 
-    private fun addVar(name:String, type: Type, isInit: Boolean = false) {
+    private fun addVar(identifierToken: TIdentifier, type: Type, isInit: Boolean = false) {
+        errorHandler.setLineAndPos(identifierToken)
         // If the name is already used within this scope throw exception
-        if (name in currentScope.variables)
-            error(IdentifierAlreadyDeclaredError("The variable $name has already been declared."))
+        val name = identifierToken.text
+        if (name in currentScope.variables) {
+            val othertoken = currentScope.findVar(name)!!.token
+            error(IdentifierAlreadyDeclaredError("The variable $name has already been declared.",
+                getOtherPointFromToken(othertoken, "Previous declaration was here.")))
+        }
         else
-            currentScope.variables[name] = Identifier(type, currentVarPrefix + name, isInit)
+            currentScope.variables[name] = Identifier(type, currentVarPrefix + name, identifierToken, isInit)
     }
 
     private fun addFun(name:String, params: List<Type>, identifier: Identifier) {
@@ -53,13 +60,24 @@ class SymbolTableBuilder(errorHandler: ErrorHandler) : ErrorTraverser(errorHandl
     private fun addModule(node: Node, name: String, templateOf: String = name) {
         if (!moduleTable.containsKey(name)) {
             if (name != templateOf && !templateModuleTable.containsKey(templateOf)) {
-                error(IdentifierNotDeclaredError("No template module with name $templateOf exists."))
+                error(IdentifierNotDeclaredError("No template module with name $templateOf exists. Candidates are ${templateModuleTable.map { it.key }.joinToString(", ")}"))
             }
 
             moduleTable[name] = templateOf
             nodeModuleTable[node] = name
-        } else
-            throw IdentifierAlreadyDeclaredError("Module with the name $name has already been declared")
+        } else {
+            val otherNode = nodeModuleTable.filterValues { it == name }.keys.first()
+
+            var token: Token? = if (otherNode is AModuledclStmt)
+                    otherNode.instance
+                else if (otherNode is AInstanceModuledcl)
+                    otherNode.identifier
+                else null
+
+            val otherPoint = if (token != null) getOtherPointFromToken(token, "Previous declaration was here.") else null
+
+            errorHandler.compileError(IdentifierAlreadyDeclaredError("Module with the name $name has already been declared", otherPoint))
+        }
     }
 
     private fun checkHasBeenDeclared(name: String) {
@@ -119,10 +137,9 @@ class SymbolTableBuilder(errorHandler: ErrorHandler) : ErrorTraverser(errorHandl
     }
 
     override fun outAVardcl(node: AVardcl) {
-        val name = node.identifier.text
         val ptype = (node.parent() as ADclStmt).type
 
-        addVar(name, Helper.getTypeFromPType(ptype))
+        addVar(node.identifier, Helper.getTypeFromPType(ptype))
     }
 
     override fun caseAModuledclStmt(node: AModuledclStmt) {
@@ -130,6 +147,7 @@ class SymbolTableBuilder(errorHandler: ErrorHandler) : ErrorTraverser(errorHandl
             val name = node.instance.text
             val template = node.template.text
 
+            errorHandler.setLineAndPos(node.template)
             addModule(node, name, template)
         } else
             super.caseAModuledclStmt(node)
@@ -143,7 +161,7 @@ class SymbolTableBuilder(errorHandler: ErrorHandler) : ErrorTraverser(errorHandl
 
             val type = if (node.type == null) Type.Void else Helper.getTypeFromPType(node.type)
 
-            addFun(name, params, Identifier(type, name))
+            addFun(name, params, Identifier(type, name, node.identifier))
         }
         else
             super.caseAFunctiondcl(node)
@@ -163,6 +181,9 @@ class SymbolTableBuilder(errorHandler: ErrorHandler) : ErrorTraverser(errorHandl
     override fun caseAInstanceModuledcl(node: AInstanceModuledcl) {
         if (rootElementMode) {
             val name = node.identifier?.text ?: nextAnonName()
+
+            if (node.identifier != null)
+                errorHandler.setLineAndPos(node.identifier)
             addModule(node, name)
         }
         else
@@ -180,7 +201,7 @@ class SymbolTableBuilder(errorHandler: ErrorHandler) : ErrorTraverser(errorHandl
 
     override fun inAForStmt(node: AForStmt) {
         openScope()
-        addVar(node.identifier.text, Type.Int, true)
+        addVar(node.identifier, Type.Int, true)
     }
     override fun outAForStmt(node: AForStmt) = closeScope()
 
@@ -206,7 +227,7 @@ class SymbolTableBuilder(errorHandler: ErrorHandler) : ErrorTraverser(errorHandl
         openScope()
 
         // Add each parameter variable to the scope
-        node.param.forEach {errorHandler.setLineAndPos((it as AParam).identifier); addVar((it as AParam).identifier.text, Helper.getTypeFromPType(it.type), true)}
+        node.param.forEach {errorHandler.setLineAndPos((it as AParam).identifier); addVar((it as AParam).identifier, Helper.getTypeFromPType(it.type), true)}
     }
     override fun outAFunctiondcl(node: AFunctiondcl) {
         closeScope()
@@ -219,7 +240,7 @@ class SymbolTableBuilder(errorHandler: ErrorHandler) : ErrorTraverser(errorHandl
         currentVarPrefix = "$name->"
 
         // Add each parameter variable to the scope
-        node.param.forEach {errorHandler.setLineAndPos((it as AParam).identifier); addVar((it as AParam).identifier.text, Helper.getTypeFromPType(it.type), true)}
+        node.param.forEach {errorHandler.setLineAndPos((it as AParam).identifier); addVar((it as AParam).identifier, Helper.getTypeFromPType(it.type), true)}
     }
 
     override fun outATemplateModuledcl(node: ATemplateModuledcl) {
