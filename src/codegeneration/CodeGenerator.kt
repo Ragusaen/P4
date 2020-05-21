@@ -310,10 +310,7 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, errorHandler:
         else
             getCode(node.type)
 
-        var vardcls = getCode(node.vardcl.first())
-        for (v in node.vardcl.drop(1)) {
-            vardcls += ", " + getCode(v)
-        }
+        val vardcls = node.vardcl.map {getCode(it)}.joinToString(", ")
         codeStack.pushLineIndented("$type $vardcls;")
     }
 
@@ -332,15 +329,19 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, errorHandler:
     override fun caseAVardcl(node: AVardcl) {
         val identifier = symbolTable.findVar(getCode(node.identifier))!!.outName
 
+        // If it is an array, we need to do a bunch of annoying stuff
         if (typeTable[node]!!.isArray()) {
             if (node.expr != null) {
+                // If there is an initialiser, C can figure out how to construct the array
                 val expr = getCode(node.expr)
                 codeStack.push("$identifier[] = $expr")
             } else {
+                // If there is no initialiser, we get the size ourselves
                 val typeNode = ((node.parent() as ADclStmt).type as AArrayType)
                 val size = getCode(typeNode.size)
                 val eType = getCode(typeNode.type)
 
+                // Check if the array can be static, or if it must be dynamically allocated
                 val cec = ConstantExpressionChecker()
                 typeNode.size.apply(cec)
                 if (cec.isConstant) {
@@ -350,6 +351,7 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, errorHandler:
                 }
             }
         } else {
+            // For non-arrays, simply get the code of the expression
             if (node.expr != null) {
                 val expr = getCode(node.expr)
                 codeStack.push("$identifier = $expr")
@@ -618,7 +620,7 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, errorHandler:
 
     override fun caseAInstanceModuledcl(node: AInstanceModuledcl) {
         inAInstanceModuledcl(node)
-        val name = symbolTable.findModule(node)
+        val name = symbolTable.findModule(node)!!.first
         val inner = getCode(node.innerModule)
 
         codeStack.push("void Task$name(void *pvParameters) {\n$inner\n}\n")

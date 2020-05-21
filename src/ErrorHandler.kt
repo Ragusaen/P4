@@ -1,6 +1,8 @@
 import sablecc.node.Token
 import java.lang.Integer.max
 
+class SableCCException(msg: String) : CompileError(msg)
+
 abstract class CompileError(msg: String) : Exception(msg) {
     var errorMsg:String = ""
         private set

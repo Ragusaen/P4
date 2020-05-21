@@ -22,6 +22,14 @@ class TypeChecker(errorHandler: ErrorHandler, symbolTable: SymbolTable) : Scoped
         typeTable[node] = type
     }
 
+    fun getType(node: Node): Type {
+        val prevSize = typeStack.size
+        node.apply(this)
+        if (typeStack.size <= prevSize)
+            println("Warning: Nothing was pushed to the typestack when getting type for node ${node::class.simpleName}\n")
+        return typeStack.pop()
+    }
+
     private var currentFunctionReturnType: Type? = null
     private var currentFunctionName:String? = null
 
@@ -262,18 +270,19 @@ class TypeChecker(errorHandler: ErrorHandler, symbolTable: SymbolTable) : Scoped
             error(Exception("Array literal was of size 0 (should have been caught in parser)"))
     }
 
-    override fun outASetToStmt(node: ASetToStmt) {
-        val value = typeStack.pop()
-        val pin = typeStack.pop()
+    override fun caseASetToStmt(node: ASetToStmt) {
+        val pin = getType(node.pin)
 
-        if ((pin == Type.DigitalOutputPin || pin == Type.DigitalPin) && value != Type.Bool)
-            error(IllegalImplicitTypeConversionError("Pin was digital so Bool was expected, but instead $value was found"))
-        else if ((pin == Type.AnalogOutputPin || pin == Type.AnalogPin) && !value.isIntType())
-            error(IllegalImplicitTypeConversionError("Pin was analog so an Int between 0 and 255 (inclusive) was expected, but $value was found"))
-        else if (pin == Type.AnalogInputPin || pin == Type.DigitalInputPin)
+        if (pin.exactlyEquals(Type.AnalogInputPin) || pin.exactlyEquals(Type.DigitalInputPin))
             error(IllegalImplicitTypeConversionError("Cannot set value of input pin."))
-        else if (!(pin == Type.DigitalOutputPin || pin == Type.AnalogOutputPin || pin == Type.DigitalPin || pin == Type.AnalogPin))
+        if (!(pin == Type.DigitalPin || pin == Type.AnalogPin))
             error(IllegalImplicitTypeConversionError("Expected type DigitalOutputPin, AnalogOutputPin, DigitalPin or AnalogPin, but got $pin"))
+
+        val value = getType(node.value)
+        if (pin == Type.DigitalPin && value != Type.Bool) // Covers all digital pin types (input has already been ruled out)
+            error(IllegalImplicitTypeConversionError("Pin was digital so Bool was expected, but instead $value was found"))
+        else if (pin == Type.AnalogPin && !value.isIntType())
+            error(IllegalImplicitTypeConversionError("Pin was analog so an Int between 0 and 1023 (inclusive) was expected, but $value was found"))
 
         typeTable[node] = pin
     }

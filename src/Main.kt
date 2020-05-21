@@ -1,6 +1,6 @@
 import codegeneration.CodeGenerator
-import sablecc.node.Token
 import sablecc.parser.Parser
+import sablecc.parser.ParserException
 import semantics.contextualConstraints.ContextualConstraintAnalyzer
 import semantics.symbolTable.SymbolTableBuilder
 import semantics.typeChecking.TypeChecker
@@ -8,9 +8,7 @@ import semantics.typeChecking.TypeChecker
 
 fun main() {
     var input = """
-fun a() {
-    return
-}
+Int a b = 3
 """
     input += "\n"
 
@@ -18,15 +16,23 @@ fun a() {
         val errorHandler = ErrorHandler(input)
 
         val lexer = StringLexer(input)
+
         val parser = Parser(lexer)
 
-        val a = parser.parse()
-        val st = SymbolTableBuilder(errorHandler).buildSymbolTable(a)
-        ContextualConstraintAnalyzer(errorHandler, st).run(a)
-        val tt = TypeChecker(errorHandler, st).run(a)
+        val startNode = try {
+            parser.parse()
+        } catch (e: ParserException) {
+            errorHandler.setLineAndPos(e.token)
+            val msg = e.message?.replace("eol", "end of line")
+            errorHandler.compileError(SableCCException(msg ?: "No message provided by SableCC"))
+        }
+
+        val st = SymbolTableBuilder(errorHandler).buildSymbolTable(startNode)
+        ContextualConstraintAnalyzer(errorHandler, st).run(startNode)
+        val tt = TypeChecker(errorHandler, st).run(startNode)
         val cg = CodeGenerator(tt, errorHandler, st)
 
-        println(cg.generate(a))
+        println(cg.generate(startNode))
     }
     catch (ce: CompileError) {
         println("Compilation stopped due to compile error.")

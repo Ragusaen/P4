@@ -29,7 +29,6 @@ class Type private constructor(private val main: EType, private val subType: Typ
         val Bool = Type(EType.BOOL)
         val Time = Type(EType.TIME)
         val Void = Type(EType.VOID)
-        val Module = Type(EType.MODULE)
         val DigitalPin = Type(EType.DIGITALPIN)
         val AnalogPin = Type(EType.ANALOGPIN)
         val DigitalInputPin = Type(EType.DIGITALINPUTPIN)
@@ -56,13 +55,23 @@ class Type private constructor(private val main: EType, private val subType: Typ
                     || (other.main == EType.DIGITALPIN && (main == EType.DIGITALINPUTPIN || main == EType.DIGITALOUTPUTPIN))
                     || (main == EType.ANALOGPIN && (other.main == EType.ANALOGINPUTPIN || other.main == EType.ANALOGOUTPUTPIN))
                     || (other.main == EType.ANALOGPIN && (main == EType.ANALOGINPUTPIN || main == EType.ANALOGOUTPUTPIN)))
-                            return true
+                return true
+
         }
         return false
     }
 
-    fun isIntType(): Boolean = main == EType.INT || main == EType.INT8 || main == EType.INT16 || main == EType.INT32 || main == EType.INT64
-            || main == EType.UINT || main == EType.UINT8 || main == EType.UINT16 || main == EType.UINT32 || main == EType.UINT64
+    fun exactlyEquals(other: Type): Boolean {
+        if (other.main == this.main) {
+            if (main == EType.ARRAY) {
+                return this.subType!! == other.subType!!
+            } else
+                return true
+        }
+        return false
+    }
+
+    fun isIntType(): Boolean = main in EType.INT..EType.UINT64
 
     fun isArray(): Boolean = main == EType.ARRAY
     fun getArraySubType(): Type = subType!!
