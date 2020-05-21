@@ -10,9 +10,12 @@ class Helper {
                 is AInt16Type -> Type.Int16
                 is AInt32Type -> Type.Int32
                 is AInt64Type -> Type.Int64
+                is AUintType -> Type.Uint
+                is AUint8Type -> Type.Uint8
+                is AUint16Type -> Type.Uint16
+                is AUint32Type -> Type.Uint32
+                is AUint64Type -> Type.Uint64
                 is AFloatType -> Type.Float
-                is AFloat32Type -> Type.Float32
-                is AFloat64Type -> Type.Float64
                 is AStringType -> Type.String
                 is ABoolType -> Type.Bool
                 is ADigitalinputpinType -> Type.DigitalInputPin

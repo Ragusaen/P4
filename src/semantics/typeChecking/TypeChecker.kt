@@ -33,11 +33,19 @@ class TypeChecker(errorHandler: ErrorHandler, symbolTable: SymbolTable) : Scoped
     private var currentFunctionReturnType: Type? = null
     private var currentFunctionName:String? = null
 
-    override fun outAReturnStmt(node: AReturnStmt) {
-        if (node.expr == null)
-            return
+    override fun inAFunctiondcl(node: AFunctiondcl) {
+        super.inAFunctiondcl(node)
 
-        val type = typeStack.pop()
+        currentFunctionReturnType = symbolTable.findFun(node.identifier.text, Helper.getFunParams(node))!!.type
+        currentFunctionName = node.identifier.text
+    }
+
+    override fun outAReturnStmt(node: AReturnStmt) {
+        val type = if (node.expr == null)
+            Type.Void
+        else
+            typeStack.pop()
+
         if (currentFunctionReturnType != type) {
             error(IllegalImplicitTypeConversionError(
                     "In function $currentFunctionName:\n" +
@@ -156,30 +164,20 @@ class TypeChecker(errorHandler: ErrorHandler, symbolTable: SymbolTable) : Scoped
         if (identifier.type.isArray()) {
             val typeNode = ((node.parent() as ADclStmt).type as AArrayType)
             if (typeNode.size == null && node.expr == null) {
-                error(ArrayInitializationError("Cannot declare array ${node.identifier.text} with no size parameters"))
+                error(ArrayInitializationError("Cannot declare array ${node.identifier.text} with no size parameters."))
             }
         }
 
         if (node.expr != null) {
             val typeE = typeStack.pop()
-            if (identifier.type.isPin()) {
-                if (typeE != identifier.type) {
-                    if ((identifier.type == Type.AnalogOutputPin || identifier.type == Type.AnalogInputPin) && typeE != Type.AnalogPin)
-                        error(IllegalImplicitTypeConversionError("Cannot assign type $typeE to an analog pin."))
-                    else if ((identifier.type == Type.DigitalOutputPin || identifier.type == Type.DigitalInputPin) && typeE != Type.DigitalPin)
-                        error(IllegalImplicitTypeConversionError("Cannot assign type $typeE to a digital pin."))
-                }
-            }
-            else if (typeE != identifier.type)
-                error(IllegalImplicitTypeConversionError("Cannot initialize the variable ${node.identifier.text} of type ${identifier.type} with value of type $typeE."))
+            if (typeE != identifier.type)
+                if ((identifier.type == Type.AnalogOutputPin || identifier.type == Type.AnalogInputPin) && typeE != Type.AnalogPin)
+                    error(IllegalImplicitTypeConversionError("Cannot assign type $typeE to an analog pin."))
+                else if ((identifier.type == Type.DigitalOutputPin || identifier.type == Type.DigitalInputPin) && typeE != Type.DigitalPin)
+                    error(IllegalImplicitTypeConversionError("Cannot assign type $typeE to a digital pin."))
+                else
+                    error(IllegalImplicitTypeConversionError("Cannot initialize the variable ${node.identifier.text} of type ${identifier.type} with value of type $typeE."))
         }
-    }
-
-    override fun inAFunctiondcl(node: AFunctiondcl) {
-        super.inAFunctiondcl(node)
-
-        currentFunctionReturnType = symbolTable.findFun(node.identifier.text, Helper.getFunParams(node))!!.type
-        currentFunctionName = node.identifier.text
     }
 
     override fun outAUnopExpr(node: AUnopExpr) {
@@ -188,9 +186,9 @@ class TypeChecker(errorHandler: ErrorHandler, symbolTable: SymbolTable) : Scoped
         when(node.unop) {
             is ANotUnop -> if (exprType != Type.Bool)
                 error(IncompatibleOperatorError("Cannot apply conditional unary '!' operator to expression of $exprType"))
-            is APlusUnop -> if (!exprType.isIntType() && !exprType.isFloatType())
+            is APlusUnop -> if (!exprType.isIntType() && exprType != Type.Float)
                 error(IncompatibleOperatorError("Cannot apply conditional unary '+' operator to expression of $exprType"))
-            is AMinusUnop -> if (!exprType.isIntType() && !exprType.isFloatType())
+            is AMinusUnop -> if (!exprType.isIntType() && exprType != Type.Float)
                 error(IncompatibleOperatorError("Cannot apply conditional unary '-' operator to expression of $exprType"))
         }
     }

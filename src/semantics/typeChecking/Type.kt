@@ -5,7 +5,8 @@ import semantics.typeChecking.Type.Companion.DigitalPin
 class Type private constructor(private val main: EType, private val subType: Type? = null) {
     private enum class EType {
         INT, INT8, INT16, INT32, INT64,
-        FLOAT, FLOAT32, FLOAT64, STRING, BOOL,
+        UINT, UINT8, UINT16, UINT32, UINT64,
+        FLOAT, STRING, BOOL,
         DIGITALINPUTPIN, DIGITALOUTPUTPIN,
         ANALOGINPUTPIN, ANALOGOUTPUTPIN,
         DIGITALPIN, ANALOGPIN,
@@ -18,9 +19,12 @@ class Type private constructor(private val main: EType, private val subType: Typ
         val Int16 = Type(EType.INT16)
         val Int32 = Type(EType.INT32)
         val Int64 = Type(EType.INT64)
+        val Uint = Type(EType.UINT)
+        val Uint8 = Type(EType.UINT8)
+        val Uint16 = Type(EType.UINT16)
+        val Uint32 = Type(EType.UINT32)
+        val Uint64 = Type(EType.UINT64)
         val Float = Type(EType.FLOAT)
-        val Float32 = Type(EType.FLOAT32)
-        val Float64 = Type(EType.FLOAT64)
         val String = Type(EType.STRING)
         val Bool = Type(EType.BOOL)
         val Time = Type(EType.TIME)
@@ -47,8 +51,6 @@ class Type private constructor(private val main: EType, private val subType: Typ
                     return true
             } else if(isIntType() && other.isIntType())
                 return true
-            else if(isFloatType() && other.isFloatType())
-                return true
             else if ((main == EType.DIGITALPIN && (other.main == EType.DIGITALINPUTPIN || other.main == EType.DIGITALOUTPUTPIN))
                     || (other.main == EType.DIGITALPIN && (main == EType.DIGITALINPUTPIN || main == EType.DIGITALOUTPUTPIN))
                     || (main == EType.ANALOGPIN && (other.main == EType.ANALOGINPUTPIN || other.main == EType.ANALOGOUTPUTPIN))
@@ -69,8 +71,7 @@ class Type private constructor(private val main: EType, private val subType: Typ
         return false
     }
 
-    fun isIntType(): Boolean = main in EType.INT..EType.INT64
-    fun isFloatType(): Boolean = main in EType.FLOAT..EType.FLOAT64
+    fun isIntType(): Boolean = main in EType.INT..EType.UINT64
 
     fun isArray(): Boolean = main == EType.ARRAY
     fun getArraySubType(): Type = subType!!
