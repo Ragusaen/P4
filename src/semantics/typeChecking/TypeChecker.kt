@@ -148,22 +148,19 @@ class TypeChecker(errorHandler: ErrorHandler, symbolTable: SymbolTable) : Scoped
         if (identifier.type.isArray()) {
             val typeNode = ((node.parent() as ADclStmt).type as AArrayType)
             if (typeNode.size == null && node.expr == null) {
-                error(ArrayInitializationError("Cannot declare array ${node.identifier.text} with no size parameters"))
+                error(ArrayInitializationError("Cannot declare array ${node.identifier.text} with no size parameters."))
             }
         }
 
         if (node.expr != null) {
             val typeE = typeStack.pop()
-            if (identifier.type.isPin()) {
-                if (typeE != identifier.type) {
-                    if ((identifier.type == Type.AnalogOutputPin || identifier.type == Type.AnalogInputPin) && typeE != Type.AnalogPin)
-                        error(IllegalImplicitTypeConversionError("Cannot assign type $typeE to an analog pin."))
-                    else if ((identifier.type == Type.DigitalOutputPin || identifier.type == Type.DigitalInputPin) && typeE != Type.DigitalPin)
-                        error(IllegalImplicitTypeConversionError("Cannot assign type $typeE to a digital pin."))
-                }
-            }
-            else if (typeE != identifier.type)
-                error(IllegalImplicitTypeConversionError("Cannot initialize the variable ${node.identifier.text} of type ${identifier.type} with value of type $typeE."))
+            if (typeE != identifier.type)
+                if ((identifier.type == Type.AnalogOutputPin || identifier.type == Type.AnalogInputPin) && typeE != Type.AnalogPin)
+                    error(IllegalImplicitTypeConversionError("Cannot assign type $typeE to an analog pin."))
+                else if ((identifier.type == Type.DigitalOutputPin || identifier.type == Type.DigitalInputPin) && typeE != Type.DigitalPin)
+                    error(IllegalImplicitTypeConversionError("Cannot assign type $typeE to a digital pin."))
+                else
+                    error(IllegalImplicitTypeConversionError("Cannot initialize the variable ${node.identifier.text} of type ${identifier.type} with value of type $typeE."))
         }
     }
 
