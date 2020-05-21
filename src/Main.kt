@@ -8,7 +8,18 @@ import semantics.typeChecking.TypeChecker
 
 fun main() {
     var input = """
-Int a b = 3
+every(1000ms)
+    Int b = 23
+
+module b {
+    every(100ms)
+        set D13 to true
+}
+
+template module temp {
+    every(1000ms)
+        Int a = 2
+}
 """
     input += "\n"
 
