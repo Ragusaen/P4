@@ -145,7 +145,7 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, errorHandler:
     }
 
     private fun generateTopCode(): String {
-        var res = "#include <dumpling.h>\n\ntypedef char Bool;\ntypedef unsigned int Time;\ntypedef int DigitalOutputPin;\n"
+        var res = "#include <dumpling.h>\n\n"
 
         // Generate global variables
         res += topDcls.joinToString("\n")
