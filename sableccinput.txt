@@ -311,9 +311,9 @@ Productions
         | {lessthan} relation lessthan read_expr
             {-> New expr.binop(relation.expr, New binop.lessthan(), read_expr.expr)}
         | {lessthanorequalto} relation lessthanorequalto read_expr
-            {-> New expr.unop(New unop.not(), New expr.binop(relation.expr, New binop.greaterthan(), read_expr.expr))}
+            {-> New expr.binop(relation.expr, New binop.lessthanorequal(), read_expr.expr)}
         | {greaterthanorequalto} relation greaterthanorequalto read_expr
-            {-> New expr.unop(New unop.not(), New expr.binop(relation.expr, New binop.lessthan(), read_expr.expr))}
+            {-> New expr.binop(relation.expr, New binop.greaterthanorequal(), read_expr.expr)}
         | {read} read_expr
             {-> read_expr.expr};
 
@@ -411,6 +411,6 @@ Abstract Syntax Tree
 
 /* Expression */
     expr = {binop} [l]:expr binop [r]:expr | {unop} unop expr | {function_call} identifier expr* | {value} value | {index} [value]:expr [index]:expr | {read} [pin]:expr;
-    binop = {addition} | {subtraction} | {multiplication} | {division} | {modulo} | {or} | {and} | {equal} | {greaterthan} | {lessthan};
+    binop = {addition} | {subtraction} | {multiplication} | {division} | {modulo} | {or} | {and} | {equal} | {greaterthan} | {lessthan} | {greaterthanorequal} | {lessthanorequal};
     unop = {minus} | {plus} | {not};
     value = {identifier} identifier | {int} intliteral | {float} floatliteral | {string} stringliteral | {bool} boolliteral | {time} timeliteral | {array} expr* | {digitalpin} digitalpinliteral | {analogpin} analogpinliteral;

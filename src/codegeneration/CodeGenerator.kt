@@ -268,6 +268,14 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, errorHandler:
         codeStack.push("-")
     }
 
+    override fun caseAGreaterthanorequalBinop(node: AGreaterthanorequalBinop) {
+        codeStack.push(">=")
+    }
+
+    override fun caseALessthanorequalBinop(node: ALessthanorequalBinop) {
+        codeStack.push("<=")
+    }
+
     override fun caseAIfStmt(node: AIfStmt) {
         val cond = getCode(node.condition)
         var res = getIndent() + "if ($cond)\n"
@@ -828,5 +836,6 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, errorHandler:
             codeStack.pushLineIndented("TempMod_${template}[$index].running = 1;")
         }
     }
+
 
 }
