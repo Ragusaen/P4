@@ -7,91 +7,37 @@ import sablecc.parser.ParserException
 import semantics.contextualConstraints.ContextualConstraintAnalyzer
 import semantics.symbolTable.SymbolTableBuilder
 import semantics.typeChecking.TypeChecker
+import java.io.File
+import java.io.FileNotFoundException
 import java.lang.Exception
 
 
-fun main() {
-    var input = """
-Int count = 0
-
-template module blink(DigitalOutputPin p, Time t){
-    Bool state = HIGH
-    every(t){
-        state = !state
-        set p to state
-        countUp()
+fun main(args: Array<String>) {
+    if (args.size != 2) {
+        println("Invalid arguments, run with: dumpling <input_path> <output_path>")
+        return
     }
-}
 
-on(count >= 100){
-    stop a
-    stop b
-    delay 2m
-    start a
-    start b
-}
+    val inputPath: String = args[0]
+    val outputPath: String = args[1]
 
-fun countUp(){
-    count += 1
-}
 
-module blink a(D5, 500ms)
-module blink b(D2, 200ms)
-"""
-    input += "\n"
-
-    try {
-        val errorHandler = ErrorHandler(input)
-
-        val lexer = StringLexer(input)
-        val parser = Parser(lexer)
-
-        val startNode = try {
-            parser.parse()
-        } catch (e: ParserException) {
-            errorHandler.setLineAndPos(e.token)
-            val msg = e.message?.replace("eol", "end of line")
-            if (msg != null) {
-                val nmsg = msg.replace("""\[(\d+),(\d+)]""".toRegex(), "")
-                errorHandler.compileError(SableCCException("This token cannot be placed here. $nmsg"))
-            } else {
-                errorHandler.compileError(SableCCException("Sorry, no message to display"))
-            }
-        } catch (e: LexerException) {
-            val msg = e.message
-
-            if (msg != null) {
-                // Grab line and column from the string because the LexerException cannot pass along a token for it
-                val match = """\[(\d+),(\d+)]""".toRegex().find(msg)?.groupValues
-
-                if (match != null) {
-                    val (line, column) = match.drop(1).map {Integer.parseInt(it)}
-
-                    // Create a fake token to pass to the error handler
-                    val fakeToken = TWhitespace("FakeToken")
-                    fakeToken.line = line
-                    fakeToken.pos = column
-                    errorHandler.setLineAndPos(fakeToken)
-                    val nmsg = msg.replace("""\[(\d+),(\d+)\]""".toRegex(), "")
-                    errorHandler.compileError(SableCCException("This symbol does not exist in Dumpling. $nmsg"))
-                } else {
-                    errorHandler.compileError(SableCCException(msg))
-                }
-
-            } else
-                errorHandler.compileError(SableCCException("No message provided by SableCC"))
-        }
-
-        val st = SymbolTableBuilder(errorHandler).buildSymbolTable(startNode)
-        ContextualConstraintAnalyzer(errorHandler, st).run(startNode)
-        val tt = TypeChecker(errorHandler, st).run(startNode)
-        val cg = CodeGenerator(tt, errorHandler, st)
-
-        println(cg.generate(startNode))
+    val inputReader = try {
+        File(inputPath).reader()
+    } catch (e: FileNotFoundException) {
+        println("Input file does not exist:\n$inputPath")
+        return
+    } catch (e: Exception) {
+        println("Unexpected error loading file.")
+        return
     }
-    catch (ce: CompileError) {
-        println("Compilation stopped due to compile error.")
-        println(ce.errorMsg)
+
+    val output = DumplingCompiler().compile(inputReader)
+
+    if (output != null) {
+        val outputFile = File(outputPath)
+
+        outputFile.writeText(output)
     }
 }
 
