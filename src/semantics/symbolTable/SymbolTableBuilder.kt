@@ -237,7 +237,7 @@ class SymbolTableBuilder(errorHandler: ErrorHandler) : ErrorTraverser(errorHandl
 
     override fun inAFunctiondcl(node: AFunctiondcl) {
         openScope()
-
+        currentVarPrefix = ""
         // Add each parameter variable to the scope
         node.param.forEach {errorHandler.setLineAndPos((it as AParam).identifier); addVar((it as AParam).identifier, Helper.getTypeFromPType(it.type), true)}
     }

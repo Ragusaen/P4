@@ -1,4 +1,22 @@
-every (1s)
-    stop
+AnalogOutputPin outputPin = A4
+DigitalInputPin inputPin = D5
 
-// Here is comment
+init{
+    Int val = f()
+    set outputPin to val
+}
+
+fun f():Int8{
+    Int8 sum = 0
+    for(i in 20 to 25)
+        sum += i
+    
+    return sum
+}
+
+module mod{
+    on(read inputPin){
+        set outputPin to 0
+        stop
+    }
+}

@@ -143,7 +143,7 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, errorHandler:
     }
 
     private fun generateTopCode(): String {
-        var res = "#include <Arduino_FreeRTOS.h>\n#include <stdint.h>\n\ntypedef char Bool;\ntypedef unsigned int Time;\ntypedef int DigitalOutputPin;\n"
+        var res = "#include <Dumpling.h>\n\ntypedef char Bool;\ntypedef unsigned int Time;\ntypedef int DigitalOutputPin;\n"
 
         // Generate code for modules
         for (ma in moduleAuxes) {
@@ -327,7 +327,7 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, errorHandler:
 
         val body = getCode(node.body)
 
-        codeStack.pushLineIndented("for (Int $v = $lower; $v < $upper; $v += $step)\n$body")
+        codeStack.pushLineIndented("for (int $v = $lower; $v < $upper; $v += $step)\n$body")
 
         outAForStmt(node)
     }
