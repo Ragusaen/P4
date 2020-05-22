@@ -143,7 +143,7 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, errorHandler:
     }
 
     private fun generateTopCode(): String {
-        var res = "#include <Dumpling.h>\n\ntypedef char Bool;\ntypedef unsigned int Time;\ntypedef int DigitalOutputPin;\n"
+        var res = "#include <dumpling.h>\n\ntypedef char Bool;\ntypedef unsigned int Time;\ntypedef int DigitalOutputPin;\n"
 
         // Generate code for modules
         for (ma in moduleAuxes) {
