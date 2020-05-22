@@ -23,7 +23,7 @@ class ErrorHandler(sourceProgram: String) {
     var lastToken: Token? = null
 
     companion object {
-        const val codeLookbackLength = 3
+        const val codeLookbackLength = 5
     }
 
     val sourceLines = sourceProgram.split('\n')

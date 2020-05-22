@@ -812,7 +812,7 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, errorHandler:
         if (template == name) { // Instance modules
             codeStack.pushLineIndented("Task${name}_running = 0;")
         } else { // Template module
-            val index = templateInstances[template]!!.indexOfFirst { it.name == name }
+            val index = symbolTable.getTemplateInstanceIndex(name)!!
             codeStack.pushLineIndented("TempMod_${template}[$index].running = 0;")
         }
     }
@@ -824,7 +824,7 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, errorHandler:
         if (template == name) { // Instance modules
             codeStack.pushLineIndented("Task${name}_running = 1;")
         } else { // Template module
-            val index = templateInstances[template]!!.indexOfFirst { it.name == name }
+            val index = symbolTable.getTemplateInstanceIndex(name)!!
             codeStack.pushLineIndented("TempMod_${template}[$index].running = 1;")
         }
     }

@@ -12,12 +12,14 @@ class SymbolTable(private val functions: Map<Pair<String, List<Type>>, Identifie
                   private var variables: Scope,
                   private val templateModules: Map<String, TemplateModuleIdentifier>,
                   private val moduleTable: Map<String, String>,
-                  private val nodeModules: Map<Node, String>
+                  private val nodeModules: Map<Node, String>,
+                  private val templateInstanceIndices: Map<String, Int>
 ) {
 
     fun findVar(name: String): Identifier? = variables.findVar(name)
     fun findFun(name: String, paramTypes: List<Type>): Identifier? = functions[Pair(name, paramTypes)]
     fun findTemplateModule(name: String): TemplateModuleIdentifier? = templateModules[name]
+    fun getTemplateInstanceIndex(name: String): Int? = templateInstanceIndices[name]
 
     fun findModule(name: String): String = moduleTable[name]!!
     fun findModule(node: Node): Pair<String, String>?  {

@@ -12,19 +12,31 @@ import java.lang.Exception
 
 fun main() {
     var input = """
-template module Blinker(DigitalOutputPin myPin, Time myTime){
-  Bool myStatus = HIGH
-  every(myTime){
-    myStatus = !myStatus
-    set myPin to myStatus
-  }
+Int count = 0
+
+template module blink(DigitalOutputPin p, Time t){
+    Bool state = HIGH
+    every(t){
+        state = !state
+        set p to state
+        countUp()
+    }
 }
 
-module Blinker slowBlinker(D5, 500ms)
+on(count >= 100){
+    stop a
+    stop b
+    delay 2m
+    start a
+    start b
+}
 
-on (read D6) 
-    stop slowBlinker
+fun countUp(){
+    count += 1
+}
 
+module blink a(D5, 500ms)
+module blink b(D2, 200ms)
 """
     input += "\n"
 

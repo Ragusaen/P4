@@ -19,6 +19,7 @@ class SymbolTableBuilder(errorHandler: ErrorHandler) : ErrorTraverser(errorHandl
     private val templateModuleTable = mutableMapOf<String, TemplateModuleIdentifier>()
     private val moduleTable = mutableMapOf<String, String>()
     private val nodeModuleTable = mutableMapOf<Node, String>()
+    private val templateInstances = mutableMapOf<String, Int>()
 
     private var rootElementMode = false
 
@@ -68,7 +69,7 @@ class SymbolTableBuilder(errorHandler: ErrorHandler) : ErrorTraverser(errorHandl
         } else {
             val otherNode = nodeModuleTable.filterValues { it == name }.keys.first()
 
-            var token: Token? = if (otherNode is AModuledclStmt)
+            val token: Token? = if (otherNode is AModuledclStmt)
                     otherNode.instance
                 else if (otherNode is AInstanceModuledcl)
                     otherNode.identifier
@@ -80,9 +81,18 @@ class SymbolTableBuilder(errorHandler: ErrorHandler) : ErrorTraverser(errorHandl
         }
     }
 
-    private fun checkHasBeenDeclared(name: String) {
-        currentScope.findVar(name) ?:
-			this.error(IdentifierUsedBeforeDeclarationError("The variable $name was used before it was declared."))
+    private fun checkHasBeenDeclared(identifier: TIdentifier) {
+        val name = identifier.text
+        val match = currentScope.findVar(name)
+        if (match == null) {
+            val nearestMatch = currentScope.nearestMatch(name)
+
+            errorHandler.setLineAndPos(identifier)
+            if (nearestMatch != null && nearestMatch.second > name.length / 2)
+                error(IdentifierUsedBeforeDeclarationError("The variable $name does not exist. Closest match was ${nearestMatch.first}"))
+            else
+                error(IdentifierUsedBeforeDeclarationError("The variable $name does not exist."))
+        }
     }
 
     private fun openScope() {
@@ -105,7 +115,7 @@ class SymbolTableBuilder(errorHandler: ErrorHandler) : ErrorTraverser(errorHandl
         if (currentScope.parent != null)
             throw Exception("An unknown error occurred while building the symbol table. A scope was not closed as expected.")
 
-        return SymbolTable(namedFunctionTable, currentScope, templateModuleTable, moduleTable, nodeModuleTable).reset()
+        return SymbolTable(namedFunctionTable, currentScope, templateModuleTable, moduleTable, nodeModuleTable, templateInstances).reset()
     }
 
     /* Tree traversal */
@@ -153,6 +163,7 @@ class SymbolTableBuilder(errorHandler: ErrorHandler) : ErrorTraverser(errorHandl
             }
 
             errorHandler.setLineAndPos(node.template)
+            templateInstances[name] = templateInstances.size
             addModule(node, name, template)
         } else
             super.caseAModuledclStmt(node)
@@ -211,15 +222,11 @@ class SymbolTableBuilder(errorHandler: ErrorHandler) : ErrorTraverser(errorHandl
     override fun outAForStmt(node: AForStmt) = closeScope()
 
     override fun outAIdentifierValue(node: AIdentifierValue) {
-        val name = node.identifier.text
-
-        checkHasBeenDeclared(name)
+        checkHasBeenDeclared(node.identifier)
     }
 
     override fun outAAssignStmt(node: AAssignStmt) {
-        val name = node.identifier.text
-
-        checkHasBeenDeclared(name)
+        checkHasBeenDeclared(node.identifier)
     }
 
     override fun outAFunctionCallExpr(node: AFunctionCallExpr) {
