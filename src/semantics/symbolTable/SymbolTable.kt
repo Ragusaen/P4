@@ -19,6 +19,7 @@ class SymbolTable(private val functions: Map<Pair<String, List<Type>>, Identifie
     fun findFun(name: String, paramTypes: List<Type>): Identifier? = functions[Pair(name, paramTypes)]
     fun findTemplateModule(name: String): TemplateModuleIdentifier? = templateModules[name]
 
+    fun findModule(name: String): String = moduleTable[name]!!
     fun findModule(node: Node): Pair<String, String>?  {
         val name = nodeModules[node]
         val template = moduleTable[name]

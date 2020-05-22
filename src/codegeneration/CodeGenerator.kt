@@ -36,7 +36,12 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, errorHandler:
     private val taskPrefix = "Task"
     private val tickratems = 15
 
-    private fun Stack<String>.pushLineIndented(s:String, indentation:Int = indentLevel) = codeStack.push(singleIndent.repeat(indentation) + s +"\n")
+    private fun Stack<String>.pushLineIndented(s:String, indentation:Int = indentLevel) = this.push(singleIndent.repeat(indentation) + s +"\n")
+    private fun <T> Stack<T>.popAll(): List<T> {
+        val list = toList()
+        clear()
+        return list
+    }
 
     private fun getIndent():String = singleIndent.repeat(indentLevel)
 
@@ -84,36 +89,51 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, errorHandler:
         var res = "void ControllerTask(void *pvParameters) {\n"
 
         for (ma in moduleAuxes) {
+            val lvType = if (ma.isEveryStruct) "unsigned long" else "Bool"
             if (ma is TemplateModuleAux) {
                 if (!templateInstances.containsKey(ma.name))
                     continue
                 val c = templateInstances[ma.name]!!.size
                 val zeroes = "0,".repeat(c).dropLast(1)
 
-                res += "${if (ma.isEveryStruct) "unsigned long" else "Bool"} ${ma.name}LastValue[] = {$zeroes};\n"
+                res += "$lvType ${ma.name}LastValue[] = {$zeroes};\n" +
+                        "struct ${ma.name}_t *${ma.name};"
             } else {
-                res += "${if (ma.isEveryStruct) "unsigned long" else "Bool"} ${ma.name}LastValue = 0;\n"
+                res += "$lvType ${ma.name}LastValue = 0;\n"
             }
         }
 
-        res += "\nwhile (1) {\n"
+        res += "\nwhile (1) {\nint e;\n"
 
         for (ma in moduleAuxes) {
+            res += ma.prefixCode + "\n"
             if (ma is TemplateModuleAux) {
                 if (!templateInstances.containsKey(ma.name))
                     continue
                 for ((i, tma) in templateInstances[ma.name]!!.withIndex()) {
+                    res += "${ma.name} = &TempMod_${ma.name}[$i];\n"
+
                     if (ma.isEveryStruct) {
-                        res += "if (millis() - ${ma.name}LastValue[$i] >= ${ma.expr}) {\n${ma.name}LastValue[$i] = millis();\nvTaskResume(TempMod_${ma.name}[$i].task_handle);\n}\n"
+                        res +=  "if (${ma.name}->running && millis() - ${ma.name}LastValue[$i] >= ${ma.expr}) {\n" +
+                                "${ma.name}LastValue[$i] = millis();\n" +
+                                "vTaskResume(${ma.name}->task_handle);\n}\n"
                     } else {
-                        res += "if (${ma.expr} && !${ma.name}LastValue[$i]) {\nvTaskResume(TempMod_${ma.name}[$i].task_handle);\n}\n${ma.name}LastValue[$i] = ${ma.expr};\n"
+                        res +=  "e = ${ma.expr};\n" +
+                                "if (${ma.name}->running && e && !${ma.name}LastValue[$i]) {\n" +
+                                "vTaskResume(${ma.name}->task_handle);\n" +
+                                "}\n${ma.name}LastValue[$i] = e;\n"
                     }
                 }
-            } else {
+            } else { // Instance module
                 if (ma.isEveryStruct) {
-                    res += "if (millis() - ${ma.name}LastValue >= ${ma.expr}) {\n${ma.name}LastValue = millis();\nvTaskResume(Task${ma.name}_Handle);\n}\n"
+                    res += "if (Task${ma.name}_running && millis() - ${ma.name}LastValue >= ${ma.expr}) {\n" +
+                            "${ma.name}LastValue = millis();\n" +
+                            "vTaskResume(Task${ma.name}_Handle);\n}\n"
                 } else {
-                    res += "if (${ma.expr} && !${ma.name}LastValue) {\nvTaskResume(Task${ma.name}_Handle);\n}\n${ma.name}LastValue = ${ma.expr};\n"
+                    res += "e = ${ma.expr};\n" +
+                            "if (Task${ma.name}_running && e && !${ma.name}LastValue) {\n" +
+                            "vTaskResume(Task${ma.name}_Handle);\n}\n" +
+                            "${ma.name}LastValue = e;\n"
                 }
             }
         }
@@ -139,12 +159,12 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, errorHandler:
                 val initializers = mutableListOf<String>()
                 for (tmpi in templateInstances[ma.name]!!) {
                     val args = tmpi.arguments.joinToString(",")
-                    val v = "{" + listOf(args, ma.dclInits.joinToString(",")).filter {it.isNotEmpty()}.joinToString(",") + ",0}" // Add final 0 for task handle
+                    val v = "{" + listOf(args, ma.dclInits.joinToString(",")).filter {it.isNotEmpty()}.joinToString(",") + ",0,1}" // Add final 0 and 1 for task handle and running
                     initializers.add(v)
                 }
                 res += initializers.joinToString (",\n") + "\n};\n"
             } else {
-                res += "TaskHandle_t Task${ma.name}_Handle;\n"
+                res += "TaskHandle_t Task${ma.name}_Handle;\nBool Task${ma.name}_running = 1;\n"
             }
         }
 
@@ -339,16 +359,8 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, errorHandler:
                 // If there is no initialiser, we get the size ourselves
                 val typeNode = ((node.parent() as ADclStmt).type as AArrayType)
                 val size = getCode(typeNode.size)
-                val eType = getCode(typeNode.type)
 
-                // Check if the array can be static, or if it must be dynamically allocated
-                val cec = ConstantExpressionChecker()
-                typeNode.size.apply(cec)
-                if (cec.isConstant) {
-                    codeStack.push("$identifier[$size]")
-                } else {
-                    codeStack.push("*$identifier = malloc($size * sizeof($eType))")
-                }
+                codeStack.push("$identifier[$size]")
             }
         } else {
             // For non-arrays, simply get the code of the expression
@@ -360,6 +372,9 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, errorHandler:
             }
         }
     }
+
+    private val blockPreviousLineInjection = Stack<String>()
+    private val blockEndOfBlockInjection = Stack<String>()
 	
     override fun caseABlockStmt(node: ABlockStmt) {
         inABlockStmt(node)
@@ -367,9 +382,18 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, errorHandler:
 
         increaseIndent()
         for (s in node.stmt) {
-            block += getCode(s)
+            val code = getCode(s)
+            if (blockPreviousLineInjection.isNotEmpty()) {
+                blockPreviousLineInjection.popAll().forEach { block += getIndent() + it + "\n" }
+            }
+
+            block += code
         }
         decreaseIndent()
+
+        if (blockEndOfBlockInjection.isNotEmpty())
+            blockEndOfBlockInjection.popAll().forEach {block += getIndent() + it + "\n"}
+
         block += getIndent() + "}\n"
 
         codeStack.push(block)
@@ -587,7 +611,7 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, errorHandler:
                 struct += "$type ${vdcl.identifier};\n"
             }
         }
-        struct += "TaskHandle_t task_handle;\n};"
+        struct += "TaskHandle_t task_handle;\nBool running;};"
 
         // Run the inner module case
         caseAInnerModuleTemplate(innerModule, name, struct)
@@ -605,12 +629,15 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, errorHandler:
         node.moduleStructure.apply(this) // Pushes twice
 
         val mstruct = codeStack.pop()
+
         val expr = codeStack.pop()
+        val prefixCode = blockPreviousLineInjection.popAll().joinToString("\n${getIndent()}")
+
 
         // Get the exprs for initializing, substitute with 0 if non-existent
         val dclInits = node.dcls.flatMap { (it as ADclStmt).vardcl }.map {if ((it as AVardcl).expr == null) "0" else getCode(it.expr)}
 
-        moduleAuxes.add(TemplateModuleAux(dclInits, structDefinition, name, expr, node.moduleStructure is AEveryModuleStructure))
+        moduleAuxes.add(TemplateModuleAux(dclInits, structDefinition, name, expr, node.moduleStructure is AEveryModuleStructure, prefixCode))
 
         codeStack.push("${singleIndent}while (1) {\n" +
                 "$mstruct" +
@@ -632,7 +659,7 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, errorHandler:
         val (moduleName, template) = symbolTable.findModule(node.parent())!!
         currentModuleName = moduleName
 
-        val dcls = node.dcls.map {getCode(it)}.joinToString("\n")
+        val dcls = node.dcls.joinToString("\n") { getCode(it) }
 
         node.moduleStructure.apply(this) // Pushes twice
 
@@ -641,8 +668,9 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, errorHandler:
         decreaseIndent()
 
         val expr = codeStack.pop()
+        val prefixCode = blockPreviousLineInjection.joinToString("\n") { it }
 
-        moduleAuxes.add(ModuleAux(moduleName, expr, node.moduleStructure is AEveryModuleStructure))
+        moduleAuxes.add(ModuleAux(moduleName, expr, node.moduleStructure is AEveryModuleStructure, prefixCode))
 
         codeStack.push(dcls)
         codeStack.push("${singleIndent}while (1) {\n" +
@@ -696,17 +724,22 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, errorHandler:
         val value = getCode(node.value)
 
         if (typeTable[node] == Type.AnalogOutputPin) {
-            codeStack.pushLineIndented("analogWrite($pin, $value);")
+            codeStack.pushLineIndented("${getIndent()}analogWrite($pin, $value);")
         } else {
-            codeStack.pushLineIndented("digitalWrite($pin, $value);")
+            codeStack.pushLineIndented("pinMode($pin, OUTPUT);\n${getIndent()}digitalWrite($pin, $value);")
         }
     }
 
     override fun caseAReadExpr(node: AReadExpr) {
         val pin = getCode(node.pin)
 
-        if (typeTable[node] == Type.Bool)
+        if (typeTable[node] == Type.Bool) {
+            // Only switch pinmode if not reading a digital output pin
+            if (!typeTable[node.pin]!!.exactlyEquals(Type.DigitalOutputPin))
+                blockPreviousLineInjection.push("pinMode($pin, INPUT);")
+
             codeStack.push("digitalRead($pin)")
+        }
         else
             codeStack.push("analogRead($pin)")
     }
@@ -773,10 +806,26 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, errorHandler:
     }
 
     override fun caseAStopStmt(node: AStopStmt) {
-        if (node.identifier != null) {
-            codeStack.pushLineIndented("vTaskSuspend($taskPrefix${node.identifier.text}_Handle);")
-        } else {
-            codeStack.pushLineIndented("vTaskSuspend($taskPrefix${currentModuleName}_Handle);")
+        val name = node.identifier?.text ?: currentModuleName
+        val template = symbolTable.findModule(name)
+
+        if (template == name) { // Instance modules
+            codeStack.pushLineIndented("Task${name}_running = 0;")
+        } else { // Template module
+            val index = templateInstances[template]!!.indexOfFirst { it.name == name }
+            codeStack.pushLineIndented("TempMod_${template}[$index].running = 0;")
+        }
+    }
+
+    override fun caseAStartStmt(node: AStartStmt) {
+        val name = node.identifier?.text ?: currentModuleName
+        val template = symbolTable.findModule(name)
+
+        if (template == name) { // Instance modules
+            codeStack.pushLineIndented("Task${name}_running = 1;")
+        } else { // Template module
+            val index = templateInstances[template]!!.indexOfFirst { it.name == name }
+            codeStack.pushLineIndented("TempMod_${template}[$index].running = 1;")
         }
     }
 

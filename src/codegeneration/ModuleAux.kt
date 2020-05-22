@@ -2,10 +2,11 @@ package codegeneration
 
 open class ModuleAux(val name: String,
                      val expr: String,
-                     val isEveryStruct: Boolean
+                     val isEveryStruct: Boolean,
+                     val prefixCode: String
 )
 
-class TemplateModuleAux(val dclInits: List<String>, val structDefinition: String, name: String, expr: String, isEveryStruct: Boolean) : ModuleAux(name, expr, isEveryStruct) {
+class TemplateModuleAux(val dclInits: List<String>, val structDefinition: String, name: String, expr: String, isEveryStruct: Boolean, prefixCode: String) : ModuleAux(name, expr, isEveryStruct, prefixCode) {
 
 }
 

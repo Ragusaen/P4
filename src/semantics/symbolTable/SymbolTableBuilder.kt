@@ -147,6 +147,11 @@ class SymbolTableBuilder(errorHandler: ErrorHandler) : ErrorTraverser(errorHandl
             val name = node.instance.text
             val template = node.template.text
 
+            errorHandler.setLineAndPos(node.instance)
+            if (name == template) {
+                error(IdentifierAlreadyDeclaredError("Cannot create instance with same name as template."))
+            }
+
             errorHandler.setLineAndPos(node.template)
             addModule(node, name, template)
         } else
@@ -263,5 +268,12 @@ class SymbolTableBuilder(errorHandler: ErrorHandler) : ErrorTraverser(errorHandl
         currentVarPrefix = ""
         node.moduleStructure.apply(this)
         outAInnerModule(node)
+    }
+
+    override fun caseAStopStmt(node: AStopStmt) {
+        val name = node.identifier?.text
+        if (name != null && name !in moduleTable) {
+            error(IdentifierNotDeclaredError("No module with name $name exists.\nCandidates are: ${moduleTable.keys.joinToString(", ")}"))
+        }
     }
 }
