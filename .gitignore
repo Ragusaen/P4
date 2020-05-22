@@ -25,3 +25,6 @@ hs_err_pid*
 build/
 
 src/sablecc/*
+
+resources/testprogram.dum
+resources/testoutput.ino
