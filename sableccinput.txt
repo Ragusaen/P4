@@ -56,6 +56,9 @@ Tokens
     and = 'and';
     or = 'or';
     init = 'init';
+    critical = 'critical';
+    sleep = 'sleep';
+    usleep = 'usleep';
     assign = '=';
     equal = '==';
     notequal = '!=';
@@ -179,6 +182,8 @@ Productions
             {-> New stmt.while(condition, body.stmt)}
         | {for} for lparen identifier in [lower]:expr to [upper]:expr forstep? rparen eol? [body]:matched
             {-> New stmt.for(identifier, lower, upper, forstep.expr, body.stmt)}
+        | {critical} critical eol? [body]:matched
+            {-> New stmt.critical(body.stmt)}
         | {single_stmt} single_stmt eol
             {-> single_stmt.stmt}
         | {block} lbrace [start]:eol? stmt* rbrace [end]:eol?
@@ -192,7 +197,9 @@ Productions
         | {while} while lparen [condition]:expr rparen eol? [body]:unmatched
             {-> New stmt.while(condition, body.stmt)}
         | {for} for lparen identifier in [lower]:expr to [upper]:expr forstep? rparen eol? [body]:unmatched
-            {-> New stmt.for(identifier, lower, upper, forstep.expr, body.stmt)};
+            {-> New stmt.for(identifier, lower, upper, forstep.expr, body.stmt)}
+        | {critical} critical eol? [body]:unmatched
+            {-> New stmt.critical(body.stmt)};
 
     forstep {-> expr} =
         step expr
@@ -230,7 +237,11 @@ Productions
         | {break} break
             {-> New stmt.break(break)}
         | {continue} continue
-            {-> New stmt.continue(continue)};
+            {-> New stmt.continue(continue)}
+        | {sleep} sleep expr
+            {-> New stmt.sleep(expr)}
+        | {usleep} usleep expr
+            {-> New stmt.usleep(expr)};
 
 
 /* Declaration */
@@ -352,7 +363,7 @@ Productions
 
     parenthesis {-> expr} =
         {parenthesis} lparen expr rparen
-            {-> expr}
+            {-> New expr.parenthesis(expr)}
         | {index} index
             {-> index.expr};
 
@@ -402,14 +413,14 @@ Abstract Syntax Tree
     module_structure = {every} expr [body]:stmt | {on} expr [body]:stmt;
 
 /* Statement */
-    stmt = {dcl} type vardcl* | {moduledcl} [template]:identifier [instance]:identifier expr* | {start} [token]:start identifier | {stop} [token]:stop identifier? | {set_to} [pin]:expr [value]:expr | {delay} [token]:delay expr | {delayuntil} [token]:delay expr | {assign} identifier expr binop? | {block} stmt* | {if} [condition]:expr [if_body]:stmt [else_body]:stmt? | {while} [condition]:expr [body]:stmt | {for} identifier [lower]:expr [upper]:expr [step]:expr? [body]:stmt | {expr} expr | {return} [token]:return expr? | {break} [token]:break | {continue} [token]:continue;
+    stmt = {dcl} type vardcl* | {moduledcl} [template]:identifier [instance]:identifier expr* | {start} [token]:start identifier | {stop} [token]:stop identifier? | {set_to} [pin]:expr [value]:expr | {delay} [token]:delay expr | {delayuntil} [token]:delay expr | {assign} identifier expr binop? | {block} stmt* | {if} [condition]:expr [if_body]:stmt [else_body]:stmt? | {while} [condition]:expr [body]:stmt | {for} identifier [lower]:expr [upper]:expr [step]:expr? [body]:stmt | {expr} expr | {return} [token]:return expr? | {break} [token]:break | {continue} [token]:continue | {critical} [body]:stmt | {sleep} expr | {usleep} expr;
 
 /* Declaration subnodes */
     vardcl = identifier expr?;
     type = {string} | {int} | {int8} | {int16} | {int32} | {int64} | {uint} | {uint8} | {uint16} | {uint32} | {uint64} | {float} | {bool} | {time} | {digitaloutputpin} | {digitalinputpin} | {analogoutputpin} | {analoginputpin} | {array} type [size]:expr?;
 
 /* Expression */
-    expr = {binop} [l]:expr binop [r]:expr | {unop} unop expr | {function_call} identifier expr* | {value} value | {index} [value]:expr [index]:expr | {read} [pin]:expr;
+    expr = {parenthesis} expr | {binop} [l]:expr binop [r]:expr | {unop} unop expr | {function_call} identifier expr* | {value} value | {index} [value]:expr [index]:expr | {read} [pin]:expr;
     binop = {addition} | {subtraction} | {multiplication} | {division} | {modulo} | {or} | {and} | {equal} | {greaterthan} | {lessthan} | {greaterthanorequal} | {lessthanorequal};
     unop = {minus} | {plus} | {not};
     value = {identifier} identifier | {int} intliteral | {float} floatliteral | {string} stringliteral | {bool} boolliteral | {time} timeliteral | {array} expr* | {digitalpin} digitalpinliteral | {analogpin} analogpinliteral;

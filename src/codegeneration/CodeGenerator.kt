@@ -57,6 +57,8 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, errorHandler:
     private val templateInstances = mutableMapOf<String, MutableList<TemplateInstance>>()
     private var initCode = ""
 
+    private val topDcls = mutableListOf<String>()
+
     private fun generateSetup(): String {
         var res = "void setup() {\n"
 
@@ -144,6 +146,9 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, errorHandler:
 
     private fun generateTopCode(): String {
         var res = "#include <Arduino_FreeRTOS.h>\n#include <stdint.h>\n\ntypedef char Bool;\ntypedef unsigned int Time;\ntypedef int DigitalOutputPin;\n"
+
+        // Generate global variables
+        res += topDcls.joinToString("\n")
 
         // Generate code for modules
         for (ma in moduleAuxes) {
@@ -339,7 +344,14 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, errorHandler:
             getCode(node.type)
 
         val vardcls = node.vardcl.map {getCode(it)}.joinToString(", ")
+
         codeStack.pushLineIndented("$type $vardcls;")
+
+        // If this is a global variable, save it for the top declarations
+        if (node.parent() is ADclRootElement) {
+            topDcls.add(codeStack.pop())
+            codeStack.push("")
+        }
     }
 
     override fun caseAAssignStmt(node: AAssignStmt) {
@@ -752,6 +764,10 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, errorHandler:
             codeStack.push("analogRead($pin)")
     }
 
+    override fun caseAParenthesisExpr(node: AParenthesisExpr) {
+        codeStack.push("( ${getCode(node.expr)})")
+    }
+
     override fun caseTDigitalpinliteral(node: TDigitalpinliteral) {
         super.caseTDigitalpinliteral(node)
         codeStack.push(node.text.substring(1))
@@ -837,5 +853,28 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, errorHandler:
         }
     }
 
+    override fun caseACriticalStmt(node: ACriticalStmt) {
+        increaseIndent()
+        val body = getCode(node.body)
+        decreaseIndent()
+
+        codeStack.push(
+                "${getIndent()}{taskENTER_CRITICAL();\n" +
+                        body +
+                        "${getIndent()}taskEXIT_CRITICAL();}\n"
+        )
+    }
+
+    override fun caseASleepStmt(node: ASleepStmt) {
+        val expr = getCode(node.expr)
+
+        codeStack.pushLineIndented("delay($expr);")
+    }
+
+    override fun caseAUsleepStmt(node: AUsleepStmt) {
+        val expr = getCode(node.expr)
+
+        codeStack.pushLineIndented("delayMicroseconds($expr);")
+    }
 
 }

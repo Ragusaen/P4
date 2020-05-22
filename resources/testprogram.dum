@@ -1,4 +1,22 @@
-every (1s)
-    stop
+fun servoPos(DigitalOutputPin pin, Int position) {
+    Int onTime = position * 6
+    Int offTime = 1000 - onTime
 
-// Here is comment
+    critical {
+        set pin to HIGH
+        usleep(1000 + onTime)
+        set pin to LOW
+        usleep(offTime + 18000)
+    }
+}
+
+Int position = 0
+module servoMover {
+    DigitalOutputPin servoPin = D3
+    every (50ms) {
+        servoPos(servoPin, position * 180)
+    }
+}
+
+every (5s)
+    position = (position + 1) % 2
