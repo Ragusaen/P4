@@ -36,7 +36,6 @@ Tokens
     digitalinputpintype = 'DigitalInputPin';
     analogoutputpintype = 'AnalogOutputPin';
     analoginputpintype = 'AnalogInputPin';
-    unsigned  = 'unsigned';
     every = 'every';
     if = 'if';
     on = 'on';
