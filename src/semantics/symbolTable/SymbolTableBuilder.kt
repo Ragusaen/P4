@@ -207,6 +207,7 @@ class SymbolTableBuilder(errorHandler: ErrorHandler) : ErrorTraverser(errorHandl
     }
 
     override fun caseAInitRootElement(node: AInitRootElement) {
+        currentVarPrefix = ""
         if (!rootElementMode)
             super.caseAInitRootElement(node)
     }

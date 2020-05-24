@@ -1,22 +1,16 @@
-AnalogOutputPin outputPin = A4
-DigitalInputPin inputPin = D5
+Time[] t = [10s, 5s, 2s, 20s, 10s, 1m]
+DigitalOutputPin p = D5
 
-init{
-    Int val = f()
-    set outputPin to val
-}
-
-fun f():Int8{
-    Int8 sum = 0
-    for(i in 20 to 25)
-        sum += i
-    
-    return sum
-}
-
-module mod{
-    on(read inputPin){
-        set outputPin to 0
-        stop
+module m{
+    Int i = 0
+    every(t[i]){
+        set p to HIGH
+        delay 1s
+        set p to LOW
+        
+        if(i >= 5)
+            i = 0
+        else
+            i += 1
     }
 }
