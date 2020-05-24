@@ -311,4 +311,18 @@ class TypeChecker(errorHandler: ErrorHandler, symbolTable: SymbolTable) : Scoped
         if (t != Type.Bool)
             throw IllegalImplicitTypeConversionError("Delay until expects expression of type Bool, but got $t.")
     }
+
+    override fun outASleepStmt(node: ASleepStmt) {
+        val t = typeStack.pop()
+
+        if (t != Type.Time)
+            error(IllegalImplicitTypeConversionError("Sleep expects expressions of type Time, but got $t"))
+    }
+
+    override fun outAUsleepStmt(node: AUsleepStmt) {
+        val t = typeStack.pop()
+
+        if (!t.isIntType())
+            error(IllegalImplicitTypeConversionError("Usleep expects expressions of type Int, but got $t"))
+    }
 }
