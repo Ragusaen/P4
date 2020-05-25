@@ -1,12 +1,3 @@
-import codegeneration.CodeGenerator
-import sablecc.lexer.LexerException
-import sablecc.node.TWhitespace
-import sablecc.node.Token
-import sablecc.parser.Parser
-import sablecc.parser.ParserException
-import semantics.contextualConstraints.ContextualConstraintAnalyzer
-import semantics.symbolTable.SymbolTableBuilder
-import semantics.typeChecking.TypeChecker
 import java.io.File
 import java.io.FileNotFoundException
 import java.lang.Exception
@@ -38,20 +29,5 @@ fun main(args: Array<String>) {
         val outputFile = File(outputPath)
 
         outputFile.writeText(output)
-    }
-}
-
-fun formatToSabbleCC(lines: List<String>) {
-    val match = "\"([^)]*)\"".toRegex()
-    val namematch = "[.]([^)]*)[)]".toRegex()
-
-    for (l in lines) {
-        val m = match.find(l)
-        val n = namematch.find(l)
-        if (m != null && n != null) {
-            val mk = m.groupValues[1]
-            val nk = n.groupValues[1].toLowerCase()
-            println("$nk = '$mk';")
-        }
     }
 }
