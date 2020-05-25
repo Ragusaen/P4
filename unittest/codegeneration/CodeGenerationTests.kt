@@ -71,6 +71,23 @@ internal class CodeGenerationTestsTest {
         compile(code)
     }
 
+    // This test is used to test code quickly and is not a part of the unit test program
+    // @Test
+    fun tester() {
+        val code = """
+            fun foo():Int {
+                fun bar():Int {
+                    return 12
+                }
+                
+                return 80
+            }
+        """
+
+        compile(code)
+    }
+
+
     private fun compile(code:String) {
         val errorHandler = ErrorHandler(code)
         val lexer = StringLexer(code)

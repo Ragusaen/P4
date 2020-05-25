@@ -52,8 +52,6 @@ internal class ParsingTests {
         parseString(input)
 
         // Assertion occurs implicitly, test will pass if no exception is thrown
-
-        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
