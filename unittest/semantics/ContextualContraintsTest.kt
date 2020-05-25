@@ -80,7 +80,7 @@ internal class ContextualConstraintsTest {
     }
 
     @Test
-    fun singleInitIsOkay(){
+    fun singleInitIsOkay() {
         val input = """
             init{
             
@@ -92,7 +92,7 @@ internal class ContextualConstraintsTest {
     }
 
     @Test
-    fun multipleInitsThrowsException(){
+    fun multipleInitsThrowsException() {
         val input = """
             init{
                 
@@ -108,7 +108,7 @@ internal class ContextualConstraintsTest {
     }
 
     @Test
-    fun stopCannotBeUsedInsideFunction(){
+    fun stopCannotBeUsedInsideFunction() {
         val input = """
             fun foo() {
                 stop
@@ -120,7 +120,7 @@ internal class ContextualConstraintsTest {
     }
 
     @Test
-    fun stopCanBeUsedInsideModule(){
+    fun stopCanBeUsedInsideModule() {
         val input = """
             module foo {
                 every (1s)
@@ -133,7 +133,7 @@ internal class ContextualConstraintsTest {
     }
 
     @Test
-    fun startCannotBeUsedInsideFunction(){
+    fun startCannotBeUsedInsideFunction() {
         val input = """
             fun foo() {
                 start bar
@@ -150,7 +150,7 @@ internal class ContextualConstraintsTest {
     }
 
     @Test
-    fun startCanBeUsedInsideModule(){
+    fun startCanBeUsedInsideModule() {
         val input = """
             module foo {
                 every (1s)
@@ -163,7 +163,7 @@ internal class ContextualConstraintsTest {
     }
 
     @Test
-    fun variableGetsMarkedInitialisedInDclIfIthasInitializer(){
+    fun variableGetsMarkedInitialisedInDclIfIthasInitializer() {
         val input = """
             Int a = 3
         """
@@ -175,7 +175,7 @@ internal class ContextualConstraintsTest {
     }
 
     @Test
-    fun delayInsideCriticalSectionThrowsError(){
+    fun delayInsideCriticalSectionThrowsError() {
         val input = """
             template module temp {
                 every(1000ms) {
@@ -190,7 +190,7 @@ internal class ContextualConstraintsTest {
     }
 
     @Test
-    fun sleepOutsideCriticalSectionThrowsError(){
+    fun sleepOutsideCriticalSectionThrowsError() {
         val input = """
             template module temp {
                 every(1000ms) {
@@ -207,7 +207,7 @@ internal class ContextualConstraintsTest {
     }
 
     @Test
-    fun sleepInsideCriticalSectionIsOk(){
+    fun sleepInsideCriticalSectionIsOk() {
         val input = """
             template module temp {
                 every(1000ms) {
@@ -222,7 +222,7 @@ internal class ContextualConstraintsTest {
     }
 
     @Test
-    fun criticalInsideCriticalSectionThrowsError(){
+    fun criticalInsideCriticalSectionThrowsError() {
         val input = """
             template module temp {
                 every(1000ms) {
