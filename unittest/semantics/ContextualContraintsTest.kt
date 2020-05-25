@@ -221,6 +221,22 @@ internal class ContextualConstraintsTest {
         ContextualConstraintAnalyzer(ErrorHandler(input), st).caseStart(start)
     }
 
+    @Test
+    fun criticalInsideCriticalSectionThrowsError(){
+        val input = """
+            template module temp {
+                every(1000ms) {
+                    critical
+                        critical
+                            Int a = 2
+                }
+            }
+        """
+
+        val (st, start) = compileUpToContextualConstraintsAnalyzerFromString(input)
+        assertThrows<CriticalSectionError> { ContextualConstraintAnalyzer(ErrorHandler(input), st).caseStart(start) }
+    }
+
 
     private fun compileUpToContextualConstraintsAnalyzerFromString(input:String):Pair<SymbolTable, Start> {
         val lexer = StringLexer(input)
