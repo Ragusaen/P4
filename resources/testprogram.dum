@@ -1,23 +1,20 @@
-Time[] t = [10s, 5s, 2s, 20s, 10s, 1m]
 DigitalOutputPin p = D5
 
-module m{
-    Int i = 0
-    module p q(5);
-    every(t[i]){
+module mod{
+    Int i = 8
+    Time t = fib(i)
+    every(t){
         set p to HIGH
-        delay 1s
+        delay t
         set p to LOW
-        
-        if(i >= 5)
-            i = 0
-        else
-            i += 1
+        i += 1
+        t = fib(i)
     }
 }
 
-template module p(Int i){
-    on(true){
-    
-    }
+//Very ineffective
+fun fib(Int n):Time{
+    if(n == 0 or n == 1)
+        return 1ms
+    return fib(n-1) + fib(n-2)
 }

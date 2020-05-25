@@ -10,8 +10,8 @@ Helpers
     eol = cr lf | cr | lf;
     noteol = [all - [cr + lf]];
     boolliteral = ('false'|'true'|'HIGH'|'LOW');
-    intliteral = '-'?digit+;
-    floatliteral = '-'?(digit+('.'digit*)?|'.'digit+);
+    intliteral = digit+;
+    floatliteral = (digit+('.'digit*)?|'.'digit+);
     timeliteral = (intliteral | floatliteral)('ms'|'s'|'m'|'h');
     stringliteral = '"'('\'all | [[all - '"'] - '\'])*'"';
     digitalpinliteral = 'D'digit+;

@@ -954,7 +954,7 @@ internal class ParsingTests {
     @Test
     fun parseMinusUnaryExprIsParseable(){
         var input = """
-           Int i = 2 - --5
+           Int i = 2 - -5
         """
         parseString(input)
     }
