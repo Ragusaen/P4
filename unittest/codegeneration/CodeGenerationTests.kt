@@ -71,6 +71,22 @@ internal class CodeGenerationTestsTest {
         compile(code)
     }
 
+    @Test
+    fun tester() {
+        val code = """
+            fun foo():Int {
+                fun bar():Int {
+                    return 12
+                }
+                
+                return 80
+            }
+        """
+
+        compile(code)
+    }
+
+
     private fun compile(code:String) {
         val errorHandler = ErrorHandler(code)
         val lexer = StringLexer(code)
