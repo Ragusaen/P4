@@ -85,6 +85,8 @@ class ContextualConstraintAnalyzer(errorHandler: ErrorHandler, symbolTable: Symb
     }
 
     override fun inACriticalStmt(node: ACriticalStmt) {
+        if (inCriticalSection)
+            error(CriticalSectionError("Cannot use critical control structure inside another critical control structure."))
         inCriticalSection = true
     }
 
