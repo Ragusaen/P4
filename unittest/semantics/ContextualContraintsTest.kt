@@ -7,10 +7,7 @@ import org.junit.jupiter.api.assertThrows
 import sablecc.node.Start
 import sablecc.parser.Parser
 import semantics.contextualConstraints.ContextualConstraintAnalyzer
-import semantics.contextualConstraints.errors.LoopJumpOutOfLoopError
-import semantics.contextualConstraints.errors.ModuleStatementUsedInFunctionError
-import semantics.contextualConstraints.errors.MultipleInitsError
-import semantics.contextualConstraints.errors.ReturnOutOfFunctionDeclarationError
+import semantics.contextualConstraints.errors.*
 import semantics.symbolTable.SymbolTable
 import semantics.symbolTable.SymbolTableBuilder
 
@@ -175,6 +172,53 @@ internal class ContextualConstraintsTest {
         ContextualConstraintAnalyzer(ErrorHandler(input), st).caseStart(start)
 
         assert(st.findVar("a")!!.isInitialized)
+    }
+
+    @Test
+    fun delayInsideCriticalSectionThrowsError(){
+        val input = """
+            template module temp {
+                every(1000ms) {
+                    critical
+                        delay 100ms
+                }
+            }
+        """
+
+        val (st, start) = compileUpToContextualConstraintsAnalyzerFromString(input)
+        assertThrows<CriticalSectionError> { ContextualConstraintAnalyzer(ErrorHandler(input), st).caseStart(start) }
+    }
+
+    @Test
+    fun sleepOutsideCriticalSectionThrowsError(){
+        val input = """
+            template module temp {
+                every(1000ms) {
+                    Int a
+                    critical
+                        a = 8
+                    sleep 1s
+                }
+            }
+        """
+
+        val (st, start) = compileUpToContextualConstraintsAnalyzerFromString(input)
+        assertThrows<CriticalSectionError> { ContextualConstraintAnalyzer(ErrorHandler(input), st).caseStart(start) }
+    }
+
+    @Test
+    fun sleepInsideCriticalSectionIsOk(){
+        val input = """
+            template module temp {
+                every(1000ms) {
+                    critical
+                        sleep 1s
+                }
+            }
+        """
+
+        val (st, start) = compileUpToContextualConstraintsAnalyzerFromString(input)
+        ContextualConstraintAnalyzer(ErrorHandler(input), st).caseStart(start)
     }
 
 
