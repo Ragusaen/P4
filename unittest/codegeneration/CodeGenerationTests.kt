@@ -71,7 +71,8 @@ internal class CodeGenerationTestsTest {
         compile(code)
     }
 
-    @Test
+    // This test is used to test code quickly and is not a part of the unit test program
+    // @Test
     fun tester() {
         val code = """
             fun foo():Int {
