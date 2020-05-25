@@ -3,6 +3,7 @@ DigitalOutputPin p = D5
 
 module m{
     Int i = 0
+    module p q(5);
     every(t[i]){
         set p to HIGH
         delay 1s
@@ -12,5 +13,11 @@ module m{
             i = 0
         else
             i += 1
+    }
+}
+
+template module p(Int i){
+    on(true){
+    
     }
 }

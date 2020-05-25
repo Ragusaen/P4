@@ -108,8 +108,8 @@ Productions
     program = root_element*;
 
     root_element {-> root_element} =
-        {dcl} dcl_stmt
-            {-> New root_element.dcl(dcl_stmt.stmt)}
+        {dcl} rootdcl
+            {-> New root_element.dcl(rootdcl.stmt)}
         | {module} moduledcl
             {-> New root_element.moduledcl(moduledcl)}
         | {function} functiondcl
@@ -159,8 +159,14 @@ Productions
         lbrace [start]:eol? dcl_stmt* module_structure rbrace [end]:eol?
             {-> New inner_module([dcl_stmt.stmt], module_structure)};
 
+    rootdcl {-> stmt} =
+        dcl_stmt
+            {-> dcl_stmt.stmt}
+        | {module_dcl} module [template]:identifier [instance]:identifier arguments? eol
+            {-> New stmt.moduledcl(template, instance, [arguments.expr])};
+
     dcl_stmt {-> stmt} = dcl eol
-        {-> dcl.stmt};
+            {-> dcl.stmt};
 
     module_structure {-> module_structure} =
         {every} every lparen expr rparen eol? stmt
@@ -247,9 +253,7 @@ Productions
 /* Declaration */
     dcl {-> stmt} =
         {vardcl} type vardcls
-            {-> New stmt.dcl(type, [vardcls.vardcl])}
-        | {module_dcl} module [template]:identifier [instance]:identifier arguments?
-            {-> New stmt.moduledcl(template, instance, [arguments.expr])};
+            {-> New stmt.dcl(type, [vardcls.vardcl])};
 
     arguments {-> expr*} =
         lparen arglist rparen
