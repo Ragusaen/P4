@@ -71,7 +71,7 @@ internal class CodeGenerationTestsTest {
         compile(code)
     }
 
-    fun compile(code:String) {
+    private fun compile(code:String) {
         val errorHandler = ErrorHandler(code)
         val lexer = StringLexer(code)
         val parser = Parser(lexer)

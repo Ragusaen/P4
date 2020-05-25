@@ -2,7 +2,6 @@ package semantics.symbolTable
 
 import ErrorHandler
 import ErrorTraverser
-import getNearestToken
 import getOtherPointFromToken
 import sablecc.node.*
 import semantics.symbolTable.errors.CloseScopeZeroException
@@ -33,9 +32,9 @@ class SymbolTableBuilder(errorHandler: ErrorHandler) : ErrorTraverser(errorHandl
         // If the name is already used within this scope throw exception
         val name = identifierToken.text
         if (name in currentScope.variables) {
-            val othertoken = currentScope.findVar(name)!!.token
+            val otherToken = currentScope.findVar(name)!!.token
             error(IdentifierAlreadyDeclaredError("The variable $name has already been declared.",
-                getOtherPointFromToken(othertoken, "Previous declaration was here.")))
+                getOtherPointFromToken(otherToken, "Previous declaration was here.")))
         }
         else
             currentScope.variables[name] = Identifier(type, currentVarPrefix + name, identifierToken, isInit)
@@ -69,11 +68,11 @@ class SymbolTableBuilder(errorHandler: ErrorHandler) : ErrorTraverser(errorHandl
         } else {
             val otherNode = nodeModuleTable.filterValues { it == name }.keys.first()
 
-            val token: Token? = if (otherNode is AModuledclStmt)
-                    otherNode.instance
-                else if (otherNode is AInstanceModuledcl)
-                    otherNode.identifier
-                else null
+            val token: Token? = when (otherNode) {
+                is AModuledclStmt -> otherNode.instance
+                is AInstanceModuledcl -> otherNode.identifier
+                else -> null
+            }
 
             val otherPoint = if (token != null) getOtherPointFromToken(token, "Previous declaration was here.") else null
 
@@ -124,7 +123,7 @@ class SymbolTableBuilder(errorHandler: ErrorHandler) : ErrorTraverser(errorHandl
     override fun caseAProgram(node: AProgram) {
         // First add all template modules and functions to the symbol table
         rootElementMode = true
-        // The root element mode is handled in each case, function and template module do no check inner code, dcl is the same
+        // The root element mode is handled in each case, function and template module do no check inner code, vardcl is the same
         // Do modules then functions then rest to ensure instances of template modules can be created in root and functions can be used to initialize variables
         val (modules, other) = node.rootElement.partition{ it is AModuledclRootElement}
         val (functions, rest) = other.partition {it is AFunctiondclRootElement}

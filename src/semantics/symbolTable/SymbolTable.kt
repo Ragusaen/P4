@@ -3,7 +3,6 @@ package semantics.symbolTable
 import sablecc.node.Node
 import semantics.typeChecking.Type
 
-
 /*
     Functions should be looked up with the findFun method, but since variables can be in different scopes,
     they should not be directly looked up in the symbol table. For that use the ScopedTraverser.

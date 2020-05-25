@@ -24,7 +24,9 @@ class TypeChecker(errorHandler: ErrorHandler, symbolTable: SymbolTable) : Scoped
 
     private fun getType(node: Node): Type {
         val prevSize = typeStack.size
+
         node.apply(this)
+
         if (typeStack.size <= prevSize)
             println("Warning: Nothing was pushed to the typestack when getting type for node ${node::class.simpleName}\n")
         return typeStack.pop()

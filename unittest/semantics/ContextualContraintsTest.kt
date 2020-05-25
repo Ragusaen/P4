@@ -8,7 +8,7 @@ import sablecc.node.Start
 import sablecc.parser.Parser
 import semantics.contextualConstraints.ContextualConstraintAnalyzer
 import semantics.contextualConstraints.errors.LoopJumpOutOfLoopError
-import semantics.contextualConstraints.errors.ModuleStatementUsedInFunctionException
+import semantics.contextualConstraints.errors.ModuleStatementUsedInFunctionError
 import semantics.contextualConstraints.errors.MultipleInitsError
 import semantics.contextualConstraints.errors.ReturnOutOfFunctionDeclarationError
 import semantics.symbolTable.SymbolTable
@@ -25,6 +25,7 @@ internal class ContextualConstraintsTest {
         """
 
         val (st, start) = compileUpToContextualConstraintsAnalyzerFromString(input)
+
         assertThrows<ReturnOutOfFunctionDeclarationError> { ContextualConstraintAnalyzer(ErrorHandler(input), st).caseStart(start) }
     }
 
@@ -38,6 +39,7 @@ internal class ContextualConstraintsTest {
         """
 
         val (st, start) = compileUpToContextualConstraintsAnalyzerFromString(input)
+
         ContextualConstraintAnalyzer(ErrorHandler(input), st).caseStart(start)
     }
 
@@ -59,6 +61,7 @@ internal class ContextualConstraintsTest {
         """
 
         val (st, start) = compileUpToContextualConstraintsAnalyzerFromString(input)
+
         ContextualConstraintAnalyzer(ErrorHandler(input), st).caseStart(start)
     }
 
@@ -75,6 +78,7 @@ internal class ContextualConstraintsTest {
             }
         """
         val (st, start) = compileUpToContextualConstraintsAnalyzerFromString(input)
+
         assertThrows<LoopJumpOutOfLoopError> { ContextualConstraintAnalyzer(ErrorHandler(input), st).caseStart(start) }
     }
 
@@ -86,6 +90,7 @@ internal class ContextualConstraintsTest {
             }
         """
         val (st, start) = compileUpToContextualConstraintsAnalyzerFromString(input)
+
         ContextualConstraintAnalyzer(ErrorHandler(input), st).caseStart(start)
     }
 
@@ -101,6 +106,7 @@ internal class ContextualConstraintsTest {
             }
         """
         val (st, start) = compileUpToContextualConstraintsAnalyzerFromString(input)
+
         assertThrows<MultipleInitsError> { ContextualConstraintAnalyzer(ErrorHandler(input), st).caseStart(start) }
     }
 
@@ -112,7 +118,8 @@ internal class ContextualConstraintsTest {
             }
         """
         val (st, start) = compileUpToContextualConstraintsAnalyzerFromString(input)
-        assertThrows<ModuleStatementUsedInFunctionException> { ContextualConstraintAnalyzer(ErrorHandler(input), st).caseStart(start) }
+
+        assertThrows<ModuleStatementUsedInFunctionError> { ContextualConstraintAnalyzer(ErrorHandler(input), st).caseStart(start) }
     }
 
     @Test
@@ -124,6 +131,7 @@ internal class ContextualConstraintsTest {
             }
         """
         val (st, start) = compileUpToContextualConstraintsAnalyzerFromString(input)
+
         ContextualConstraintAnalyzer(ErrorHandler(input), st).caseStart(start)
     }
 
@@ -140,7 +148,8 @@ internal class ContextualConstraintsTest {
             }
         """
         val (st, start) = compileUpToContextualConstraintsAnalyzerFromString(input)
-        assertThrows<ModuleStatementUsedInFunctionException> { ContextualConstraintAnalyzer(ErrorHandler(input), st).caseStart(start) }
+
+        assertThrows<ModuleStatementUsedInFunctionError> { ContextualConstraintAnalyzer(ErrorHandler(input), st).caseStart(start) }
     }
 
     @Test
@@ -152,6 +161,7 @@ internal class ContextualConstraintsTest {
             }
         """
         val (st, start) = compileUpToContextualConstraintsAnalyzerFromString(input)
+
         ContextualConstraintAnalyzer(ErrorHandler(input), st).caseStart(start)
     }
 
@@ -160,8 +170,10 @@ internal class ContextualConstraintsTest {
         val input = """
             Int a = 3
         """
+
         val (st, start) = compileUpToContextualConstraintsAnalyzerFromString(input)
         ContextualConstraintAnalyzer(ErrorHandler(input), st).caseStart(start)
+
         assert(st.findVar("a")!!.isInitialized)
     }
 

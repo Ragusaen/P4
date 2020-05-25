@@ -684,7 +684,7 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, errorHandler:
         node.moduleStructure.apply(this) // Pushes twice
 
         increaseIndent()
-        val mstruct = codeStack.pop()
+        val mStruct = codeStack.pop()
         decreaseIndent()
 
         val expr = codeStack.pop()
@@ -694,7 +694,7 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, errorHandler:
 
         codeStack.push(dcls)
         codeStack.push("${singleIndent}while (1) {\n" +
-                "$mstruct" +
+                mStruct +
                 "${singleIndent.repeat(2)}vTaskSuspend(${taskPrefix}${moduleName}_Handle);\n" +
                 "$singleIndent}")
     }
@@ -724,8 +724,8 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, errorHandler:
     }
 
     override fun caseAArrayValue(node: AArrayValue) {
-        val exprs = node.expr.map {getCode(it)}.joinToString(", ")
-        codeStack.push("{ $exprs }")
+        val expressions = node.expr.map {getCode(it)}.joinToString(", ")
+        codeStack.push("{ $expressions }")
     }
 
     override fun caseAIndexExpr(node: AIndexExpr) {
@@ -876,5 +876,4 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, errorHandler:
 
         codeStack.pushLineIndented("delayMicroseconds($expr);")
     }
-
 }

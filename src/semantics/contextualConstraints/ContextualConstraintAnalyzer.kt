@@ -4,7 +4,7 @@ import ErrorHandler
 import sablecc.node.*
 import semantics.contextualConstraints.errors.LoopJumpOutOfLoopError
 import semantics.contextualConstraints.errors.MultipleInitsError
-import semantics.contextualConstraints.errors.ModuleStatementUsedInFunctionException
+import semantics.contextualConstraints.errors.ModuleStatementUsedInFunctionError
 import semantics.contextualConstraints.errors.ReturnOutOfFunctionDeclarationError
 import semantics.symbolTable.ScopedTraverser
 import semantics.symbolTable.SymbolTable
@@ -22,22 +22,22 @@ class ContextualConstraintAnalyzer(errorHandler: ErrorHandler, symbolTable: Symb
 
     override fun outADelayStmt(node: ADelayStmt) {
         if (!inModule)
-            error(ModuleStatementUsedInFunctionException("Delay can only be used inside module declaration."))
+            error(ModuleStatementUsedInFunctionError("Delay can only be used inside module declaration."))
     }
 
     override fun outADelayuntilStmt(node: ADelayuntilStmt) {
         if (!inModule)
-            error(ModuleStatementUsedInFunctionException("Delay until can only be used inside module declaration."))
+            error(ModuleStatementUsedInFunctionError("Delay until can only be used inside module declaration."))
     }
 
     override fun outAStopStmt(node: AStopStmt) {
         if (!inModule)
-            error(ModuleStatementUsedInFunctionException("Stop can only be used inside module declaration."))
+            error(ModuleStatementUsedInFunctionError("Stop can only be used inside module declaration."))
     }
 
     override fun outAStartStmt(node: AStartStmt) {
         if (!inModule)
-            error(ModuleStatementUsedInFunctionException("Stop can only be used inside module declaration."))
+            error(ModuleStatementUsedInFunctionError("Stop can only be used inside module declaration."))
     }
 
     override fun outABreakStmt(node: ABreakStmt) {
