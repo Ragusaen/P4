@@ -2,10 +2,7 @@ package semantics.contextualConstraints
 
 import ErrorHandler
 import sablecc.node.*
-import semantics.contextualConstraints.errors.LoopJumpOutOfLoopError
-import semantics.contextualConstraints.errors.MultipleInitsError
-import semantics.contextualConstraints.errors.ModuleStatementUsedInFunctionException
-import semantics.contextualConstraints.errors.ReturnOutOfFunctionDeclarationError
+import semantics.contextualConstraints.errors.*
 import semantics.symbolTable.ScopedTraverser
 import semantics.symbolTable.SymbolTable
 import semantics.typeChecking.errors.IdentifierUsedBeforeAssignmentError
@@ -15,29 +12,44 @@ class ContextualConstraintAnalyzer(errorHandler: ErrorHandler, symbolTable: Symb
     private var inFunction = false
     private var inModule = false
     private var initHasAppeared = false
+    private var inCriticalSection = false
 
     fun run(node: Start) {
         caseStart(node)
     }
 
+    override fun outAUsleepStmt(node: AUsleepStmt) {
+        if (!inCriticalSection)
+            error(CriticalSectionError("Micro-sleep control structure cannot be used outside of critical section."))
+    }
+
+    override fun outASleepStmt(node: ASleepStmt) {
+        if (!inCriticalSection)
+            error(CriticalSectionError("Sleep control structure cannot be used outside of critical section."))
+    }
+
     override fun outADelayStmt(node: ADelayStmt) {
         if (!inModule)
-            error(ModuleStatementUsedInFunctionException("Delay can only be used inside module declaration."))
+            error(ModuleStatementUsedInFunctionError("Delay can only be used inside module declaration."))
+        if(inCriticalSection)
+            error(CriticalSectionError("Delay Statement cannot be used in critical control structure."))
     }
 
     override fun outADelayuntilStmt(node: ADelayuntilStmt) {
         if (!inModule)
-            error(ModuleStatementUsedInFunctionException("Delay until can only be used inside module declaration."))
+            error(ModuleStatementUsedInFunctionError("Delay until can only be used inside module declaration."))
+        if(inCriticalSection)
+            error(CriticalSectionError("Delay Until Statement cannot be used in critical control structure."))
     }
 
     override fun outAStopStmt(node: AStopStmt) {
         if (!inModule)
-            error(ModuleStatementUsedInFunctionException("Stop can only be used inside module declaration."))
+            error(ModuleStatementUsedInFunctionError("Stop can only be used inside module declaration."))
     }
 
     override fun outAStartStmt(node: AStartStmt) {
         if (!inModule)
-            error(ModuleStatementUsedInFunctionException("Stop can only be used inside module declaration."))
+            error(ModuleStatementUsedInFunctionError("Stop can only be used inside module declaration."))
     }
 
     override fun outABreakStmt(node: ABreakStmt) {
@@ -70,6 +82,16 @@ class ContextualConstraintAnalyzer(errorHandler: ErrorHandler, symbolTable: Symb
         val identifier = symbolTable.findVar(node.identifier.text)
         if (!identifier!!.isInitialized)
             error(IdentifierUsedBeforeAssignmentError("The variable ${node.identifier.text} was used before being initialized."))
+    }
+
+    override fun inACriticalStmt(node: ACriticalStmt) {
+        if (inCriticalSection)
+            error(CriticalSectionError("Cannot use critical control structure inside another critical control structure."))
+        inCriticalSection = true
+    }
+
+    override fun outACriticalStmt(node: ACriticalStmt) {
+        inCriticalSection = false
     }
 
     override fun inAFunctiondcl(node: AFunctiondcl) {

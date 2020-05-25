@@ -304,6 +304,7 @@ internal class TypeCheckerTest {
         """
 
         val (st, start) = getScopeFromString(input)
+
         assertThrows<IllegalImplicitTypeConversionError> { TypeChecker(ErrorHandler(input), st).run(start) }
     }
 
@@ -346,6 +347,7 @@ internal class TypeCheckerTest {
         """
 
         val (st, start) = getScopeFromString(input)
+
         assertThrows<IllegalImplicitTypeConversionError> {TypeChecker(ErrorHandler(input), st).run(start)}
     }
 
@@ -508,6 +510,7 @@ internal class TypeCheckerTest {
         """
 
         val (st, start) = getScopeFromString(input)
+
         assertThrows<IllegalImplicitTypeConversionError> { TypeChecker(ErrorHandler(input), st).run(start) }
     }
 
@@ -530,6 +533,7 @@ internal class TypeCheckerTest {
         """
 
         val (st, start) = getScopeFromString(input)
+
         assertThrows<IllegalImplicitTypeConversionError> { TypeChecker(ErrorHandler(input), st).run(start) }
     }
 
@@ -552,6 +556,7 @@ internal class TypeCheckerTest {
         """
 
         val (st, start) = getScopeFromString(input)
+
         assertThrows<IncompatibleOperatorError> { TypeChecker(ErrorHandler(input), st).run(start) }
     }
 
@@ -592,6 +597,7 @@ internal class TypeCheckerTest {
         """
             Float a = +.9
         """
+
         val (st, start) = getScopeFromString(input)
         TypeChecker(ErrorHandler(input), st).run(start)
     }
@@ -607,6 +613,7 @@ internal class TypeCheckerTest {
         """
 
         val (st, start) = getScopeFromString(input)
+
         assertThrows<IllegalImplicitTypeConversionError> { TypeChecker(ErrorHandler(input), st).run(start) }
     }
 
@@ -633,6 +640,7 @@ internal class TypeCheckerTest {
         """
 
         val (st, start) = getScopeFromString(input)
+
         TypeChecker(ErrorHandler(input), st).run(start)
     }
 
@@ -646,6 +654,7 @@ internal class TypeCheckerTest {
         """
 
         val (st, start) = getScopeFromString(input)
+
         assertThrows<IllegalImplicitTypeConversionError> { TypeChecker(ErrorHandler(input), st).run(start) }
     }
 

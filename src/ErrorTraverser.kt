@@ -2,8 +2,62 @@ import sablecc.analysis.DepthFirstAdapter
 import sablecc.node.*
 
 abstract class ErrorTraverser(val errorHandler: ErrorHandler) : DepthFirstAdapter() {
-
     fun error(ce: CompileError): Nothing = errorHandler.compileError(ce)
+    override fun caseTCritical(node: TCritical) {
+        errorHandler.setLineAndPos(node)
+    }
+
+    override fun caseTSleep(node: TSleep) {
+        errorHandler.setLineAndPos(node)
+    }
+
+    override fun caseTUsleep(node: TUsleep) {
+        errorHandler.setLineAndPos(node)
+    }
+
+    override fun caseTInt8type(node: TInt8type) {
+        errorHandler.setLineAndPos(node)
+    }
+
+    override fun caseTInt16type(node: TInt16type) {
+        errorHandler.setLineAndPos(node)
+    }
+
+    override fun caseTInt32type(node: TInt32type) {
+        errorHandler.setLineAndPos(node)
+    }
+
+    override fun caseTInt64type(node: TInt64type) {
+        errorHandler.setLineAndPos(node)
+    }
+
+    override fun caseTUint8type(node: TUint8type) {
+        errorHandler.setLineAndPos(node)
+    }
+
+    override fun caseTUint16type(node: TUint16type) {
+        errorHandler.setLineAndPos(node)
+    }
+
+    override fun caseTUint32type(node: TUint32type) {
+        errorHandler.setLineAndPos(node)
+    }
+
+    override fun caseTUint64type(node: TUint64type) {
+        errorHandler.setLineAndPos(node)
+    }
+
+    override fun caseTIn(node: TIn) {
+        errorHandler.setLineAndPos(node)
+    }
+
+    override fun caseTStep(node: TStep) {
+        errorHandler.setLineAndPos(node)
+    }
+
+    override fun caseTUinttype(node: TUinttype) {
+        errorHandler.setLineAndPos(node)
+    }
 
     override fun caseTAssign(node: TAssign){
         errorHandler.setLineAndPos(node)
@@ -276,6 +330,4 @@ abstract class ErrorTraverser(val errorHandler: ErrorHandler) : DepthFirstAdapte
     override fun caseTWhitespace(node: TWhitespace){
         errorHandler.setLineAndPos(node)
     }
-
-
 }

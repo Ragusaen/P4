@@ -5,7 +5,7 @@ import sablecc.node.*
 class  OperatorType {
     companion object{
         //Semantic type rules
-        val typeRules = listOf<TypeRule>(
+        private val typeRules = listOf(
                 TypeRule(Type.Int, Operator.ADDITION, Type.Int, Type.Int),
                 TypeRule(Type.Float, Operator.ADDITION, Type.Float, Type.Float),
                 TypeRule(Type.Time, Operator.ADDITION, Type.Time, Type.Time),
@@ -74,8 +74,8 @@ class  OperatorType {
                 AOrBinop::class.java to Operator.OR
         )
 
-        fun getReturnType(lside : Type, op : PBinop, rside: Type) : Type?{
-            return typeRules.firstOrNull { it.lside == lside && it.operator == opMap[op::class.java] && it.rside == rside }?.returnType
+        fun getReturnType(lSide : Type, op : PBinop, rSide: Type) : Type?{
+            return typeRules.firstOrNull { it.lSide == lSide && it.operator == opMap[op::class.java] && it.rSide == rSide }?.returnType
         }
 
         private val opToStringMap = mapOf(

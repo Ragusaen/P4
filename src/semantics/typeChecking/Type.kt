@@ -1,7 +1,5 @@
 package semantics.typeChecking
 
-import semantics.typeChecking.Type.Companion.DigitalPin
-
 class Type private constructor(private val main: EType, private val subType: Type? = null) {
     private enum class EType {
         INT, INT8, INT16, INT32, INT64,
@@ -10,7 +8,7 @@ class Type private constructor(private val main: EType, private val subType: Typ
         DIGITALINPUTPIN, DIGITALOUTPUTPIN,
         ANALOGINPUTPIN, ANALOGOUTPUTPIN,
         DIGITALPIN, ANALOGPIN,
-        TIME, VOID, MODULE, ARRAY;
+        TIME, VOID, ARRAY;
     }
 
     companion object {
@@ -39,7 +37,6 @@ class Type private constructor(private val main: EType, private val subType: Typ
         fun createArrayOf(subType: Type): Type {
             return Type(EType.ARRAY, subType)
         }
-
     }
 
     override fun equals(other: Any?): Boolean {
@@ -72,11 +69,9 @@ class Type private constructor(private val main: EType, private val subType: Typ
     }
 
     fun isIntType(): Boolean = main in EType.INT..EType.UINT64
-
     fun isArray(): Boolean = main == EType.ARRAY
-    fun getArraySubType(): Type = subType!!
 
-    fun isPin(): Boolean = (main in EType.DIGITALINPUTPIN..EType.ANALOGPIN)
+    fun getArraySubType(): Type = subType!!
 
     override fun toString(): String {
         return "$main" + if (isArray()) " <${subType!!}>" else ""

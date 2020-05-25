@@ -1,12 +1,10 @@
 import sablecc.lexer.Lexer
 import sablecc.node.TEol
 import sablecc.node.TWhitespace
-import sablecc.node.Token
 import java.io.PushbackReader
 
 open class DumplingLexer(input: String, size: Int = 1024) : Lexer(PushbackReader((input + "\n").reader(), size)) {
-
-    var lastNewLine = true
+    private var lastNewLine = true
 
     override fun filter() {
         if (this.token is TEol) {

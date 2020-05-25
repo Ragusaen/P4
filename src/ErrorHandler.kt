@@ -26,7 +26,7 @@ class ErrorHandler(sourceProgram: String) {
         const val codeLookbackLength = 5
     }
 
-    val sourceLines = sourceProgram.split('\n')
+    private val sourceLines = sourceProgram.split('\n')
 
     fun setLineAndPos(t:Token) {
         lastToken = t
@@ -34,6 +34,7 @@ class ErrorHandler(sourceProgram: String) {
         lastPos = t.pos
     }
 
+    // Throws a compile error (exception) with a fitting error message
     fun compileError(ce:CompileError):Nothing {
         if (lastLine == null || lastPos == null)
             errorMsg = "Line and position unavailable.\n"

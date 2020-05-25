@@ -16,14 +16,6 @@ import semantics.typeChecking.Type
 import semantics.typeChecking.errors.IdentifierNotDeclaredError
 
 internal class SymbolTableBuilderTest {
-    fun parseString(input: String): Start {
-        var newInput = input + "\n"
-        newInput = input.replace("(?m)^[ \t]*\r?\n".toRegex(), "")
-        val lexer = StringLexer(newInput)
-        val parser = Parser(lexer)
-        return parser.parse()
-    }
-
     @Test
     fun symbolTableBuilderThrowsErrorWhenVariableHasAlreadyBeenDeclared() {
         val input = "Int a = 8\n Int a = 5"
@@ -93,6 +85,7 @@ internal class SymbolTableBuilderTest {
             }
             Int b = a + 2
         """
+
         assertThrows<IdentifierUsedBeforeDeclarationError> {  getScopeFromString(input) }
     }
 
@@ -126,6 +119,7 @@ internal class SymbolTableBuilderTest {
             }
             Int a = 2
         """
+
         val st = getScopeFromString(input).first
 
         assertNotNull(st.findVar("a"))
@@ -162,6 +156,7 @@ internal class SymbolTableBuilderTest {
                 foo()
             }
         """
+
         val st = getScopeFromString(input).first
 
         assertNotNull(st.findFun("foo", listOf()))
@@ -176,6 +171,7 @@ internal class SymbolTableBuilderTest {
                     a += 1
             }
         """
+
         val st = getScopeFromString(input).first
 
         assertNotNull(st.findTemplateModule("thismodule"))
@@ -203,6 +199,7 @@ internal class SymbolTableBuilderTest {
                 foo()
             }
         """
+
         assertThrows<IdentifierUsedBeforeDeclarationError> {getScopeFromString(input).first}
     }
 
@@ -216,6 +213,7 @@ internal class SymbolTableBuilderTest {
             fun foo()
                 return
         """
+
         getScopeFromString(input).first
     }
 
@@ -229,6 +227,7 @@ internal class SymbolTableBuilderTest {
             fun foo()
                 return
         """
+
         getScopeFromString(input).first
     }
 
@@ -240,6 +239,7 @@ internal class SymbolTableBuilderTest {
             fun foo(): Int
                 return 3
         """
+
         getScopeFromString(input).first
     }
 

@@ -1,6 +1,5 @@
 package semantics.symbolTable
 
-import sablecc.node.Node
 import sablecc.node.Token
 import semantics.typeChecking.Type
 

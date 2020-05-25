@@ -1,6 +1,5 @@
 package parser
 
-import PrettyPrinter
 import StringLexer
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -12,135 +11,185 @@ import sablecc.parser.ParserException
 internal class ParsingTests {
 
     @Test
-    fun parseVariableDeclarationIsParseable(){
+    fun parseVariableDeclarationIsParsable() {
         val input = """
             Int a
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseIntegerDeclarationIsParseable(){
+    fun parseIntegerDeclarationIsParsable() {
         val input = """
             Int a = 5
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseIntegerDeclarationNegativeLiteralIsParseable(){
+    fun parseIntegerDeclarationNegativeLiteralIsParsable() {
         val input = """
             Int a = -5
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseInt8DeclarationIsParseable(){
+    fun parseInt8DeclarationIsParsable() {
         val input = """
             Int8 a = 5
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseInt16DeclarationIsParseable(){
+    fun parseInt16DeclarationIsParsable() {
         val input = """
             Int16 a = 5
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseInt32DeclarationIsParseable(){
+    fun parseInt32DeclarationIsParsable() {
         val input = """
             Int32 a = 5
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseInt64DeclarationIsParseable(){
+    fun parseInt64DeclarationIsParsable() {
         val input = """
             Int64 a = 5
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseUintDeclarationIsParseable(){
+    fun parseUintDeclarationIsParsable() {
         val input = """
             Uint a = 5
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseUint8DeclarationIsParseable(){
+    fun parseUint8DeclarationIsParsable() {
         val input = """
             Uint8 a = 5
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseUint16DeclarationIsParseable(){
+    fun parseUint16DeclarationIsParsable() {
         val input = """
             Uint16 a = 5
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseUint32DeclarationIsParseable(){
+    fun parseUint32DeclarationIsParsable() {
         val input = """
             Uint32 a = 5
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseUint64DeclarationIsParseable(){
+    fun parseUint64DeclarationIsParsable() {
         val input = """
             Uint64 a = 5
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseFloatDeclarationIsParseable(){
+    fun parseFloatDeclarationIsParsable() {
         val input = """
             Float f = 5.5
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseFloatDeclarationNegativeNumberIsParseable(){
+    fun parseFloatDeclarationNegativeNumberIsParsable() {
         val input = """
             Float f = -5.5
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseFloatDeclarationNoNumbersBeforeDotIsParseable(){
+    fun parseFloatDeclarationNoNumbersBeforeDotIsParsable() {
         val input = """
             Float f = .5
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseFloatDeclarationNoNumbersAfterDotIsParseable(){
+    fun parseFloatDeclarationNoNumbersAfterDotIsParsable() {
         val input = """
             Float f = 5.
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseFloatDeclarationOnlyDotThrowsException(){
+    fun parseFloatDeclarationOnlyDotThrowsException() {
         val input = """
             Float f = .
         """
@@ -148,55 +197,73 @@ internal class ParsingTests {
     }
 
     @Test
-    fun parseTimeDeclarationMinutesIsParseable(){
+    fun parseTimeDeclarationMinutesIsParsable() {
         val input = """
             Time t = 5m
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseTimeDeclarationSecondsIsParseable(){
+    fun parseTimeDeclarationSecondsIsParsable() {
         val input = """
             Time t = 5s
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseTimeDeclarationHoursIsParseable(){
+    fun parseTimeDeclarationHoursIsParsable() {
         val input = """
             Time t = 5h
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseTimeDeclarationMillisecondsIsParseable(){
+    fun parseTimeDeclarationMillisecondsIsParsable() {
         val input = """
             Time t = 5ms
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseTimeDeclarationDecimalIsParseable(){
+    fun parseTimeDeclarationDecimalIsParsable() {
         val input = """
             Time t = 5.6ms
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseTimeDeclarationNegativeTimeIsParseable(){
+    fun parseTimeDeclarationNegativeTimeIsParsable() {
         val input = """
             Time t = -5.6ms
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseTimeDeclarationInvalidTimeSuffixThrowsException(){
+    fun parseTimeDeclarationInvalidTimeSuffixThrowsException() {
         val input = """
             Time t = 7t
         """
@@ -204,39 +271,51 @@ internal class ParsingTests {
     }
 
     @Test
-    fun parseDIPDeclarationIsParseable(){
+    fun parseDIPDeclarationIsParsable() {
         val input = """
             DigitalInputPin p = D5
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseDOPDeclarationIsParseable(){
+    fun parseDOPDeclarationIsParsable() {
         val input = """
             DigitalOutputPin p = D5
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseAOPDeclarationIsParseable(){
+    fun parseAOPDeclarationIsParsable() {
         val input = """
             AnalogOutputPin p = A5
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseAIPDeclarationIsParseable(){
+    fun parseAIPDeclarationIsParsable() {
         val input = """
             AnalogInputPin p = A5
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseIdentifierAsDNumberThrowsException(){
+    fun parseIdentifierAsDNumberThrowsException() {
         val input = """
            Time D5 = 5s
         """
@@ -244,7 +323,7 @@ internal class ParsingTests {
     }
 
     @Test
-    fun parseIdentifierAsANumberThrowsException(){
+    fun parseIdentifierAsANumberThrowsException() {
         val input = """
            Time A5 = 5s
         """
@@ -252,15 +331,18 @@ internal class ParsingTests {
     }
 
     @Test
-    fun parseMultipleDeclarationsPerLineIsParseable(){
+    fun parseMultipleDeclarationsPerLineIsParsable() {
         val input = """
            Int a, b = 5
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseArrayDeclarationEmptyIsParseable(){
+    fun parseArrayDeclarationEmptyIsParsable() {
         val input = """
            Time[] t = []
         """
@@ -268,23 +350,29 @@ internal class ParsingTests {
     }
 
     @Test
-    fun parseArrayDeclarationWithValuesIsParseable(){
+    fun parseArrayDeclarationWithValuesIsParsable() {
         val input = """
            Time[] t = [500ms, 400ms]
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseMultipleDimentionArrayDeclarationIsParseable(){
+    fun parseMultipleDimentionArrayDeclarationIsParsable() {
         val input = """
            Time[] t = [[200ms, 100ms], [400ms, 1s]]
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseTemplateModuleDeclarationNoModuleStructureNoDclsThrowsException(){
+    fun parseTemplateModuleDeclarationNoModuleStructureNoDclsThrowsException() {
         val input = """
             template module id {
             }
@@ -293,7 +381,7 @@ internal class ParsingTests {
     }
 
     @Test
-    fun parseTemplateModuleDeclarationNoModuleStructureWithDclsThrowsException(){
+    fun parseTemplateModuleDeclarationNoModuleStructureWithDclsThrowsException() {
         val input = """
             template module id {
                 Int i = 5
@@ -303,29 +391,35 @@ internal class ParsingTests {
     }
 
     @Test
-    fun parseTemplateModuleDeclarationWithModuleStructureNoDclsIsParseable(){
+    fun parseTemplateModuleDeclarationWithModuleStructureNoDclsIsParsable() {
         val input = """
             template module id {
                 every(5s)
                    set D5 to HIGH
             }
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseTemplateModuleDeclarationWithModuleStructureWithDclsIsParseable(){
+    fun parseTemplateModuleDeclarationWithModuleStructureWithDclsIsParsable() {
         val input = """
             template module id {
                 Int i = 5
                 every(5s) set D5 to HIGH
             }
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseTemplateModuleDeclarationModuleStructureWithDclsAfterThrowsException(){
+    fun parseTemplateModuleDeclarationModuleStructureWithDclsAfterThrowsException() {
         val input = """
             template module id {
                 every(5s) set D5 to HIGH
@@ -336,121 +430,157 @@ internal class ParsingTests {
     }
 
     @Test
-    fun parseTemplateModuleDeclarationOneParamIsParseable(){
+    fun parseTemplateModuleDeclarationOneParamIsParsable() {
         val input = """
             template module id(Int a) {
                 every(5s) set D5 to HIGH
             }
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseTemplateModuleDeclarationMultipleParamsIsParseable(){
+    fun parseTemplateModuleDeclarationMultipleParamsIsParsable() {
         val input = """
             template module id(Int a, Int b) {
                 every(5s) set D5 to HIGH
             }
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseNamedModuleDeclarationIsParseable(){
+    fun parseNamedModuleDeclarationIsParsable() {
         val input = """
             module id {
                 every(5s) set D5 to HIGH
             }
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseAnonymousModuleDeclarationNoDclsIsParseable(){
+    fun parseAnonymousModuleDeclarationNoDclsIsParsable() {
         val input = """
             every(5s) set D5 to HIGH
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseOnStructureIsParseable(){
+    fun parseOnStructureIsParsable() {
         val input = """
             on(true) set D5 to HIGH
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseFunctionDeclarationNoParamsNoReturnTypeIsParseable(){
-        var input = """
+    fun parseFunctionDeclarationNoParamsNoReturnTypeIsParsable() {
+        val input = """
            fun f() set D5 to HIGH
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseFunctionDeclarationNoParamsWithReturnTypeIsParseable(){
-        var input = """
+    fun parseFunctionDeclarationNoParamsWithReturnTypeIsParsable() {
+        val input = """
            fun f(): Int set D5 to HIGH
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseFunctionDeclarationOneParamIsParseable(){
-        var input = """
+    fun parseFunctionDeclarationOneParamIsParsable() {
+        val input = """
            fun f(Int i) set D5 to HIGH
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseFunctionDeclarationMultipleParamsIsParseable(){
-        var input = """
+    fun parseFunctionDeclarationMultipleParamsIsParsable() {
+        val input = """
            fun f(Int i, Float f) set D5 to HIGH
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseIfStmtNoElseIsParseable(){
-        var input = """
-           fun f(){
+    fun parseIfStmtNoElseIsParsable() {
+        val input = """
+           fun f() {
                 if(true) set D5 to HIGH
             }
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseIfStmtWithElseIsParseable(){
-        var input = """
-           fun f(){
+    fun parseIfStmtWithElseIsParsable() {
+        val input = """
+           fun f() {
                 if(true) 
                     set D5 to HIGH 
                 else set D6 to HIGH
             }
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseIfStmtWithBlockIsParseable(){
-        var input = """
-           fun f(){
+    fun parseIfStmtWithBlockIsParsable() {
+        val input = """
+           fun f() {
                 if(true){
                     set D5 to HIGH
                 }
             }
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseIfStmtWithNoConditionThrowsException(){
-        var input = """
-           fun f(){
+    fun parseIfStmtWithNoConditionThrowsException() {
+        val input = """
+           fun f() {
                 if() set D5 to HIGH
             }
         """
@@ -458,31 +588,37 @@ internal class ParsingTests {
     }
 
     @Test
-    fun parseWhileStmtIsParseable(){
-        var input = """
-           fun f(){
+    fun parseWhileStmtIsParsable() {
+        val input = """
+           fun f() {
                 while(true) set D5 to HIGH
             }
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseWhileStmtWithBlockIsParseable(){
-        var input = """
-           fun f(){
+    fun parseWhileStmtWithBlockIsParsable() {
+        val input = """
+           fun f() {
                 while(true){
                     set D5 to HIGH
                 }
             }
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseWhileStmtWithNoConditionThrowsException(){
-        var input = """
-           fun f(){
+    fun parseWhileStmtWithNoConditionThrowsException() {
+        val input = """
+           fun f() {
                 while() set D5 to HIGH
             }
         """
@@ -490,41 +626,50 @@ internal class ParsingTests {
     }
 
     @Test
-    fun parseForStmtIsParseable(){
-        var input = """
-           fun f(){
+    fun parseForStmtIsParsable() {
+        val input = """
+           fun f() {
                 for(i in 1 to 4) set D5 to HIGH
             }
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseForStmtWithStepIsParseable(){
-        var input = """
-           fun f(){
+    fun parseForStmtWithStepIsParsable() {
+        val input = """
+           fun f() {
                 for(i in 1 to 4 step 2) set D5 to HIGH
             }
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseForStmtWithBlockIsParseable(){
-        var input = """
-           fun f(){
+    fun parseForStmtWithBlockIsParsable() {
+        val input = """
+           fun f() {
                 for(i in 1 to 4){
                     set D5 to HIGH
                 }
             }
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseForStmtWithNoConditionThrowsException(){
-        var input = """
-           fun f(){
+    fun parseForStmtWithNoConditionThrowsException() {
+        val input = """
+           fun f() {
                 for() set D5 to HIGH
             }
         """
@@ -532,9 +677,9 @@ internal class ParsingTests {
     }
 
     @Test
-    fun parseDanglingElseIsParseable(){
-        var input = """
-           fun f(){
+    fun parseDanglingElseIsParsable() {
+        val input = """
+           fun f() {
                 if(true)
                     if(true) 
                         set D5 to HIGH
@@ -542,13 +687,16 @@ internal class ParsingTests {
                         set D6 to HIGH
             }
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseDanglingElseWithWhileIsParseable(){
-        var input = """
-           fun f(){
+    fun parseDanglingElseWithWhileIsParsable() {
+        val input = """
+           fun f() {
                 if(true) 
                     while(true) 
                         if(true) 
@@ -557,13 +705,16 @@ internal class ParsingTests {
                             set D6 to HIGH
             }
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseDanglingElseWithForIsParseable(){
-        var input = """
-           fun f(){
+    fun parseDanglingElseWithForIsParsable() {
+        val input = """
+           fun f() {
                 if(true) 
                     for(i in 1 to 4)
                         if(true) 
@@ -572,109 +723,136 @@ internal class ParsingTests {
                             set D6 to HIGH
             }
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseAssignStmtIsParseable(){
-        var input = """
-           fun f(){
+    fun parseAssignStmtIsParsable() {
+        val input = """
+           fun f() {
                 Int i = 5
                 i = 7
             }
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseAssignToIdentifierIsParseable(){
-        var input = """
-           fun f(){
+    fun parseAssignToIdentifierIsParsable() {
+        val input = """
+           fun f() {
                 Int i = 5
                 i = i
             }
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseAdditionAssignStmtIsParseable(){
-        var input = """
-           fun f(){
+    fun parseAdditionAssignStmtIsParsable() {
+        val input = """
+           fun f() {
                 Int i = 5
                 i += 7
             }
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseSubtractionAssignStmtIsParseable(){
-        var input = """
-           fun f(){
+    fun parseSubtractionAssignStmtIsParsable() {
+        val input = """
+           fun f() {
                 Int i = 5
                 i -= 7
             }
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseDivisionAssignStmtIsParseable(){
-        var input = """
-           fun f(){
+    fun parseDivisionAssignStmtIsParsable() {
+        val input = """
+           fun f() {
                 Int i = 5
                 i /= 7
             }
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseMultiplicationAssignStmtIsParseable(){
-        var input = """
-           fun f(){
+    fun parseMultiplicationAssignStmtIsParsable() {
+        val input = """
+           fun f() {
                 Int i = 5
                 i *= 7
             }
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseModuloAssignStmtIsParseable(){
-        var input = """
-           fun f(){
+    fun parseModuloAssignStmtIsParsable() {
+        val input = """
+           fun f() {
                 Int i = 5
                 i %= 7
             }
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseStmtInGlobalScopeThrowsException(){
-        var input = """
+    fun parseStmtInGlobalScopeThrowsException() {
+        val input = """
             set D5 to HIGH
         """
         assertThrows<ParserException> { parseString(input) }
     }
 
     @Test
-    fun parseStartStmtIsParseable(){
-        var input = """
-           fun f(){
+    fun parseStartStmtIsParsable() {
+        val input = """
+           fun f() {
                 DigitalOutputPin p = D5
                 start p
             }
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseStartStmtWithoutIdentifierThrowsException(){
-        var input = """
-           fun f(){
+    fun parseStartStmtWithoutIdentifierThrowsException() {
+        val input = """
+           fun f() {
                 start
             }
         """
@@ -682,29 +860,35 @@ internal class ParsingTests {
     }
 
     @Test
-    fun parseStopStmtIsParseable(){
-        var input = """
-           fun f(){
+    fun parseStopStmtIsParsable() {
+        val input = """
+           fun f() {
                 stop
             }
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseDelayStmtIsParseable(){
-        var input = """
-           fun f(){
+    fun parseDelayStmtIsParsable() {
+        val input = """
+           fun f() {
                 delay 500ms
             }
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseDelayStmtNoParamsThrowsExceptioni(){
-        var input = """
-           fun f(){
+    fun parseDelayStmtNoParamsThrowsExceptioni() {
+        val input = """
+           fun f() {
                 delay
             }
         """
@@ -712,19 +896,22 @@ internal class ParsingTests {
     }
 
     @Test
-    fun parseDelayUntilStmtIsParseable(){
-        var input = """
-           fun f(){
+    fun parseDelayUntilStmtIsParsable() {
+        val input = """
+           fun f() {
                 delay until true
             }
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseDelayUntilStmtNoParamsThrowsExceptioni(){
-        var input = """
-           fun f(){
+    fun parseDelayUntilStmtNoParamsThrowsExceptioni() {
+        val input = """
+           fun f() {
                 delay until
             }
         """
@@ -732,223 +919,298 @@ internal class ParsingTests {
     }
 
     @Test
-    fun parseReturnStmtNoExprIsParseable(){
-        var input = """
-           fun f(){
+    fun parseReturnStmtNoExprIsParsable() {
+        val input = """
+           fun f() {
                 return
             }
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseReturnStmtWithExprIsParseable(){
-        var input = """
-           fun f(){
+    fun parseReturnStmtWithExprIsParsable() {
+        val input = """
+           fun f() {
                 return 5
             }
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseFunctionCallStmtNoParamsIsParseable(){
-        var input = """
-           fun f(){
+    fun parseFunctionCallStmtNoParamsIsParsable() {
+        val input = """
+           fun f() {
                 g()
             }
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseFunctionCallStmtOneParamIsParseable(){
-        var input = """
-           fun f(){
+    fun parseFunctionCallStmtOneParamIsParsable() {
+        val input = """
+           fun f() {
                 g(id)
             }
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseFunctionCallStmtMultipleParamsIsParseable(){
-        var input = """
-           fun f(){
+    fun parseFunctionCallStmtMultipleParamsIsParsable() {
+        val input = """
+           fun f() {
                 g(id, id2)
             }
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseBreakStmtIsParseable(){
-        var input = """
-           fun f(){
+    fun parseBreakStmtIsParsable() {
+        val input = """
+           fun f() {
                 break
             }
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseContinueStmtIsParseable(){
-        var input = """
-           fun f(){
+    fun parseContinueStmtIsParsable() {
+        val input = """
+           fun f() {
                 continue
             }
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseNoStmtIsParseable(){
-        var input = """
-           fun f(){
+    fun parseNoStmtIsParsable() {
+        val input = """
+           fun f() {
                 
             }
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseSetAnalogPinStmtIsParseable(){
-        var input = """
-           fun f(){
+    fun parseSetAnalogPinStmtIsParsable() {
+        val input = """
+           fun f() {
                 set A2 to 1023
             }
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseSetDigitalPinStmtIsParseable(){
-        var input = """
-           fun f(){
+    fun parseSetDigitalPinStmtIsParsable() {
+        val input = """
+           fun f() {
                 set D5 to HIGH
             }
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseOrExprIsParseable(){
-        var input = """
+    fun parseOrExprIsParsable() {
+        val input = """
            Bool b = true or false
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseAndExprIsParseable(){
-        var input = """
+    fun parseAndExprIsParsable() {
+        val input = """
            Bool b = true and false
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseEqualsExprIsParseable(){
-        var input = """
+    fun parseEqualsExprIsParsable() {
+        val input = """
            Bool b = true == false
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseNotEqualsExprIsParseable(){
-        var input = """
+    fun parseNotEqualsExprIsParsable() {
+        val input = """
            Bool b = true != false
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseLessThanExprIsParseable(){
-        var input = """
+    fun parseLessThanExprIsParsable() {
+        val input = """
            Bool b = 5 < 8
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseGreaterThanExprIsParseable(){
-        var input = """
+    fun parseGreaterThanExprIsParsable() {
+        val input = """
            Bool b = 5 > 8
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseLessThanEqualsExprIsParseable(){
-        var input = """
+    fun parseLessThanEqualsExprIsParsable() {
+        val input = """
            Bool b = 5 <= 8
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseGreaterThanEqualsExprIsParseable(){
-        var input = """
+    fun parseGreaterThanEqualsExprIsParsable() {
+        val input = """
            Bool b = 5 >= 8
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseReadExprIsParseable(){
-        var input = """
+    fun parseReadExprIsParsable() {
+        val input = """
            Int i = read A2
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseAdditionExprIsParseable(){
-        var input = """
+    fun parseAdditionExprIsParsable() {
+        val input = """
            Int i = 5 + 2
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseSubtractionExprIsParseable(){
-        var input = """
+    fun parseSubtractionExprIsParsable() {
+        val input = """
            Int i = 5 - 2
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseMultiplicationExprIsParseable(){
-        var input = """
+    fun parseMultiplicationExprIsParsable() {
+        val input = """
            Int i = 5 * 2
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseDivisionExprIsParseable(){
-        var input = """
+    fun parseDivisionExprIsParsable() {
+        val input = """
            Int i = 5 / 2
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseModuloExprIsParseable(){
-        var input = """
+    fun parseModuloExprIsParsable() {
+        val input = """
            Int i = 5 % 2
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parsePlusUnaryExprIsParseable(){
-        var input = """
+    fun parsePlusUnaryExprIsParsable() {
+        val input = """
            Int i = 2 + +5
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
@@ -956,65 +1218,85 @@ internal class ParsingTests {
         var input = """
            Int i = 2 - -5
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseNegationExprIsParseable(){
-        var input = """
+    fun parseNegationExprIsParsable() {
+        val input = """
            Bool b = !true
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseParenthesisExprIsParseable(){
-        var input = """
+    fun parseParenthesisExprIsParsable() {
+        val input = """
            Int i = (5 + 2)
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseArrayIndexingExprIsParseable(){
-        var input = """
+    fun parseArrayIndexingExprIsParsable() {
+        val input = """
            Int i = a[2]
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseSingleLineCommentIsParseable(){
-        var input = """
+    fun parseSingleLineCommentIsParsable() {
+        val input = """
             // Comment
            Int i = 4  
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseCommentInFunctionIsParseable(){
-        var input = """
+    fun parseCommentInFunctionIsParsable() {
+        val input = """
             fun a() {
                 // Do
             }
         """
 
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
     @Test
-    fun parseMultiLineCommentIsParseable(){
-        var input = """
+    fun parseMultiLineCommentIsParsable() {
+        val input = """
            /*
            Comment
            */
            Int i = 4
         """
+
         parseString(input)
+
+        // Assertion occurs implicitly, test will pass if no exception is thrown
     }
 
-    fun parseString(input:String): Start {
+    private fun parseString(input: String): Start {
         val newInput = (input + "\n").replace("(?m)^[ \t]*\r?\n".toRegex(), "")
         val lexer = StringLexer(newInput)
         val parser = Parser(lexer)
