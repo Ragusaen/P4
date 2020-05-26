@@ -195,7 +195,7 @@ internal class ParsingTests {
     }
 
     @Test
-    fun parseTimeDeclarationMinutesIsParsable() {
+    fun parseTimeLiteralMinutesIsParsable() {
         val input = """
             Time t = 5m
         """
@@ -206,7 +206,7 @@ internal class ParsingTests {
     }
 
     @Test
-    fun parseTimeDeclarationSecondsIsParsable() {
+    fun parseTimeLiteralSecondsIsParsable() {
         val input = """
             Time t = 5s
         """
@@ -217,7 +217,7 @@ internal class ParsingTests {
     }
 
     @Test
-    fun parseTimeDeclarationHoursIsParsable() {
+    fun parseTimeLiteralHoursIsParsable() {
         val input = """
             Time t = 5h
         """
@@ -228,7 +228,7 @@ internal class ParsingTests {
     }
 
     @Test
-    fun parseTimeDeclarationMillisecondsIsParsable() {
+    fun parseTimeLiteralMillisecondsIsParsable() {
         val input = """
             Time t = 5ms
         """
@@ -239,7 +239,7 @@ internal class ParsingTests {
     }
 
     @Test
-    fun parseTimeDeclarationDecimalIsParsable() {
+    fun parseTimeLiteralDecimalIsParsable() {
         val input = """
             Time t = 5.6ms
         """
@@ -250,7 +250,7 @@ internal class ParsingTests {
     }
 
     @Test
-    fun parseTimeDeclarationNegativeTimeIsParsable() {
+    fun parseTimeLiteralNegativeTimeIsParsable() {
         val input = """
             Time t = -5.6ms
         """
@@ -261,7 +261,7 @@ internal class ParsingTests {
     }
 
     @Test
-    fun parseTimeDeclarationInvalidTimeSuffixThrowsException() {
+    fun parseTimeLiteralInvalidTimeSuffixThrowsException() {
         val input = """
             Time t = 7t
         """
