@@ -20,14 +20,14 @@ internal class SymbolTableBuilderTest {
     fun symbolTableBuilderThrowsErrorWhenVariableHasAlreadyBeenDeclared() {
         val input = "Int a = 8\n Int a = 5"
 
-        assertThrows<IdentifierAlreadyDeclaredError> { getScopeFromString(input) }
+        assertThrows<IdentifierAlreadyDeclaredError> { getSymbolTableFromString(input) }
     }
 
     @Test
     fun symbolTableBuilderThrowsErrorIfVariableIsUsedBeforeDeclaration() {
         val input = "Int b = a + 2"
 
-        assertThrows<IdentifierUsedBeforeDeclarationError> { getScopeFromString(input) }
+        assertThrows<IdentifierUsedBeforeDeclarationError> { getSymbolTableFromString(input) }
     }
 
     @Test
@@ -38,7 +38,7 @@ internal class SymbolTableBuilderTest {
                 Int b = 0
             }
         """.trimMargin()
-        assertThrows<IdentifierUsedBeforeDeclarationError> { getScopeFromString(input) }
+        assertThrows<IdentifierUsedBeforeDeclarationError> { getSymbolTableFromString(input) }
     }
 
     @Test
@@ -49,7 +49,7 @@ internal class SymbolTableBuilderTest {
            }
         """
 
-        assertThrows<IdentifierUsedBeforeDeclarationError>{ getScopeFromString(input)}
+        assertThrows<IdentifierUsedBeforeDeclarationError>{ getSymbolTableFromString(input)}
     }
 
     @Test
@@ -64,7 +64,7 @@ internal class SymbolTableBuilderTest {
             }
         """
 
-        val st = getScopeFromString(input).first
+        val st = getSymbolTableFromString(input).first
 
         st.openScope()
         assertNotNull(st.findVar("s"))
@@ -86,7 +86,7 @@ internal class SymbolTableBuilderTest {
             Int b = a + 2
         """
 
-        assertThrows<IdentifierUsedBeforeDeclarationError> {  getScopeFromString(input) }
+        assertThrows<IdentifierUsedBeforeDeclarationError> {  getSymbolTableFromString(input) }
     }
 
     @Test
@@ -101,7 +101,7 @@ internal class SymbolTableBuilderTest {
             }
         """
         
-        val st = getScopeFromString(input).first
+        val st = getSymbolTableFromString(input).first
 
         assertNotNull(st.findVar("a"))
         st.openScope()
@@ -120,7 +120,7 @@ internal class SymbolTableBuilderTest {
             Int a = 2
         """
 
-        val st = getScopeFromString(input).first
+        val st = getSymbolTableFromString(input).first
 
         assertNotNull(st.findVar("a"))
         st.openScope()
@@ -136,7 +136,7 @@ internal class SymbolTableBuilderTest {
                 return 100ms
             }
         """
-        getScopeFromString(input)
+        getSymbolTableFromString(input)
     }
 
     @Test
@@ -146,7 +146,7 @@ internal class SymbolTableBuilderTest {
                 foo()
             }
         """
-        assertThrows<IdentifierUsedBeforeDeclarationError> {  getScopeFromString(input) }
+        assertThrows<IdentifierUsedBeforeDeclarationError> {  getSymbolTableFromString(input) }
     }
 
     @Test
@@ -157,7 +157,7 @@ internal class SymbolTableBuilderTest {
             }
         """
 
-        val st = getScopeFromString(input).first
+        val st = getSymbolTableFromString(input).first
 
         assertNotNull(st.findFun("foo", listOf()))
     }
@@ -172,7 +172,7 @@ internal class SymbolTableBuilderTest {
             }
         """
 
-        val st = getScopeFromString(input).first
+        val st = getSymbolTableFromString(input).first
 
         assertNotNull(st.findTemplateModule("thismodule"))
     }
@@ -189,7 +189,7 @@ internal class SymbolTableBuilderTest {
             }
         """
 
-        assertThrows<IdentifierNotDeclaredError> { val (st, start) = getScopeFromString(input) }
+        assertThrows<IdentifierNotDeclaredError> { val (st, start) = getSymbolTableFromString(input) }
     }
 
     @Test
@@ -200,7 +200,7 @@ internal class SymbolTableBuilderTest {
             }
         """
 
-        assertThrows<IdentifierUsedBeforeDeclarationError> {getScopeFromString(input).first}
+        assertThrows<IdentifierUsedBeforeDeclarationError> {getSymbolTableFromString(input).first}
     }
 
     @Test
@@ -214,7 +214,7 @@ internal class SymbolTableBuilderTest {
                 return
         """
 
-        getScopeFromString(input).first
+        getSymbolTableFromString(input).first
     }
 
     @Test
@@ -228,7 +228,7 @@ internal class SymbolTableBuilderTest {
                 return
         """
 
-        getScopeFromString(input).first
+        getSymbolTableFromString(input).first
     }
 
     @Test
@@ -240,11 +240,11 @@ internal class SymbolTableBuilderTest {
                 return 3
         """
 
-        getScopeFromString(input).first
+        getSymbolTableFromString(input).first
     }
 
 
-    private fun getScopeFromString(input:String):Pair<SymbolTable, Start> {
+    private fun getSymbolTableFromString(input:String):Pair<SymbolTable, Start> {
         val lexer = StringLexer(input)
         val parser = Parser(lexer)
         val s = parser.parse()
