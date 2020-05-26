@@ -1212,9 +1212,9 @@ internal class ParsingTests {
     }
 
     @Test
-    fun parseMinusUnaryExprIsParsable() {
-        val input = """
-           Int i = 2 - --5
+    fun parseMinusUnaryExprIsParseable(){
+        var input = """
+           Int i = 2 - -5
         """
 
         parseString(input)
