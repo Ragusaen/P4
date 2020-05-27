@@ -775,7 +775,7 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, errorHandler:
 
     override fun caseTAnalogpinliteral(node: TAnalogpinliteral) {
         super.caseTAnalogpinliteral(node)
-        codeStack.push(node.text)
+        codeStack.push(node.text.drop(1))
     }
 
     override fun caseTAnaloginputpintype(node: TAnaloginputpintype) {
