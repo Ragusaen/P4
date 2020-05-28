@@ -42,8 +42,6 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, errorHandler:
 
     private val taskPrefix = "Task"
 
-    private var codeStack = Stack<String>()
-
 	// This field is used to output prototypes for functions
     private val functionPrototypes = mutableListOf<String>()
 
