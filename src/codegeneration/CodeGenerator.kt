@@ -1,7 +1,9 @@
 package codegeneration
 
 import ErrorHandler
+import Helper.Companion.getFunParams
 import sablecc.node.*
+import semantics.symbolTable.Identifier
 import semantics.symbolTable.ScopedTraverser
 import semantics.symbolTable.SymbolTable
 import semantics.typeChecking.Type
@@ -47,12 +49,9 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, errorHandler:
 
     private var currentModuleName = ""
 
-    private fun toSimpleCode(s:String):String {
-        return s.trim().trim { it == ';' }
-    }
-
     private var codeStack = Stack<String>()
 
+    private val functionPrototypes = mutableListOf<String>()
     private val moduleAuxes = mutableListOf<ModuleAux>()
     private val templateInstances = mutableMapOf<String, MutableList<TemplateInstance>>()
     private var initCode = ""
@@ -145,10 +144,16 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, errorHandler:
     }
 
     private fun generateTopCode(): String {
+        // Generate libraries
         var res = "#include <dumpling.h>\n\n"
+
+        // Generate function prototypes
+        res += functionPrototypes.joinToString("\n")
+        res += "\n"
 
         // Generate global variables
         res += topDcls.joinToString("\n")
+        res += "\n"
 
         // Generate code for modules
         for (ma in moduleAuxes) {
@@ -568,8 +573,13 @@ class CodeGenerator(private val typeTable: MutableMap<Node, Type>, errorHandler:
             }
         }
 
+        functionPrototypes.add("$type $identifier ($param);")
+
         val body = getCode(node.body)
-        codeStack.push("$type $identifier ($param)\n$body")
+        if (node.body is ABlockStmt)
+            codeStack.push("$type $identifier ($param)\n$body")
+        else
+            codeStack.push("$type $identifier ($param){\n$body}\n")
         outAFunctiondcl(node)
     }
 

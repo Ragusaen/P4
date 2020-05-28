@@ -169,10 +169,10 @@ Productions
             {-> dcl.stmt};
 
     module_structure {-> module_structure} =
-        {every} every lparen expr rparen eol? stmt
-            {-> New module_structure.every(expr, stmt)}
-        | {on} on lparen expr rparen eol? stmt
-            {-> New module_structure.on(expr, stmt)};
+        {every} [token]:every lparen expr rparen eol? stmt
+            {-> New module_structure.every(token, expr, stmt)}
+        | {on} [token]:on lparen expr rparen eol? stmt
+            {-> New module_structure.on(token, expr, stmt)};
 
 /* Statement */
     stmt {-> stmt} =
@@ -414,7 +414,7 @@ Abstract Syntax Tree
 /* Module */
     moduledcl = {template} identifier param* inner_module | {instance} identifier? inner_module;
     inner_module = [dcls]:stmt* module_structure;
-    module_structure = {every} expr [body]:stmt | {on} expr [body]:stmt;
+    module_structure = {every} [token]:every expr [body]:stmt | {on} [token]:on expr [body]:stmt;
 
 /* Statement */
     stmt = {dcl} type vardcl* | {moduledcl} [template]:identifier [instance]:identifier expr* | {start} [token]:start identifier | {stop} [token]:stop identifier? | {set_to} [pin]:expr [value]:expr | {delay} [token]:delay expr | {delayuntil} [token]:delay expr | {assign} identifier expr binop? | {block} stmt* | {if} [condition]:expr [if_body]:stmt [else_body]:stmt? | {while} [condition]:expr [body]:stmt | {for} identifier [lower]:expr [upper]:expr [step]:expr? [body]:stmt | {expr} expr | {return} [token]:return expr? | {break} [token]:break | {continue} [token]:continue | {critical} [body]:stmt | {sleep} expr | {usleep} expr;
