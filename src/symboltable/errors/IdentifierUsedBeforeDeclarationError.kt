@@ -1,4 +1,4 @@
-package semantics.symbolTable.errors
+package symboltable.errors
 
 import CompileError
 

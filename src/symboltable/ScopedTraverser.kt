@@ -1,4 +1,4 @@
-package semantics.symbolTable
+package symboltable
 
 import ErrorHandler
 import ErrorTraverser

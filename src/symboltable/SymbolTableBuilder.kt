@@ -1,14 +1,14 @@
-package semantics.symbolTable
+package symboltable
 
 import ErrorHandler
 import ErrorTraverser
 import getOtherPointFromToken
 import sablecc.node.*
-import semantics.symbolTable.errors.CloseScopeZeroException
-import semantics.symbolTable.errors.IdentifierAlreadyDeclaredError
-import semantics.symbolTable.errors.IdentifierUsedBeforeDeclarationError
-import semantics.typeChecking.Type
-import semantics.typeChecking.errors.IdentifierNotDeclaredError
+import symboltable.errors.CloseScopeZeroException
+import symboltable.errors.IdentifierAlreadyDeclaredError
+import symboltable.errors.IdentifierUsedBeforeDeclarationError
+import typeChecking.Type
+import typeChecking.errors.IdentifierNotDeclaredError
 
 class SymbolTableBuilder(errorHandler: ErrorHandler) : ErrorTraverser(errorHandler) {
     private var currentScope = Scope(null)
@@ -34,7 +34,7 @@ class SymbolTableBuilder(errorHandler: ErrorHandler) : ErrorTraverser(errorHandl
         if (name in currentScope.variables) {
             val otherToken = currentScope.findVar(name)!!.token
             error(IdentifierAlreadyDeclaredError("The variable $name has already been declared.",
-                getOtherPointFromToken(otherToken, "Previous declaration was here.")))
+                    getOtherPointFromToken(otherToken, "Previous declaration was here.")))
         }
         else
             currentScope.variables[name] = Identifier(type, currentVarPrefix + name, identifierToken, isInit)
@@ -95,7 +95,7 @@ class SymbolTableBuilder(errorHandler: ErrorHandler) : ErrorTraverser(errorHandl
     }
 
     private fun openScope() {
-        val newScope = Scope(parent=currentScope)
+        val newScope = Scope(parent = currentScope)
         currentScope.children.add(newScope)
         currentScope = newScope
     }

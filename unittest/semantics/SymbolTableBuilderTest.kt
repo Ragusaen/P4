@@ -8,12 +8,12 @@ import org.junit.jupiter.api.Assertions.*
 import sablecc.parser.Parser
 import org.junit.jupiter.api.assertThrows
 import sablecc.node.Start
-import semantics.symbolTable.SymbolTable
-import semantics.symbolTable.errors.IdentifierAlreadyDeclaredError
-import semantics.symbolTable.errors.IdentifierUsedBeforeDeclarationError
-import semantics.symbolTable.SymbolTableBuilder
-import semantics.typeChecking.Type
-import semantics.typeChecking.errors.IdentifierNotDeclaredError
+import symboltable.SymbolTable
+import symboltable.errors.IdentifierAlreadyDeclaredError
+import symboltable.errors.IdentifierUsedBeforeDeclarationError
+import symboltable.SymbolTableBuilder
+import typeChecking.Type
+import typeChecking.errors.IdentifierNotDeclaredError
 
 internal class SymbolTableBuilderTest {
     @Test

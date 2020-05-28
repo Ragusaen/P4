@@ -1,4 +1,4 @@
-package semantics.typeChecking.errors
+package typeChecking.errors
 
 import CompileError
 

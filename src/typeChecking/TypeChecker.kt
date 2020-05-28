@@ -1,10 +1,10 @@
-package semantics.typeChecking
+package typeChecking
 
 import ErrorHandler
 import sablecc.node.*
-import semantics.symbolTable.ScopedTraverser
-import semantics.symbolTable.SymbolTable
-import semantics.typeChecking.errors.*
+import symboltable.ScopedTraverser
+import symboltable.SymbolTable
+import typeChecking.errors.*
 import java.util.*
 
 class TypeChecker(errorHandler: ErrorHandler, symbolTable: SymbolTable) : ScopedTraverser(errorHandler, symbolTable) {

@@ -3,10 +3,9 @@ package codegeneration
 import ErrorHandler
 import Helper.Companion.getFunParams
 import sablecc.node.*
-import semantics.symbolTable.Identifier
-import semantics.symbolTable.ScopedTraverser
-import semantics.symbolTable.SymbolTable
-import semantics.typeChecking.Type
+import symboltable.ScopedTraverser
+import symboltable.SymbolTable
+import typeChecking.Type
 import java.util.*
 
 class CodeGenerator(private val typeTable: MutableMap<Node, Type>, errorHandler: ErrorHandler, symbolTable: SymbolTable) : ScopedTraverser(errorHandler, symbolTable) {

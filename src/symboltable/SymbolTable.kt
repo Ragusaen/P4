@@ -1,7 +1,7 @@
-package semantics.symbolTable
+package symboltable
 
 import sablecc.node.Node
-import semantics.typeChecking.Type
+import typeChecking.Type
 
 /*
     Functions should be looked up with the findFun method, but since variables can be in different scopes,

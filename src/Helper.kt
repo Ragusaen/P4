@@ -1,5 +1,5 @@
 import sablecc.node.*
-import semantics.typeChecking.Type
+import typeChecking.Type
 
 class Helper {
     companion object {

@@ -3,9 +3,9 @@ import sablecc.lexer.LexerException
 import sablecc.node.TWhitespace
 import sablecc.parser.Parser
 import sablecc.parser.ParserException
-import semantics.contextualConstraints.ContextualConstraintAnalyzer
-import semantics.symbolTable.SymbolTableBuilder
-import semantics.typeChecking.TypeChecker
+import contextualConstraints.ContextualConstraintAnalyzer
+import symboltable.SymbolTableBuilder
+import typeChecking.TypeChecker
 import java.io.Reader
 
 class DumplingCompiler {

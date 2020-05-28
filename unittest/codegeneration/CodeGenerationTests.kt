@@ -4,9 +4,9 @@ import ErrorHandler
 import StringLexer
 import org.junit.jupiter.api.Test
 import sablecc.parser.Parser
-import semantics.contextualConstraints.ContextualConstraintAnalyzer
-import semantics.symbolTable.SymbolTableBuilder
-import semantics.typeChecking.TypeChecker
+import contextualConstraints.ContextualConstraintAnalyzer
+import symboltable.SymbolTableBuilder
+import typeChecking.TypeChecker
 
 internal class CodeGenerationTestsTest {
     @Test

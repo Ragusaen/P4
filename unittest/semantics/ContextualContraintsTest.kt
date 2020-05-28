@@ -6,10 +6,10 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import sablecc.node.Start
 import sablecc.parser.Parser
-import semantics.contextualConstraints.ContextualConstraintAnalyzer
-import semantics.contextualConstraints.errors.*
-import semantics.symbolTable.SymbolTable
-import semantics.symbolTable.SymbolTableBuilder
+import contextualConstraints.ContextualConstraintAnalyzer
+import contextualConstraints.errors.*
+import symboltable.SymbolTable
+import symboltable.SymbolTableBuilder
 
 internal class ContextualConstraintsTest {
     @Test

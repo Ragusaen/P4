@@ -1,11 +1,11 @@
-package semantics.contextualConstraints
+package contextualConstraints
 
 import ErrorHandler
 import sablecc.node.*
-import semantics.contextualConstraints.errors.*
-import semantics.symbolTable.ScopedTraverser
-import semantics.symbolTable.SymbolTable
-import semantics.typeChecking.errors.IdentifierUsedBeforeAssignmentError
+import contextualConstraints.errors.*
+import symboltable.ScopedTraverser
+import symboltable.SymbolTable
+import typeChecking.errors.IdentifierUsedBeforeAssignmentError
 
 class ContextualConstraintAnalyzer(errorHandler: ErrorHandler, symbolTable: SymbolTable) : ScopedTraverser(errorHandler, symbolTable) {
     private var openLoops: Int = 0

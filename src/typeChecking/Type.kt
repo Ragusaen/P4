@@ -1,4 +1,4 @@
-package semantics.typeChecking
+package typeChecking
 
 class Type private constructor(private val main: EType, private val subType: Type? = null) {
     private enum class EType {
