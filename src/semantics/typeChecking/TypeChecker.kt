@@ -187,9 +187,9 @@ class TypeChecker(errorHandler: ErrorHandler, symbolTable: SymbolTable) : Scoped
         when(node.unop) {
             is ANotUnop -> if (exprType != Type.Bool)
                 error(IncompatibleOperatorError("Cannot apply conditional unary '!' operator to expression of $exprType"))
-            is APlusUnop -> if (!exprType.isIntType() && exprType != Type.Float)
+            is APlusUnop -> if (!exprType.isIntType() && exprType != Type.Float && exprType != Type.Time)
                 error(IncompatibleOperatorError("Cannot apply conditional unary '+' operator to expression of $exprType"))
-            is AMinusUnop -> if (!exprType.isIntType() && exprType != Type.Float)
+            is AMinusUnop -> if (!exprType.isIntType() && exprType != Type.Float && exprType != Type.Time)
                 error(IncompatibleOperatorError("Cannot apply conditional unary '-' operator to expression of $exprType"))
         }
     }

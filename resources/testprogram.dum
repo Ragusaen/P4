@@ -1,20 +1,12 @@
-DigitalOutputPin p = D5
+AnalogOutputPin p = A3
+Int fadeAmount = 5
+Int brightness = 0
+Time t = 500ms + -5ms
 
-module mod{
-    Int i = 8
-    Time t = fib(i)
-    every(t){
-        set p to HIGH
-        delay t
-        set p to LOW
-        i += 1
-        t = fib(i)
-    }
+every(30ms){
+    set p to brightness
+    brightness = brightness + fadeAmount
+    if(brightness <= 0 or brightness >= 255)
+        fadeAmount = -fadeAmount
 }
 
-//Very ineffective
-fun fib(Int n):Time{
-    if(n == 0 or n == 1)
-        return 1ms
-    return fib(n-1) + fib(n-2)
-}
